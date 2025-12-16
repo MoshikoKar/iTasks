@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  Admin
+  TeamLead
+  Technician
+  Viewer
+}
+
+enum TaskStatus {
+  Open
+  InProgress
+  PendingVendor
+  PendingUser
+  Resolved
+  Closed
+}
+
+enum TaskPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     User[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  role         Role
+  passwordHash String
+  teamId       String?
+  createdAt    DateTime  @default(now())
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  tasksCreated Task[]    @relation("TasksCreated")
+  tasksAssigned Task[]   @relation("TasksAssigned")
+  subscribedTasks Task[] @relation("TaskSubscribers")
+  recurringTemplates RecurringTaskConfig[] @relation("TemplateAssignee")
+  comments     Comment[]
+  attachments  Attachment[]
+  auditLogs    AuditLog[]
+  mentions     Mention[] @relation("UserMentions")
+}
+
+model Task {
+  id             String            @id @default(uuid())
+  title          String
+  description    String
+  dueDate        DateTime?
+  slaDeadline    DateTime?
+  status         TaskStatus        @default(Open)
+  priority       TaskPriority      @default(Medium)
+  branch         String?
+  type           TaskType          @default(Standard)
+  tags           String[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  creatorId      String
+  assigneeId     String
+  recurringConfigId String?
+  parentTaskId   String?
+  creator        User              @relation("TasksCreated", fields: [creatorId], references: [id])
+  assignee       User              @relation("TasksAssigned", fields: [assigneeId], references: [id])
+  parentTask     Task?             @relation("SubTasks", fields: [parentTaskId], references: [id])
+  subTasks       Task[]            @relation("SubTasks")
+  context        TaskContext?
+  recurringConfig RecurringTaskConfig? @relation(fields: [recurringConfigId], references: [id])
+  comments       Comment[]
+  attachments    Attachment[]
+  auditLogs      AuditLog[]
+  subscribers    User[]            @relation("TaskSubscribers")
+  incident       Incident?
+}
+
+enum TaskType {
+  Standard
+  Recurring_Instance
+  Incident
+}
+
+model TaskContext {
+  id             String   @id @default(uuid())
+  taskId         String   @unique
+  serverName     String?
+  application    String?
+  workstationId  String?
+  adUser         String?
+  environment    String?
+  ipAddress      String?
+  manufacturer   String?
+  version        String?
+  task           Task     @relation(fields: [taskId], references: [id])
+}
+
+model RecurringTaskConfig {
+  id              String    @id @default(uuid())
+  name            String
+  cron            String
+  lastGeneratedAt DateTime?
+  nextGenerationAt DateTime?
+  templateTitle   String
+  templateDescription String?
+  templatePriority TaskPriority @default(Medium)
+  templateAssigneeId String
+  templateBranch  String?
+  templateServerName String?
+  templateApplication String?
+  templateIpAddress String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  tasks           Task[]
+  templateAssignee User      @relation("TemplateAssignee", fields: [templateAssigneeId], references: [id])
+}
+
+model Incident {
+  id          String    @id @default(uuid())
+  taskId      String    @unique
+  severity    TaskPriority
+  startedAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+  task        Task      @relation(fields: [taskId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  mentions  Mention[]
+}
+
+model Mention {
+  id        String   @id @default(uuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserMentions", fields: [userId], references: [id])
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  taskId     String
+  uploadedBy String
+  filePath   String
+  fileType   String
+  createdAt  DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id])
+  user       User     @relation(fields: [uploadedBy], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  taskId    String
+  actorId   String
+  action    String
+  oldValue  Json?
+  newValue  Json?
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id])
+  actor     User     @relation(fields: [actorId], references: [id])
+}
+
