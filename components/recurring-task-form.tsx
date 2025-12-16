@@ -26,11 +26,34 @@ interface RecurringTaskFormProps {
 }
 
 const cronPresets = [
+  // Daily schedules (sorted by time)
+  { label: 'Every Day at 8:00 AM', value: '0 8 * * *' },
   { label: 'Every Day at 9:00 AM', value: '0 9 * * *' },
+  { label: 'Every Day at 10:00 AM', value: '0 10 * * *' },
+  { label: 'Every Day at 12:00 PM', value: '0 12 * * *' },
+  { label: 'Every Day at 5:00 PM', value: '0 17 * * *' },
+  
+  // Weekday schedules (sorted by time)
+  { label: 'Every Weekday at 8:00 AM', value: '0 8 * * 1-5' },
   { label: 'Every Weekday at 9:00 AM', value: '0 9 * * 1-5' },
+  { label: 'Every Weekday at 5:00 PM', value: '0 17 * * 1-5' },
+  
+  // Specific weekday schedules (Sunday = 0, Monday = 1, ..., Saturday = 6)
+  { label: 'Every Sunday at 9:00 AM', value: '0 9 * * 0' },
   { label: 'Every Monday at 9:00 AM', value: '0 9 * * 1' },
+  { label: 'Every Tuesday at 9:00 AM', value: '0 9 * * 2' },
+  { label: 'Every Wednesday at 9:00 AM', value: '0 9 * * 3' },
+  { label: 'Every Thursday at 9:00 AM', value: '0 9 * * 4' },
+  { label: 'Every Friday at 9:00 AM', value: '0 9 * * 5' },
+  { label: 'Every Saturday at 9:00 AM', value: '0 9 * * 6' },
+  
+  // Monthly schedules (sorted by time, then by day)
+  { label: 'First Day of Month at 8:00 AM', value: '0 8 1 * *' },
   { label: 'First Day of Month at 9:00 AM', value: '0 9 1 * *' },
-  { label: 'Every Week on Sunday at 9:00 AM', value: '0 9 * * 0' },
+  { label: '15th of Every Month at 9:00 AM', value: '0 9 15 * *' },
+  { label: 'Last Day of Month at 9:00 AM', value: '0 9 28-31 * *' },
+  
+  // Custom
   { label: 'Custom', value: 'custom' },
 ];
 
@@ -45,11 +68,25 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
   const [customCron, setCustomCron] = useState(
     config && !cronPresets.find(p => p.value === config.cron) ? config.cron : ''
   );
+  const [branchSelection, setBranchSelection] = useState<string>('');
+  const [customBranch, setCustomBranch] = useState('');
 
   useEffect(() => {
     fetch('/api/branches')
       .then(res => res.ok ? res.json() : [])
-      .then(data => setBranches(data))
+      .then(data => {
+        setBranches(data);
+        // Update branch selection after branches are loaded
+        if (config?.templateBranch) {
+          if (data.includes(config.templateBranch)) {
+            setBranchSelection(config.templateBranch);
+            setCustomBranch('');
+          } else {
+            setBranchSelection('custom');
+            setCustomBranch(config.templateBranch);
+          }
+        }
+      })
       .catch(() => setBranches([]));
   }, []);
 
@@ -67,14 +104,16 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
       return;
     }
 
+    const taskTitle = formData.get('taskTitle') as string;
+    const branchValue = branchSelection === 'custom' ? customBranch : (branchSelection || undefined);
     const data = {
-      name: formData.get('name') as string,
+      name: taskTitle, // Use task title as the config name (shown in recurring tasks table)
       cron: cronValue,
-      templateTitle: formData.get('templateTitle') as string,
+      templateTitle: taskTitle, // Also use as the title for generated tasks
       templateDescription: formData.get('templateDescription') as string,
       templatePriority: formData.get('templatePriority') as TaskPriority,
       templateAssigneeId: formData.get('templateAssigneeId') as string,
-      templateBranch: formData.get('templateBranch') as string || undefined,
+      templateBranch: branchValue,
       templateServerName: formData.get('templateServerName') as string || undefined,
       templateApplication: formData.get('templateApplication') as string || undefined,
       templateIpAddress: formData.get('templateIpAddress') as string || undefined,
@@ -112,84 +151,27 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
         </div>
       )}
 
-      {/* Configuration Name */}
+      {/* Task Title */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
-          Configuration Name <span className="text-red-500">*</span>
+        <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-700 mb-2">
+          Task Title <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          id="name"
-          name="name"
+          id="taskTitle"
+          name="taskTitle"
           required
-          defaultValue={config?.name}
+          defaultValue={config?.templateTitle || config?.name}
           className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-          placeholder="e.g., Weekly Server Backup Check"
+          placeholder="e.g., Weekly Server Backup Verification"
         />
-        <p className="mt-1.5 text-xs text-slate-500">A descriptive name for this recurring task configuration</p>
-      </div>
-
-      {/* Schedule */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-slate-700">
-          <Calendar className="inline mr-2" size={16} />
-          Schedule <span className="text-red-500">*</span>
-        </label>
-
-        <select
-          value={cronPreset}
-          onChange={(e) => setCronPreset(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-        >
-          {cronPresets.map((preset) => (
-            <option key={preset.value} value={preset.value}>
-              {preset.label}
-            </option>
-          ))}
-        </select>
-
-        {cronPreset === 'custom' && (
-          <div>
-            <input
-              type="text"
-              value={customCron}
-              onChange={(e) => setCustomCron(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-sm"
-              placeholder="0 9 * * *"
-            />
-            <p className="mt-1.5 text-xs text-slate-500">
-              Enter cron expression (minute hour day month weekday)
-            </p>
-          </div>
-        )}
-
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-          <p className="text-xs text-blue-800">
-            <strong>Current schedule:</strong> {cronPreset === 'custom' ? customCron || 'Not set' : cronPreset}
-          </p>
-        </div>
+        <p className="mt-1.5 text-xs text-slate-500">This title will be used for the recurring task configuration and each generated task</p>
       </div>
 
       <div className="border-t border-slate-200 pt-6">
-        <h3 className="text-base font-semibold text-slate-900 mb-4">Task Template</h3>
+        <h3 className="text-base font-semibold text-slate-900 mb-4">Task Details</h3>
 
-        {/* Template Title */}
-        <div className="mb-4">
-          <label htmlFor="templateTitle" className="block text-sm font-medium text-slate-700 mb-2">
-            Task Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="templateTitle"
-            name="templateTitle"
-            required
-            defaultValue={config?.templateTitle}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            placeholder="e.g., Weekly Server Backup Verification"
-          />
-        </div>
-
-        {/* Template Description */}
+        {/* Task Description */}
         <div className="mb-4">
           <label htmlFor="templateDescription" className="block text-sm font-medium text-slate-700 mb-2">
             Task Description
@@ -204,8 +186,45 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
           />
         </div>
 
-        {/* Priority, Branch, and Assignee Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Schedule, Priority, Branch, and Assignee Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Schedule */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              <Calendar className="inline mr-1" size={14} />
+              Schedule <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={cronPreset}
+              onChange={(e) => setCronPreset(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            >
+              {cronPresets.map((preset) => (
+                <option key={preset.value} value={preset.value}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+            {cronPreset === 'custom' && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={customCron}
+                  onChange={(e) => setCustomCron(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-sm"
+                  placeholder="0 9 * * *"
+                />
+                <p className="mt-1.5 text-xs text-slate-500">
+                  Enter cron expression (minute hour day month weekday)
+                </p>
+              </div>
+            )}
+            <div className="mt-2 rounded-lg bg-blue-50 border border-blue-200 p-3">
+              <p className="text-xs text-blue-800">
+                <strong>Current schedule:</strong> {cronPreset === 'custom' ? customCron || 'Not set' : cronPreset}
+              </p>
+            </div>
+          </div>
           <div>
             <label htmlFor="templatePriority" className="block text-sm font-medium text-slate-700 mb-2">
               Priority
@@ -227,21 +246,31 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
             <label htmlFor="templateBranch" className="block text-sm font-medium text-slate-700 mb-2">
               Branch / Location
             </label>
-            <input
-              type="text"
+            <select
               id="templateBranch"
-              name="templateBranch"
-              list="branch-suggestions"
-              autoComplete="off"
-              defaultValue={config?.templateBranch || ''}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-              placeholder="e.g., Main Office, Branch A"
-            />
-            <datalist id="branch-suggestions">
+              value={branchSelection}
+              onChange={(e) => setBranchSelection(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            >
+              <option value="">Select a branch...</option>
               {branches.map((branch) => (
-                <option key={branch} value={branch} />
+                <option key={branch} value={branch}>
+                  {branch}
+                </option>
               ))}
-            </datalist>
+              <option value="custom">Custom...</option>
+            </select>
+            {branchSelection === 'custom' && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={customBranch}
+                  onChange={(e) => setCustomBranch(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  placeholder="Enter custom branch name..."
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -322,7 +351,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
         <Button type="submit" variant="primary" isLoading={isLoading}>
-          {config ? 'Update Configuration' : 'Create Configuration'}
+          {config ? 'Update Recurring Task' : 'Create Recurring Task'}
         </Button>
       </div>
     </form>
