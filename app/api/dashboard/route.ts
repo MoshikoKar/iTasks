@@ -11,7 +11,11 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const stats = await getDashboardStats(user.id);
-    return NextResponse.json(stats);
+    return NextResponse.json(stats, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 });

@@ -90,30 +90,29 @@ export async function getDashboardStats(userId: string) {
 
   const taskFilter = buildTaskFilter(currentUser);
 
-  // Top stat cards with RBAC
-  const open = await db.task.count({
-    where: { ...taskFilter, status: TaskStatus.Open },
-  });
-
-  const overdue = await db.task.count({
-    where: {
-      ...taskFilter,
-      dueDate: { lt: now },
-      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
-    },
-  });
-
-  const slaBreaches = await db.task.count({
-    where: {
-      ...taskFilter,
-      slaDeadline: { lt: now },
-      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
-    },
-  });
-
-  const critical = await db.task.count({
-    where: { ...taskFilter, priority: TaskPriority.Critical },
-  });
+  // Top stat cards with RBAC - Parallelized for performance
+  const [open, overdue, slaBreaches, critical] = await Promise.all([
+    db.task.count({
+      where: { ...taskFilter, status: TaskStatus.Open },
+    }),
+    db.task.count({
+      where: {
+        ...taskFilter,
+        dueDate: { lt: now },
+        status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
+      },
+    }),
+    db.task.count({
+      where: {
+        ...taskFilter,
+        slaDeadline: { lt: now },
+        status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
+      },
+    }),
+    db.task.count({
+      where: { ...taskFilter, priority: TaskPriority.Critical },
+    }),
+  ]);
 
   // My Day - Always personal (user's own tasks)
   const myDay = await db.task.findMany({
@@ -178,19 +177,20 @@ export async function getDashboardStats(userId: string) {
     };
   });
 
-  // Tasks by Priority Distribution with RBAC
-  const priorityDistribution = await Promise.all(
-    Object.values(TaskPriority).map(async (priority) => {
-      const count = await db.task.count({
-        where: {
-          ...taskFilter,
-          priority,
-          status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
-        },
-      });
-      return { priority, count };
-    })
-  );
+  // Tasks by Priority Distribution with RBAC - Optimized with groupBy
+  const priorityDistributionRaw = await db.task.groupBy({
+    by: ['priority'],
+    where: {
+      ...taskFilter,
+      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
+    },
+    _count: { priority: true },
+  });
+
+  const priorityDistribution = Object.values(TaskPriority).map(priority => {
+    const found = priorityDistributionRaw.find(p => p.priority === priority);
+    return { priority, count: found?._count.priority || 0 };
+  });
 
   // Tasks by Branch Distribution with RBAC
   const allBranches = await db.task.findMany({

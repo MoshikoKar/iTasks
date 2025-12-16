@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, User as UserIcon } from "lucide-react";
+
+const MAX_LENGTH = 5000;
 
 interface User {
   id: string;
@@ -43,11 +45,9 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
 
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`/api/users/search?q=${encodeURIComponent(mentionSearch)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setMentionUsers(data);
-        }
+        const { fetchUsersWithCache } = await import("@/lib/user-search-cache");
+        const data = await fetchUsersWithCache(mentionSearch);
+        setMentionUsers(data);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }
@@ -57,12 +57,20 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
     return () => clearTimeout(debounce);
   }, [mentionSearch]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const cursorPos = e.target.selectionStart;
 
-    setContent(value);
-    setCursorPosition(cursorPos);
+    // Limit to MAX_LENGTH
+    if (value.length <= MAX_LENGTH) {
+      setContent(value);
+      setCursorPosition(cursorPos);
+    } else {
+      // If past limit, truncate and restore cursor position
+      const truncated = value.substring(0, MAX_LENGTH);
+      setContent(truncated);
+      setCursorPosition(Math.min(cursorPos, MAX_LENGTH));
+    }
 
     // Detect @ mention
     const textBeforeCursor = value.substring(0, cursorPos);
@@ -80,9 +88,9 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
     } else {
       setShowMentions(false);
     }
-  };
+  }, []);
 
-  const insertMention = (user: User) => {
+  const insertMention = useCallback((user: User) => {
     const textBeforeCursor = content.substring(0, cursorPosition);
     const textAfterCursor = content.substring(cursorPosition);
     const lastAtIndex = textBeforeCursor.lastIndexOf("@");
@@ -105,9 +113,9 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
         }
       }, 0);
     }
-  };
+  }, [content, cursorPosition, mentionedUsers]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
@@ -122,7 +130,7 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [content, mentionedUsers, onSubmit]);
 
   return (
     <form onSubmit={handleSubmit} className="mb-6">
@@ -132,10 +140,21 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
           value={content}
           onChange={handleInputChange}
           rows={3}
-          className="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
           placeholder="Add a comment... (Type @ to mention someone)"
           disabled={loading}
+          maxLength={MAX_LENGTH}
         />
+        <div className="mt-1 flex items-center justify-between">
+          <div className="text-xs text-slate-500">
+            {content.length} / {MAX_LENGTH} characters
+            {content.length > MAX_LENGTH * 0.9 && (
+              <span className="ml-1 text-amber-600 font-medium">
+                ({MAX_LENGTH - content.length} remaining)
+              </span>
+            )}
+          </div>
+        </div>
 
         {showMentions && mentionSearch !== undefined && (
           <div
@@ -188,7 +207,7 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
 
       <button
         type="submit"
-        disabled={loading || !content.trim()}
+        disabled={loading || !content.trim() || content.length > MAX_LENGTH}
         className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <MessageSquare size={16} />

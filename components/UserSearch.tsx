@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, User as UserIcon } from "lucide-react";
 
 interface User {
@@ -43,11 +43,9 @@ export function UserSearch({ onSelect, placeholder = "Search users...", classNam
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/users/search?q=${encodeURIComponent(search)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setUsers(data.filter((u: User) => !excludeUserIds.includes(u.id)));
-        }
+        const { fetchUsersWithCache } = await import("@/lib/user-search-cache");
+        const data = await fetchUsersWithCache(search);
+        setUsers(data.filter((u: User) => !excludeUserIds.includes(u.id)));
       } catch (error) {
         console.error("Failed to fetch users:", error);
       } finally {
@@ -59,12 +57,12 @@ export function UserSearch({ onSelect, placeholder = "Search users...", classNam
     return () => clearTimeout(debounce);
   }, [search, excludeUserIds]);
 
-  const handleSelect = (user: User) => {
+  const handleSelect = useCallback((user: User) => {
     onSelect(user);
     setSearch("");
     setUsers([]);
     setIsOpen(false);
-  };
+  }, [onSelect]);
 
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>

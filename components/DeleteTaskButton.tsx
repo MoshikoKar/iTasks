@@ -1,0 +1,77 @@
+'use client';
+
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { Modal } from './modal';
+import { Button } from './button';
+import { useRouter } from 'next/navigation';
+
+interface DeleteTaskButtonProps {
+  taskId: string;
+  taskTitle: string;
+  deleteTaskAction: (formData: FormData) => Promise<void>;
+}
+
+export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: DeleteTaskButtonProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsDeleting(true);
+    const formData = new FormData(e.currentTarget);
+    try {
+      await deleteTaskAction(formData);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant="danger"
+        size="sm"
+        onClick={() => setIsModalOpen(true)}
+        className="inline-flex items-center gap-1"
+      >
+        <Trash2 size={14} className="shrink-0" aria-hidden="true" />
+        <span>Delete Task</span>
+      </Button>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => !isDeleting && setIsModalOpen(false)}
+        title="Delete Task"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600">
+            Are you sure you want to delete <strong>"{taskTitle}"</strong>? This action cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <form onSubmit={handleDelete}>
+              <input type="hidden" name="taskId" value={taskId} />
+              <Button
+                type="submit"
+                variant="danger"
+                isLoading={isDeleting}
+                disabled={isDeleting}
+              >
+                Delete
+              </Button>
+            </form>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+}

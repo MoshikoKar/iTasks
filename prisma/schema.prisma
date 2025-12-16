@@ -86,6 +86,16 @@ model Task {
   auditLogs      AuditLog[]
   subscribers    User[]            @relation("TaskSubscribers")
   incident       Incident?
+
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([slaDeadline])
+  @@index([updatedAt])
+  @@index([status, priority])
+  @@index([assigneeId, status])
 }
 
 enum TaskType {
@@ -146,6 +156,10 @@ model Comment {
   task      Task     @relation(fields: [taskId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   mentions  Mention[]
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Mention {
@@ -178,6 +192,10 @@ model AuditLog {
   createdAt DateTime @default(now())
   task      Task     @relation(fields: [taskId], references: [id])
   actor     User     @relation(fields: [actorId], references: [id])
+
+  @@index([taskId])
+  @@index([actorId])
+  @@index([createdAt])
 }
 
 model SystemConfig {

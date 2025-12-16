@@ -32,7 +32,11 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json(users, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error("User search error:", error);
     return NextResponse.json({ error: "Failed to search users" }, { status: 500 });

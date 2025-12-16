@@ -10,6 +10,10 @@ import Link from "next/link";
 import { TaskAssignment } from "@/components/TaskAssignment";
 import { CommentInput } from "@/components/CommentInput";
 import { CommentDisplay } from "@/components/CommentDisplay";
+import { DeleteTaskButton } from "@/components/DeleteTaskButton";
+import { Button } from "@/components/button";
+import { StatusChangeButtons } from "@/components/StatusChangeButtons";
+import { Badge } from "@/components/ui/badge";
 
 export default async function TaskDetail({
   params,
@@ -37,14 +41,14 @@ export default async function TaskDetail({
             }
           }
         },
-        orderBy: { createdAt: "desc" }
+        orderBy: { createdAt: "desc" },
+        take: 20
       }
     },
   });
   if (!task) return notFound();
 
   const isEditMode = resolvedSearchParams?.edit === "1";
-  const isConfirmDelete = resolvedSearchParams?.confirmDelete === "1";
 
   const canManageTask =
     currentUser.role === Role.Admin ||
@@ -76,23 +80,21 @@ export default async function TaskDetail({
       },
     });
 
-    const [assignee, creator, mentionedUsers] = await Promise.all([
+    const [assignee, creator, mentionedUsers, previousCommentersRaw] = await Promise.all([
       db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true } }),
       db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true } }),
       db.user.findMany({
         where: { id: { in: mentionedUserIds } },
         select: { email: true, name: true }
+      }),
+      db.comment.groupBy({
+        by: ['userId'],
+        where: { taskId: task.id, userId: { not: user.id } }
       })
     ]);
 
-    // Get all previous commenters (users who commented before, excluding current user)
-    const previousCommenterIds = new Set(
-      task.comments
-        .filter(c => c.userId !== user.id)
-        .map(c => c.userId)
-    );
     const previousCommenters = await db.user.findMany({
-      where: { id: { in: Array.from(previousCommenterIds) } },
+      where: { id: { in: previousCommentersRaw.map(g => g.userId) } },
       select: { email: true, name: true }
     });
 
@@ -376,51 +378,41 @@ export default async function TaskDetail({
           <div className="flex items-center gap-2">
             {isEditMode ? (
               <>
-                <button
+                <Button
                   type="submit"
                   form="task-edit-form"
-                  className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-blue-700"
+                  size="sm"
+                  className="inline-flex items-center gap-1"
                 >
-                  <CheckCircle size={14} className="shrink-0" />
+                  <CheckCircle size={14} className="shrink-0" aria-hidden="true" />
                   <span>Save Changes</span>
-                </button>
-                <Link
-                  href={`/tasks/${task.id}`}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-                >
-                  <span>Cancel</span>
+                </Button>
+                <Link href={`/tasks/${task.id}`}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
                 </Link>
               </>
             ) : (
-              <Link
-                href={`/tasks/${task.id}?edit=1`}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-              >
-                <Edit size={14} className="shrink-0" />
-                <span>Edit</span>
+              <Link href={`/tasks/${task.id}?edit=1`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                >
+                  <Edit size={14} className="shrink-0" aria-hidden="true" />
+                  <span>Edit</span>
+                </Button>
               </Link>
             )}
 
-            {!isConfirmDelete ? (
-              <Link
-                href={`/tasks/${task.id}?confirmDelete=1${isEditMode ? "&edit=1" : ""}`}
-                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 shadow-sm hover:bg-red-100"
-              >
-                <Trash2 size={14} className="shrink-0" />
-                <span>Delete Task</span>
-              </Link>
-            ) : (
-              <form action={deleteTaskAction}>
-                <input type="hidden" name="taskId" value={task.id} />
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-1 rounded-lg border border-red-600 bg-red-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-red-700"
-                >
-                  <Trash2 size={14} className="shrink-0" />
-                  <span>Confirm Delete</span>
-                </button>
-              </form>
-            )}
+            <DeleteTaskButton
+              taskId={task.id}
+              taskTitle={task.title}
+              deleteTaskAction={deleteTaskAction}
+            />
           </div>
         )}
       </div>
@@ -435,8 +427,15 @@ export default async function TaskDetail({
             <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Task Details</div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">{task.title}</h1>
 
+            {isEditMode && canManageTask && (
+              <div className="mb-4 rounded-lg border-2 border-blue-300 bg-blue-50/50 p-3">
+                <p className="text-sm font-medium text-blue-900">
+                  ✏️ Editing task - Click 'Save Changes' to apply
+                </p>
+              </div>
+            )}
             {isEditMode && canManageTask ? (
-              <form action={saveTask} id="task-edit-form" className="space-y-4">
+              <form action={saveTask} id="task-edit-form" className="space-y-4 border-2 border-blue-300 rounded-lg p-4 bg-white transition-all">
                 <input type="hidden" name="taskId" value={task.id} />
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">
@@ -446,7 +445,7 @@ export default async function TaskDetail({
                     type="text"
                     value={task.title}
                     readOnly
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
 
@@ -457,7 +456,7 @@ export default async function TaskDetail({
                   <textarea
                     name="description"
                     defaultValue={task.description}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 min-h-[120px]"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-700 min-h-[120px] focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
 
@@ -525,8 +524,8 @@ export default async function TaskDetail({
               <CheckCircle size={18} className="text-slate-600" />
             </div>
             <div>
-              <div className="text-xs text-slate-500">Status</div>
-              <StatusBadge status={task.status} />
+              <div className="text-xs text-slate-600">Status</div>
+              <Badge variant="status" value={task.status} />
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -534,8 +533,8 @@ export default async function TaskDetail({
               <FileText size={18} className="text-slate-600" />
             </div>
             <div>
-              <div className="text-xs text-slate-500">Priority</div>
-              <PriorityBadge priority={task.priority} />
+              <div className="text-xs text-slate-600">Priority</div>
+              <Badge variant="priority" value={task.priority} />
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -688,30 +687,13 @@ export default async function TaskDetail({
         {/* Change Status */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Change Status</h2>
-          <div className="flex flex-wrap gap-3">
-            {Object.values(TaskStatus).map((status) => (
-              <form key={status} action={changeStatus}>
-                <input type="hidden" name="status" value={status} />
-                <button
-                  type="submit"
-                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all hover:shadow-md ${
-                    task.status === status
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-                  }`}
-                  aria-label={`Set status to ${status}`}
-                >
-                  {status}
-                </button>
-              </form>
-            ))}
-          </div>
+          <StatusChangeButtons currentStatus={task.status} changeStatus={changeStatus} />
         </div>
       </div>
 
       {/* Comments */}
       <div className="flex justify-center">
-        <div className="w-[60%] rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="w-full md:w-3/4 lg:w-2/3 max-w-4xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
             <MessageSquare size={20} className="text-blue-600" />
             Comments
@@ -767,25 +749,4 @@ export default async function TaskDetail({
   );
 }
 
-function StatusBadge({ status }: { status: TaskStatus }) {
-  const colors: Record<TaskStatus, string> = {
-    Open: "bg-blue-100 text-blue-800 border border-blue-200",
-    InProgress: "bg-purple-100 text-purple-800 border border-purple-200",
-    PendingVendor: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-    PendingUser: "bg-orange-100 text-orange-800 border border-orange-200",
-    Resolved: "bg-green-100 text-green-800 border border-green-200",
-    Closed: "bg-slate-100 text-slate-800 border border-slate-200",
-  };
-  return <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${colors[status]}`}>{status}</span>;
-}
-
-function PriorityBadge({ priority }: { priority: TaskPriority }) {
-  const colors: Record<TaskPriority, string> = {
-    Low: "bg-green-100 text-green-800 border border-green-200",
-    Medium: "bg-blue-100 text-blue-800 border border-blue-200",
-    High: "bg-amber-100 text-amber-800 border border-amber-200",
-    Critical: "bg-red-100 text-red-800 border border-red-200",
-  };
-  return <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${colors[priority]}`}>{priority}</span>;
-}
 

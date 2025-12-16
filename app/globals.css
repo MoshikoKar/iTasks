@@ -22,6 +22,22 @@
   --color-ring: hsl(222.2 84% 4.9%);
   --radius: 0.5rem;
   
+  /* Primary color scale */
+  --color-primary-50: 222.2 47.4% 95%;
+  --color-primary-100: 222.2 47.4% 90%;
+  --color-primary-200: 222.2 47.4% 80%;
+  --color-primary-300: 222.2 47.4% 70%;
+  --color-primary-400: 222.2 47.4% 60%;
+  --color-primary-500: 222.2 47.4% 50%;
+  --color-primary-600: 222.2 47.4% 40%;
+  --color-primary-700: 222.2 47.4% 30%;
+  --color-primary-800: 222.2 47.4% 20%;
+  --color-primary-900: 222.2 47.4% 11.2%;
+  
+  /* Semantic colors */
+  --color-success: 142 76% 36%;
+  --color-warning: 38 92% 50%;
+  
   /* Legacy HSL variables for backward compatibility */
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -51,5 +67,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Hide Next.js development overlay "N" tooltip */
+[data-nextjs-dialog-overlay],
+[data-nextjs-dialog],
+button[data-nextjs-toast],
+.__next-dev-overlay,
+.__next-dev-overlay * {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 

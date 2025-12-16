@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TaskPriority, TaskStatus } from "@prisma/client";
+import { motion } from "framer-motion";
 import {
   CheckCircle2,
   AlertTriangle,
@@ -17,6 +18,7 @@ import {
 import Link from "next/link";
 import { BarChart } from "@/components/BarChart";
 import { DonutChart } from "@/components/DonutChart";
+import { Badge } from "@/components/ui/badge";
 
 interface DashboardStats {
   open: number;
@@ -125,25 +127,47 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (userId) {
-      fetchStats();
-      // Only auto-refresh if tab is visible
-      const interval = setInterval(() => {
-        if (document.visibilityState === "visible") {
-          fetchStats();
-        }
-      }, 30000);
-      return () => clearInterval(interval);
-    }
+    if (!userId) return;
+
+    fetchStats();
+
+    let intervalId: NodeJS.Timeout;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchStats();
+        intervalId = setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            fetchStats();
+          }
+        }, 60000);
+      } else {
+        clearInterval(intervalId);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchStats();
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [userId]);
 
   if (loading || !stats) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-slate-600">Loading dashboard...</span>
+      <div className="space-y-8 animate-pulse">
+        <div className="h-8 bg-slate-200 rounded w-1/3"></div>
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-slate-200 rounded-xl"></div>
+          ))}
         </div>
+        <div className="h-64 bg-slate-200 rounded-xl"></div>
       </div>
     );
   }
@@ -158,12 +182,12 @@ export default function DashboardPage() {
         </div>
         <div className="text-sm text-slate-500">
           <Clock className="inline mr-1" size={14} />
-          Auto-refresh: 30s
+          Auto-refresh: 60s
         </div>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Open Tasks" value={stats.open} icon={<CheckCircle2 size={24} />} color="blue" />
         <StatCard
           label="Overdue"
@@ -199,7 +223,13 @@ export default function DashboardPage() {
             {stats.myOpenTasks.length === 0 ? (
               <div className="px-4 py-12 text-center">
                 <CheckCircle2 size={48} className="mx-auto text-green-500 mb-3" />
-                <p className="text-slate-500 font-medium">No open tasks!</p>
+                <p className="text-slate-600 font-medium mb-4">No open tasks!</p>
+                <Link 
+                  href="/tasks?create=1" 
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                >
+                  Create Your First Task
+                </Link>
               </div>
             ) : (
               <table className="min-w-full text-sm">
@@ -231,7 +261,7 @@ export default function DashboardPage() {
                         {task.slaDeadline ? new Date(task.slaDeadline).toLocaleString() : "-"}
                       </td>
                       <td className="px-6 py-4">
-                        <PriorityBadge priority={task.priority as TaskPriority} />
+                        <Badge variant="priority" value={task.priority as TaskPriority} />
                       </td>
                     </tr>
                   ))}
@@ -256,7 +286,7 @@ export default function DashboardPage() {
             {stats.myDay.length === 0 ? (
               <div className="px-4 py-12 text-center">
                 <CheckCircle2 size={48} className="mx-auto text-green-500 mb-3" />
-                <p className="text-slate-500 font-medium">All caught up for today!</p>
+                <p className="text-slate-600 font-medium">All caught up for today!</p>
               </div>
             ) : (
               <table className="min-w-full text-sm">
@@ -288,7 +318,7 @@ export default function DashboardPage() {
                         {task.dueDate ? new Date(task.dueDate).toLocaleString() : "-"}
                       </td>
                       <td className="px-6 py-4">
-                        <PriorityBadge priority={task.priority as TaskPriority} />
+                        <Badge variant="priority" value={task.priority as TaskPriority} />
                       </td>
                     </tr>
                   ))}
@@ -332,7 +362,7 @@ export default function DashboardPage() {
             </h2>
           </div>
           {stats.branchDistribution.length === 0 ? (
-            <div className="py-8 text-center text-slate-500">
+            <div className="py-8 text-center text-slate-600">
               <PieChart size={40} className="mx-auto text-slate-300 mb-2" />
               <p className="text-sm">No branch data available</p>
             </div>
@@ -366,7 +396,7 @@ export default function DashboardPage() {
           </div>
           <div className="text-xs text-slate-500 mb-3">No updates for more than 7 days</div>
           {stats.staleTasks.length === 0 ? (
-            <div className="py-8 text-center text-slate-500">
+            <div className="py-8 text-center text-slate-600">
               <CheckCircle2 size={40} className="mx-auto text-green-500 mb-2" />
               <p className="text-sm">No stale tasks</p>
             </div>
@@ -385,7 +415,7 @@ export default function DashboardPage() {
                         <span className="text-xs text-slate-500">
                           Last update: {new Date(task.updatedAt).toLocaleDateString()}
                         </span>
-                        <PriorityBadge priority={task.priority} />
+                        <Badge variant="priority" value={task.priority} />
                       </div>
                     </div>
                   </div>
@@ -421,10 +451,12 @@ function StatCard({
   };
 
   return (
-    <div
+    <motion.div
       className={`group relative overflow-hidden rounded-xl border ${
         highlight ? "border-red-300 shadow-lg shadow-red-100" : "border-slate-200"
-      } bg-white p-6 transition-all hover:shadow-xl hover:-translate-y-1`}
+      } bg-white p-6`}
+      whileHover={{ y: -4, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
+      transition={{ duration: 0.2 }}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -446,16 +478,7 @@ function StatCard({
           colorClasses[color].split(" ")[1]
         }`}
       ></div>
-    </div>
+    </motion.div>
   );
 }
 
-function PriorityBadge({ priority }: { priority: TaskPriority }) {
-  const colors: Record<TaskPriority, string> = {
-    Low: "bg-green-100 text-green-800 border border-green-200",
-    Medium: "bg-blue-100 text-blue-800 border border-blue-200",
-    High: "bg-amber-100 text-amber-800 border border-amber-200",
-    Critical: "bg-red-100 text-red-800 border border-red-200",
-  };
-  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[priority]}`}>{priority}</span>;
-}
