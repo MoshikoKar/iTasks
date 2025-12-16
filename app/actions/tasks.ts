@@ -4,6 +4,41 @@ import { notifyTaskCreated, notifyTaskUpdated } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 import { TaskPriority, TaskStatus, TaskType } from "@prisma/client";
 
+async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Promise<Date | null> {
+  try {
+    const config = await db.systemConfig.findUnique({
+      where: { id: "system" },
+    });
+
+    if (!config) return null;
+
+    let hours: number | null = null;
+    switch (priority) {
+      case TaskPriority.Critical:
+        hours = config.slaCriticalHours;
+        break;
+      case TaskPriority.High:
+        hours = config.slaHighHours;
+        break;
+      case TaskPriority.Medium:
+        hours = config.slaMediumHours;
+        break;
+      case TaskPriority.Low:
+        hours = config.slaLowHours;
+        break;
+    }
+
+    if (hours === null || hours <= 0) return null;
+
+    const deadline = new Date(createdAt);
+    deadline.setHours(deadline.getHours() + hours);
+    return deadline;
+  } catch (error) {
+    console.error("Error calculating SLA deadline:", error);
+    return null;
+  }
+}
+
 export async function createTask(data: {
   title: string;
   description: string;
@@ -27,13 +62,24 @@ export async function createTask(data: {
   };
 }) {
   const assigneeId = data.assigneeId || data.creatorId;
+  const priority = data.priority || TaskPriority.Medium;
+  const createdAt = new Date();
+  
+  // Calculate SLA deadline if not provided
+  let slaDeadline: Date | null = null;
+  if (data.slaDeadline) {
+    slaDeadline = new Date(data.slaDeadline);
+  } else {
+    slaDeadline = await calculateSLADeadline(priority, createdAt);
+  }
+
   const task = await db.task.create({
     data: {
       title: data.title,
       description: data.description,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      slaDeadline: data.slaDeadline ? new Date(data.slaDeadline) : null,
-      priority: data.priority || TaskPriority.Medium,
+      slaDeadline,
+      priority,
       branch: data.branch || null,
       type: data.type || TaskType.Standard,
       tags: data.tags || [],

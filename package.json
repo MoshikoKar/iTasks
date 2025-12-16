@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/adapter-pg": "6.19.1",
+    "@prisma/client": "6.19.1",
     "@tabler/icons-react": "^3.36.0",
     "clsx": "^2.1.1",
     "cron-parser": "^5.4.0",
@@ -44,7 +44,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.0.10",
     "postcss": "^8.4.40",
-    "prisma": "^7.1.0",
+    "prisma": "6.19.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   }

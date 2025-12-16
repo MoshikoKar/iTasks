@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -177,5 +178,26 @@ model AuditLog {
   createdAt DateTime @default(now())
   task      Task     @relation(fields: [taskId], references: [id])
   actor     User     @relation(fields: [actorId], references: [id])
+}
+
+model SystemConfig {
+  id        String   @id @default("system")
+  
+  // SMTP Configuration
+  smtpHost  String?  @default("localhost")
+  smtpPort  Int?     @default(25)
+  smtpFrom  String?  @default("no-reply@local")
+  smtpSecure Boolean @default(false)
+  smtpUser  String?
+  smtpPassword String? // Encrypted in production
+  
+  // SLA Defaults (in hours)
+  slaLowHours      Int? @default(120)  // 5 days
+  slaMediumHours   Int? @default(48)   // 2 days
+  slaHighHours     Int? @default(24)   // 1 day
+  slaCriticalHours Int? @default(4)    // 4 hours
+  
+  updatedAt DateTime @updatedAt
+  updatedBy String?
 }
 

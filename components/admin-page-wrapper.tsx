@@ -13,6 +13,12 @@ const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal 
 const UserForm = dynamic(() => import('./user-form').then(mod => ({ default: mod.UserForm })), {
   ssr: false,
 });
+const SMTPConfigForm = dynamic(() => import('./smtp-config-form').then(mod => ({ default: mod.SMTPConfigForm })), {
+  ssr: false,
+});
+const SLAConfigForm = dynamic(() => import('./sla-config-form').then(mod => ({ default: mod.SLAConfigForm })), {
+  ssr: false,
+});
 
 interface Team {
   id: string;
@@ -75,6 +81,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isTeamDeleting, setIsTeamDeleting] = useState(false);
+
+  // System configuration modals
+  const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
+  const [isSLAModalOpen, setIsSLAModalOpen] = useState(false);
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
@@ -531,7 +541,11 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                 <div className="text-sm text-slate-600">Local LAN, Port 25</div>
               </div>
             </div>
-            <Button variant="ghost" className="text-blue-600">
+            <Button 
+              variant="ghost" 
+              className="text-blue-600"
+              onClick={() => setIsSMTPModalOpen(true)}
+            >
               Configure
             </Button>
           </div>
@@ -545,7 +559,11 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                 <div className="text-sm text-slate-600">Configure default SLA deadlines</div>
               </div>
             </div>
-            <Button variant="ghost" className="text-blue-600">
+            <Button 
+              variant="ghost" 
+              className="text-blue-600"
+              onClick={() => setIsSLAModalOpen(true)}
+            >
               Configure
             </Button>
           </div>
@@ -684,6 +702,38 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* SMTP Configuration Modal */}
+      <Modal
+        isOpen={isSMTPModalOpen}
+        onClose={() => setIsSMTPModalOpen(false)}
+        title="Configure SMTP Server"
+        size="md"
+      >
+        <SMTPConfigForm
+          onSuccess={() => {
+            setIsSMTPModalOpen(false);
+            router.refresh();
+          }}
+          onCancel={() => setIsSMTPModalOpen(false)}
+        />
+      </Modal>
+
+      {/* SLA Defaults Configuration Modal */}
+      <Modal
+        isOpen={isSLAModalOpen}
+        onClose={() => setIsSLAModalOpen(false)}
+        title="Configure SLA Defaults"
+        size="md"
+      >
+        <SLAConfigForm
+          onSuccess={() => {
+            setIsSLAModalOpen(false);
+            router.refresh();
+          }}
+          onCancel={() => setIsSLAModalOpen(false)}
+        />
       </Modal>
     </div>
   );
