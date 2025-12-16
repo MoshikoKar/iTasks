@@ -42,9 +42,10 @@ interface RecurringConfig {
 interface RecurringPageWrapperProps {
   configs: RecurringConfig[];
   users: Pick<User, 'id' | 'name'>[];
+  currentUser: { id: string; role: string };
 }
 
-export function RecurringPageWrapper({ configs, users }: RecurringPageWrapperProps) {
+export function RecurringPageWrapper({ configs, users, currentUser }: RecurringPageWrapperProps) {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -265,6 +266,7 @@ export function RecurringPageWrapper({ configs, users }: RecurringPageWrapperPro
       >
         <RecurringTaskForm
           users={users}
+          currentUser={currentUser}
           onSuccess={() => {
             setIsCreateModalOpen(false);
             router.refresh();
@@ -285,6 +287,7 @@ export function RecurringPageWrapper({ configs, users }: RecurringPageWrapperPro
         {selectedConfig && (
           <RecurringTaskForm
             users={users}
+            currentUser={currentUser}
             config={selectedConfig}
             onSuccess={() => {
               setIsEditModalOpen(false);

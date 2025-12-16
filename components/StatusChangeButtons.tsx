@@ -6,15 +6,17 @@ import { Button } from './button';
 
 interface StatusChangeButtonsProps {
   currentStatus: TaskStatus;
+  taskId: string;
   changeStatus: (formData: FormData) => Promise<void>;
 }
 
-export function StatusChangeButtons({ currentStatus, changeStatus }: StatusChangeButtonsProps) {
+export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: StatusChangeButtonsProps) {
   const [changingStatus, setChangingStatus] = useState<TaskStatus | null>(null);
 
   const handleStatusChange = async (status: TaskStatus) => {
     setChangingStatus(status);
     const formData = new FormData();
+    formData.append('taskId', taskId);
     formData.append('status', status);
     try {
       await changeStatus(formData);
@@ -29,6 +31,7 @@ export function StatusChangeButtons({ currentStatus, changeStatus }: StatusChang
     <div className="flex flex-wrap gap-3">
       {Object.values(TaskStatus).map((status) => (
         <form key={status} action={changeStatus}>
+          <input type="hidden" name="taskId" value={taskId} />
           <input type="hidden" name="status" value={status} />
           <Button
             type="submit"

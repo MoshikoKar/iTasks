@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './button';
-import { TaskPriority, User } from '@prisma/client';
+import { TaskPriority, User, Role } from '@prisma/client';
 import { Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
 
 interface RecurringTaskFormProps {
   users: Pick<User, 'id' | 'name'>[];
+  currentUser: { id: string; role: string };
   config?: {
     id: string;
     name: string;
@@ -33,7 +34,7 @@ const cronPresets = [
   { label: 'Custom', value: 'custom' },
 ];
 
-export function RecurringTaskForm({ users, config, onSuccess }: RecurringTaskFormProps) {
+export function RecurringTaskForm({ users, currentUser, config, onSuccess }: RecurringTaskFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -252,7 +253,7 @@ export function RecurringTaskForm({ users, config, onSuccess }: RecurringTaskFor
               id="templateAssigneeId"
               name="templateAssigneeId"
               required
-              defaultValue={config?.templateAssigneeId}
+              defaultValue={config?.templateAssigneeId || currentUser.id}
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               {users.map((user) => (
@@ -261,6 +262,11 @@ export function RecurringTaskForm({ users, config, onSuccess }: RecurringTaskFor
                 </option>
               ))}
             </select>
+            {(currentUser.role === Role.Technician || currentUser.role === Role.Viewer) && (
+              <p className="mt-1.5 text-xs text-slate-500">
+                You can only assign recurring tasks to yourself
+              </p>
+            )}
           </div>
         </div>
 

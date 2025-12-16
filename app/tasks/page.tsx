@@ -3,6 +3,7 @@ import { TasksPageWrapper } from "@/components/tasks-page-wrapper";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
+import { Suspense } from "react";
 
 /**
  * Build task filter based on user role (RBAC)
@@ -32,7 +33,13 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
     case Role.Technician:
     case Role.Viewer:
     default:
-      // Technician/Viewer sees only tasks assigned to them or created by them
+      // Technician/Viewer sees tasks from their team (to match dashboard behavior)
+      if (user.teamId) {
+        return {
+          assignee: { teamId: user.teamId },
+        };
+      }
+      // If no team, fall back to their own tasks
       return {
         OR: [{ assigneeId: user.id }, { creatorId: user.id }],
       };
@@ -57,19 +64,40 @@ export default async function TasksPage() {
         },
         orderBy: { createdAt: "desc" },
       }),
-      db.user.findMany({
-        select: { id: true, name: true },
-        orderBy: { name: "asc" },
-      }),
+      // Filter users based on permission level - no one can assign to users above their level
+      currentUser.role === Role.Admin
+        ? db.user.findMany({
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+          })
+        : currentUser.role === Role.TeamLead
+        ? db.user.findMany({
+            where: {
+              OR: [
+                { id: currentUser.id },
+                { role: { in: [Role.Technician, Role.Viewer] } },
+                ...(currentUser.teamId ? [{ teamId: currentUser.teamId, role: { not: Role.Admin } }] : []),
+              ],
+            },
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+          })
+        : db.user.findMany({
+            where: { id: currentUser.id },
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+          }),
     ]);
 
     return (
-      <TasksPageWrapper
-        tasks={tasks}
-        currentUser={{ id: currentUser.id, name: currentUser.name }}
-        users={users}
-        showFilters={true}
-      />
+      <Suspense fallback={<div className="space-y-4"><h1 className="text-2xl font-semibold text-slate-900">All Tasks</h1><div>Loading...</div></div>}>
+        <TasksPageWrapper
+          tasks={tasks}
+          currentUser={{ id: currentUser.id, name: currentUser.name }}
+          users={users}
+          showFilters={true}
+        />
+      </Suspense>
     );
   } catch (error) {
     console.error("Error loading tasks:", error);

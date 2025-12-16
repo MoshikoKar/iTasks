@@ -13,10 +13,11 @@ interface User {
 }
 
 interface CommentInputProps {
-  onSubmit: (content: string, mentionedUserIds: string[]) => Promise<void>;
+  taskId: string;
+  onSubmit?: (content: string, mentionedUserIds: string[]) => Promise<void>;
 }
 
-export function CommentInput({ onSubmit }: CommentInputProps) {
+export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
   const [content, setContent] = useState("");
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
@@ -121,7 +122,14 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
 
     setLoading(true);
     try {
-      await onSubmit(content, Array.from(mentionedUsers.keys()));
+      if (onSubmit) {
+        // Use provided onSubmit if available (for backward compatibility)
+        await onSubmit(content, Array.from(mentionedUsers.keys()));
+      } else {
+        // Otherwise, call the server action directly
+        const { addCommentAction } = await import("@/app/actions/comments");
+        await addCommentAction(taskId, content, Array.from(mentionedUsers.keys()));
+      }
       setContent("");
       setMentionedUsers(new Map());
     } catch (error) {
@@ -130,7 +138,7 @@ export function CommentInput({ onSubmit }: CommentInputProps) {
     } finally {
       setLoading(false);
     }
-  }, [content, mentionedUsers, onSubmit]);
+  }, [content, mentionedUsers, onSubmit, taskId]);
 
   return (
     <form onSubmit={handleSubmit} className="mb-6">

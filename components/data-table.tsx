@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, memo } from "react";
+import { memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TaskStatus, TaskPriority } from "@prisma/client";
 import { Filter, Search, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTaskFilters } from "@/hooks/useTaskFilters";
 
 interface Task {
   id: string;
@@ -26,30 +27,19 @@ interface DataTableProps {
 
 export function DataTable({ tasks, showFilters = true }: DataTableProps) {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
-  const [branchFilter, setBranchFilter] = useState<string>("all");
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
-
-  const assignees = useMemo(() =>
-    Array.from(new Set(tasks.map((t) => t.assignee.name))),
-    [tasks]
-  );
-
-  const branches = useMemo(() =>
-    Array.from(new Set(tasks.map((t) => t.branch).filter(Boolean))) as string[],
-    [tasks]
-  );
-
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      if (statusFilter !== "all" && task.status !== statusFilter) return false;
-      if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
-      if (branchFilter !== "all" && task.branch !== branchFilter) return false;
-      if (assigneeFilter !== "all" && task.assignee.name !== assigneeFilter) return false;
-      return true;
-    });
-  }, [tasks, statusFilter, priorityFilter, branchFilter, assigneeFilter]);
+  const {
+    filteredTasks,
+    statusFilter,
+    setStatusFilter,
+    priorityFilter,
+    setPriorityFilter,
+    branchFilter,
+    setBranchFilter,
+    assigneeFilter,
+    setAssigneeFilter,
+    uniqueAssignees,
+    uniqueBranches,
+  } = useTaskFilters(tasks);
 
   return (
     <div className="space-y-4">
@@ -102,7 +92,7 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               >
                 <option value="all">All Branches</option>
-                {branches.map((branch) => (
+                {uniqueBranches.map((branch) => (
                   <option key={branch} value={branch}>
                     {branch}
                   </option>
@@ -117,7 +107,7 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               >
                 <option value="all">All Assignees</option>
-                {assignees.map((name) => (
+                {uniqueAssignees.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>

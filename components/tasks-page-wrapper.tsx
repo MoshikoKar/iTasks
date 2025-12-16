@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
@@ -22,7 +23,26 @@ interface TasksPageWrapperProps {
 }
 
 export function TasksPageWrapper({ tasks, currentUser, users, showFilters = true }: TasksPageWrapperProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if create=1 is in the URL query params
+    if (searchParams.get('create') === '1') {
+      setIsCreateModalOpen(true);
+    }
+  }, [searchParams]);
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    // Remove create=1 from URL if present
+    if (searchParams.get('create') === '1') {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('create');
+      router.replace(`/tasks${params.toString() ? `?${params.toString()}` : ''}`);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -42,14 +62,14 @@ export function TasksPageWrapper({ tasks, currentUser, users, showFilters = true
 
       <Modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={handleCloseModal}
         title="Create New Task"
         size="lg"
       >
         <CreateTaskForm
           currentUserId={currentUser.id}
           users={users}
-          onSuccess={() => setIsCreateModalOpen(false)}
+          onSuccess={handleCloseModal}
         />
       </Modal>
     </div>

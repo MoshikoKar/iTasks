@@ -6,6 +6,7 @@ import { UserPlus, Edit2, Trash2, Settings, Mail, Activity, Building2, Plus, X, 
 import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
+import { formatDateTimeStable } from '@/lib/utils/date';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -56,12 +57,6 @@ interface AdminPageWrapperProps {
   teams: Team[];
   stats: { role: Role; _count: number }[];
   recentActivity: RecentActivity[];
-}
-
-function formatDateTime(value: Date | string) {
-  const date = new Date(value);
-  // Stable, timezone-agnostic string to avoid SSR/CSR locale differences
-  return date.toISOString().replace('T', ' ').slice(0, 16);
 }
 
 export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminPageWrapperProps) {
@@ -362,7 +357,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                   <td className="px-4 py-3 text-slate-600">{user._count.tasksAssigned}</td>
                   <td className="px-4 py-3 text-slate-600">{user._count.tasksCreated}</td>
                   <td className="px-4 py-3 text-slate-600">
-                    {formatDateTime(user.createdAt)}
+                    {formatDateTimeStable(user.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
@@ -469,7 +464,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                         {log.action}
                       </td>
                       <td className="px-3 py-2 text-slate-600">
-                        {formatDateTime(log.createdAt)}
+                        {formatDateTimeStable(log.createdAt)}
                       </td>
                     </tr>
                   ))}

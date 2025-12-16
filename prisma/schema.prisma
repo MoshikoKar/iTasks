@@ -52,6 +52,7 @@ model User {
   tasksAssigned Task[]   @relation("TasksAssigned")
   subscribedTasks Task[] @relation("TaskSubscribers")
   recurringTemplates RecurringTaskConfig[] @relation("TemplateAssignee")
+  recurringTasksCreated RecurringTaskConfig[] @relation("RecurringTaskCreator")
   comments     Comment[]
   attachments  Attachment[]
   auditLogs    AuditLog[]
@@ -128,6 +129,7 @@ model RecurringTaskConfig {
   templateDescription String?
   templatePriority TaskPriority @default(Medium)
   templateAssigneeId String
+  creatorId       String?
   templateBranch  String?
   templateServerName String?
   templateApplication String?
@@ -136,6 +138,7 @@ model RecurringTaskConfig {
   updatedAt       DateTime  @updatedAt
   tasks           Task[]
   templateAssignee User      @relation("TemplateAssignee", fields: [templateAssigneeId], references: [id])
+  creator         User?      @relation("RecurringTaskCreator", fields: [creatorId], references: [id])
 }
 
 model Incident {

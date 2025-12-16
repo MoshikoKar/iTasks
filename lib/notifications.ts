@@ -1,5 +1,6 @@
 import { sendMail } from "./smtp";
 import { TaskStatus, TaskPriority } from "@prisma/client";
+import { formatDateTime } from "./utils/date";
 
 interface TaskNotificationData {
   taskId: string;
@@ -15,11 +16,6 @@ interface TaskNotificationData {
   changes?: string[];
   commentContent?: string;
   commentAuthor?: string;
-}
-
-function formatDate(date: Date | null | undefined): string {
-  if (!date) return "Not set";
-  return new Date(date).toLocaleString();
 }
 
 function getPriorityColor(priority: TaskPriority): string {
@@ -106,7 +102,7 @@ function generateTaskSummaryGrid(data: TaskNotificationData): string {
                     data.dueDate
                       ? `<td style="padding:10px 18px; width:50%; vertical-align:top;">
                     <div style="font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:#6b7280; margin-bottom:4px;">DUE DATE</div>
-                    <div style="font-size:13px; font-weight:600; color:#111827;">${formatDate(data.dueDate!)}</div>
+                    <div style="font-size:13px; font-weight:600; color:#111827;">${formatDateTime(data.dueDate!)}</div>
                   </td>`
                       : `<td style="padding:10px 18px; width:50%;"></td>`
                   }
@@ -114,7 +110,7 @@ function generateTaskSummaryGrid(data: TaskNotificationData): string {
                     data.slaDeadline
                       ? `<td style="padding:10px 18px; width:50%; vertical-align:top;">
                     <div style="font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:#6b7280; margin-bottom:4px;">SLA DEADLINE</div>
-                    <div style="font-size:13px; font-weight:600; color:#111827;">${formatDate(data.slaDeadline!)}</div>
+                    <div style="font-size:13px; font-weight:600; color:#111827;">${formatDateTime(data.slaDeadline!)}</div>
                   </td>`
                       : `<td style="padding:10px 18px; width:50%;"></td>`
                   }

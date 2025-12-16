@@ -1,10 +1,7 @@
 import { db } from "@/lib/db";
-import { updateTask } from "@/app/actions/tasks";
-import { notifyTaskCommented, notifyUserMentioned } from "@/lib/notifications";
-import { TaskStatus, TaskPriority, Role } from "@prisma/client";
-import { notFound, redirect } from "next/navigation";
+import { TaskStatus, TaskPriority, Role, Prisma } from "@prisma/client";
+import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
 import { FileText, Server, Calendar, User, MessageSquare, CheckCircle, Trash2, Edit } from "lucide-react";
 import Link from "next/link";
 import { TaskAssignment } from "@/components/TaskAssignment";
@@ -14,6 +11,30 @@ import { DeleteTaskButton } from "@/components/DeleteTaskButton";
 import { Button } from "@/components/button";
 import { StatusChangeButtons } from "@/components/StatusChangeButtons";
 import { Badge } from "@/components/ui/badge";
+import { formatDateTime, formatDateTimeLocal } from "@/lib/utils/date";
+import { changeStatusAction, saveTask } from "./actions/task-actions";
+import { deleteCommentFormData } from "./actions/comment-actions";
+import { assignTask, addTechnician, removeTechnician } from "./actions/assignment-actions";
+import { deleteTaskActionFormData } from "./actions/delete-action";
+
+type TaskWithRelations = Prisma.TaskGetPayload<{
+  include: {
+    assignee: true;
+    creator: true;
+    context: true;
+    subscribers: true;
+    comments: {
+      include: {
+        user: true;
+        mentions: {
+          include: {
+            user: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 export default async function TaskDetail({
   params,
@@ -41,11 +62,11 @@ export default async function TaskDetail({
             }
           }
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "desc" as const },
         take: 20
       }
     },
-  });
+  }) as TaskWithRelations | null;
   if (!task) return notFound();
 
   const isEditMode = resolvedSearchParams?.edit === "1";
@@ -56,313 +77,6 @@ export default async function TaskDetail({
     task.assigneeId === currentUser.id ||
     task.creatorId === currentUser.id;
 
-  async function changeStatus(formData: FormData) {
-    "use server";
-    const user = await requireAuth();
-    const status = formData.get("status") as TaskStatus;
-    await updateTask(task.id, { status }, user.id);
-    revalidatePath(`/tasks/${task.id}`);
-  }
-
-  async function addComment(content: string, mentionedUserIds: string[]) {
-    "use server";
-    const user = await requireAuth();
-    if (!content.trim()) return;
-
-    const comment = await db.comment.create({
-      data: {
-        taskId: task.id,
-        userId: user.id,
-        content,
-        mentions: {
-          create: mentionedUserIds.map(userId => ({ userId }))
-        }
-      },
-    });
-
-    const [assignee, creator, mentionedUsers, previousCommentersRaw] = await Promise.all([
-      db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true } }),
-      db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true } }),
-      db.user.findMany({
-        where: { id: { in: mentionedUserIds } },
-        select: { email: true, name: true }
-      }),
-      db.comment.groupBy({
-        by: ['userId'],
-        where: { taskId: task.id, userId: { not: user.id } }
-      })
-    ]);
-
-    const previousCommenters = await db.user.findMany({
-      where: { id: { in: previousCommentersRaw.map(g => g.userId) } },
-      select: { email: true, name: true }
-    });
-
-    if (mentionedUsers.length > 0) {
-      // If there are mentions, only notify mentioned users
-      for (const mentionedUser of mentionedUsers) {
-        await notifyUserMentioned(
-          {
-            taskId: task.id,
-            title: task.title,
-            description: task.description,
-            status: task.status,
-            priority: task.priority,
-            assigneeName: assignee?.name || "Unknown",
-            creatorName: creator?.name || "Unknown",
-            commentContent: content,
-            commentAuthor: user.name,
-            dueDate: task.dueDate,
-            slaDeadline: task.slaDeadline,
-          },
-          mentionedUser.email
-        );
-      }
-    } else {
-      // If no mentions, notify assignee, creator, and all previous commenters
-      const previousCommenterEmails = previousCommenters
-        .map(c => c.email)
-        .filter((email): email is string => !!email && email !== user.email);
-
-      await notifyTaskCommented(
-        {
-          taskId: task.id,
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          priority: task.priority,
-          assigneeName: assignee?.name || "Unknown",
-          creatorName: creator?.name || "Unknown",
-          commentContent: content,
-          commentAuthor: user.name,
-          dueDate: task.dueDate,
-          slaDeadline: task.slaDeadline,
-        },
-        assignee?.email && assignee.email !== user.email ? assignee.email : undefined,
-        creator?.email && creator.email !== user.email ? creator.email : undefined,
-        undefined,
-        previousCommenterEmails
-      );
-    }
-
-    revalidatePath(`/tasks/${task.id}`);
-  }
-
-  async function deleteComment(formData: FormData) {
-    "use server";
-    const user = await requireAuth();
-    const commentId = formData.get("commentId")?.toString();
-    if (!commentId) return;
-
-    const comment = await db.comment.findUnique({
-      where: { id: commentId },
-    });
-
-    if (!comment) return;
-
-    if (comment.userId !== user.id && user.role !== Role.Admin) {
-      return;
-    }
-
-    await db.comment.delete({
-      where: { id: commentId },
-    });
-
-    revalidatePath(`/tasks/${comment.taskId}`);
-  }
-
-  async function assignTask(taskId: string, assigneeId: string) {
-    "use server";
-    const user = await requireAuth();
-
-    // Only Admin and TeamLead can assign tasks
-    if (user.role !== Role.Admin && user.role !== Role.TeamLead) {
-      throw new Error("Unauthorized: Only Admin and TeamLead can assign tasks");
-    }
-
-    await updateTask(taskId, { assigneeId }, user.id);
-    revalidatePath(`/tasks/${taskId}`);
-  }
-
-  async function addTechnician(taskId: string, technicianId: string) {
-    "use server";
-    const user = await requireAuth();
-
-    if (user.role !== Role.Admin && user.role !== Role.TeamLead) {
-      throw new Error("Unauthorized: Only Admin and TeamLead can manage technicians");
-    }
-
-    await db.task.update({
-      where: { id: taskId },
-      data: {
-        subscribers: {
-          connect: { id: technicianId },
-        },
-      },
-    });
-
-    revalidatePath(`/tasks/${taskId}`);
-  }
-
-  async function removeTechnician(taskId: string, technicianId: string) {
-    "use server";
-    const user = await requireAuth();
-
-    if (user.role !== Role.Admin && user.role !== Role.TeamLead) {
-      throw new Error("Unauthorized: Only Admin and TeamLead can manage technicians");
-    }
-
-    await db.task.update({
-      where: { id: taskId },
-      data: {
-        subscribers: {
-          disconnect: { id: technicianId },
-        },
-      },
-    });
-
-    revalidatePath(`/tasks/${taskId}`);
-  }
-
-  async function saveTask(formData: FormData) {
-    "use server";
-    const user = await requireAuth();
-    const taskId = formData.get("taskId")?.toString();
-    
-    if (!taskId) {
-      throw new Error("Task ID is required");
-    }
-
-    const existingTask = await db.task.findUnique({
-      where: { id: taskId },
-      select: { assigneeId: true, creatorId: true },
-    });
-
-    if (!existingTask) {
-      throw new Error("Task not found");
-    }
-
-    const canManage =
-      user.role === Role.Admin ||
-      user.role === Role.TeamLead ||
-      existingTask.assigneeId === user.id ||
-      existingTask.creatorId === user.id;
-
-    if (!canManage) {
-      throw new Error("Forbidden: You don't have permission to edit this task");
-    }
-
-    const description = formData.get("description")?.toString() ?? "";
-    const status = formData.get("status") as TaskStatus;
-    const priority = formData.get("priority") as TaskPriority;
-    const dueDateRaw = formData.get("dueDate")?.toString() || "";
-
-    const serverName = formData.get("serverName")?.toString() || null;
-    const application = formData.get("application")?.toString() || null;
-    const workstationId = formData.get("workstationId")?.toString() || null;
-    const adUser = formData.get("adUser")?.toString() || null;
-    const environment = formData.get("environment")?.toString() || null;
-    const ipAddress = formData.get("ipAddress")?.toString() || null;
-    const manufacturer = formData.get("manufacturer")?.toString() || null;
-    const version = formData.get("version")?.toString() || null;
-
-    // Update core task fields (Title is immutable)
-    await updateTask(
-      taskId,
-      {
-        description,
-        status,
-        priority,
-        dueDate: dueDateRaw ? new Date(dueDateRaw) : null,
-      },
-      user.id
-    );
-
-    // Update linked assets (context)
-    await db.task.update({
-      where: { id: taskId },
-      data: {
-        context: {
-          upsert: {
-            create: {
-              serverName,
-              application,
-              workstationId,
-              adUser,
-              environment,
-              ipAddress,
-              manufacturer,
-              version,
-            },
-            update: {
-              serverName,
-              application,
-              workstationId,
-              adUser,
-              environment,
-              ipAddress,
-              manufacturer,
-              version,
-            },
-          },
-        },
-      },
-    });
-
-    revalidatePath(`/tasks/${taskId}`);
-  }
-
-  async function deleteTaskAction(formData: FormData) {
-    "use server";
-    const user = await requireAuth();
-    const taskId = formData.get("taskId")?.toString();
-    
-    if (!taskId) {
-      throw new Error("Task ID is required");
-    }
-
-    const existingTask = await db.task.findUnique({
-      where: { id: taskId },
-      select: { creatorId: true },
-    });
-
-    if (!existingTask) {
-      throw new Error("Task not found");
-    }
-
-    const canDelete =
-      user.role === Role.Admin ||
-      user.role === Role.TeamLead ||
-      existingTask.creatorId === user.id;
-
-    if (!canDelete) {
-      throw new Error("Forbidden: You don't have permission to delete this task");
-    }
-
-    // Delete related records first to avoid foreign key constraint violations
-    await db.taskContext.deleteMany({
-      where: { taskId },
-    });
-
-    await db.comment.deleteMany({
-      where: { taskId },
-    });
-
-    await db.attachment.deleteMany({
-      where: { taskId },
-    });
-
-    await db.auditLog.deleteMany({
-      where: { taskId },
-    });
-
-    // Delete the task itself
-    await db.task.delete({
-      where: { id: taskId },
-    });
-
-    redirect("/tasks");
-  }
 
   return (
     <div className="space-y-6">
@@ -411,7 +125,7 @@ export default async function TaskDetail({
             <DeleteTaskButton
               taskId={task.id}
               taskTitle={task.title}
-              deleteTaskAction={deleteTaskAction}
+              deleteTaskAction={deleteTaskActionFormData}
             />
           </div>
         )}
@@ -502,11 +216,7 @@ export default async function TaskDetail({
                     <input
                       type="datetime-local"
                       name="dueDate"
-                      defaultValue={
-                        task.dueDate
-                          ? new Date(task.dueDate).toISOString().slice(0, 16)
-                          : ""
-                      }
+                      defaultValue={formatDateTimeLocal(task.dueDate)}
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
                     />
                   </div>
@@ -552,7 +262,7 @@ export default async function TaskDetail({
             </div>
             <div>
               <div className="text-xs text-slate-500">Due Date</div>
-              <div className="font-semibold text-slate-900">{task.dueDate?.toLocaleString() || "-"}</div>
+              <div className="font-semibold text-slate-900">{formatDateTime(task.dueDate)}</div>
             </div>
           </div>
         </div>
@@ -687,7 +397,11 @@ export default async function TaskDetail({
         {/* Change Status */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Change Status</h2>
-          <StatusChangeButtons currentStatus={task.status} changeStatus={changeStatus} />
+          <StatusChangeButtons 
+            currentStatus={task.status}
+            taskId={task.id}
+            changeStatus={changeStatusAction} 
+          />
         </div>
       </div>
 
@@ -699,7 +413,7 @@ export default async function TaskDetail({
             Comments
           </h2>
 
-          <CommentInput onSubmit={addComment} />
+          <CommentInput taskId={task.id} />
 
           <div className="space-y-3">
             {task.comments.length === 0 ? (
@@ -708,7 +422,7 @@ export default async function TaskDetail({
                 <p>No comments yet. Be the first to comment!</p>
               </div>
             ) : (
-              task.comments.map((comment) => (
+              task.comments.map((comment: TaskWithRelations['comments'][0]) => (
                 <div key={comment.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-start gap-3">
                     <div className="rounded-full bg-blue-100 p-2">
@@ -719,11 +433,11 @@ export default async function TaskDetail({
                         <div>
                           <div className="font-semibold text-slate-900">{comment.user?.name || "User"}</div>
                           <div className="text-xs text-slate-500 mt-1">
-                            {new Date(comment.createdAt).toLocaleString()}
+                            {formatDateTime(comment.createdAt)}
                           </div>
                         </div>
                         {(comment.userId === currentUser.id || currentUser.role === Role.Admin) && (
-                          <form action={deleteComment}>
+                          <form action={deleteCommentFormData}>
                             <input type="hidden" name="commentId" value={comment.id} />
                             <button
                               type="submit"

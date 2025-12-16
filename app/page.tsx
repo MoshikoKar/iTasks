@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { TaskPriority, TaskStatus } from "@prisma/client";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +18,9 @@ import Link from "next/link";
 import { BarChart } from "@/components/BarChart";
 import { DonutChart } from "@/components/DonutChart";
 import { Badge } from "@/components/ui/badge";
+import { formatDateTime, formatDate } from "@/lib/utils/date";
+import { useAuth } from "@/hooks/useAuth";
+import { usePolling } from "@/hooks/usePolling";
 
 interface DashboardStats {
   open: number;
@@ -59,34 +61,13 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string>("");
+  const [countdown, setCountdown] = useState(60);
 
-  useEffect(() => {
-    async function init() {
-      try {
-        const res = await fetch("/api/auth/user");
-        if (res.ok) {
-          const user = await res.json();
-          setUserId(user.id);
-        } else {
-          console.error("Failed to get user");
-          if (res.status === 401) router.replace("/login");
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Failed to get user:", error);
-        router.replace("/login");
-        setLoading(false);
-      }
-    }
-    init();
-  }, [router]);
-
-  const fetchStats = async () => {
-    if (!userId) return;
+  const fetchStats = useCallback(async () => {
+    if (!user?.id) return;
     try {
       const res = await fetch("/api/dashboard", {
         cache: "no-store",
@@ -95,70 +76,69 @@ export default function DashboardPage() {
       if (res.ok) {
         const data = await res.json();
         // Convert date strings to Date objects
-        const processedData = {
+        const processedData: DashboardStats = {
           ...data,
-          myDay: data.myDay.map((task: any) => ({
+          myDay: data.myDay.map((task: { id: string; title: string; dueDate: string | null; priority: TaskPriority }) => ({
             ...task,
             dueDate: task.dueDate ? new Date(task.dueDate) : null,
           })),
-          myOpenTasks: data.myOpenTasks.map((task: any) => ({
+          myOpenTasks: data.myOpenTasks.map((task: { id: string; title: string; dueDate: string | null; slaDeadline: string | null; priority: TaskPriority }) => ({
             ...task,
             dueDate: task.dueDate ? new Date(task.dueDate) : null,
             slaDeadline: task.slaDeadline ? new Date(task.slaDeadline) : null,
           })),
-          staleTasks: data.staleTasks.map((task: any) => ({
+          staleTasks: data.staleTasks.map((task: { id: string; title: string; updatedAt: string; priority: TaskPriority; status: TaskStatus; assignee: { id: string; name: string } | null }) => ({
             ...task,
             updatedAt: new Date(task.updatedAt),
           })),
-          recentActivity: data.recentActivity.map((activity: any) => ({
+          recentActivity: data.recentActivity.map((activity: { id: string; action: string; createdAt: string; actor: { id: string; name: string } | null; task: { id: string; title: string } | null }) => ({
             ...activity,
             createdAt: new Date(activity.createdAt),
           })),
         };
         setStats(processedData);
-      } else if (res.status === 401) {
-        router.replace("/login");
+        setCountdown(60); // Reset countdown after successful fetch
       }
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
+  // Use polling hook for auto-refresh (60 seconds)
+  usePolling(fetchStats, 60000, !!user?.id);
+
+  // Countdown timer effect
   useEffect(() => {
-    if (!userId) return;
+    if (!user?.id || loading) return;
 
-    fetchStats();
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          return 60; // Reset to 60 when it reaches 0
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    let intervalId: NodeJS.Timeout;
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+    return () => clearInterval(timer);
+  }, [user?.id, loading]);
+
+  // F5 keyboard shortcut for manual refresh
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F5") {
+        e.preventDefault();
         fetchStats();
-        intervalId = setInterval(() => {
-          if (document.visibilityState === 'visible') {
-            fetchStats();
-          }
-        }, 60000);
-      } else {
-        clearInterval(intervalId);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchStats();
-      }
-    }, 60000);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fetchStats]);
 
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [userId]);
-
-  if (loading || !stats) {
+  if (authLoading || loading || !stats) {
     return (
       <div className="space-y-8 animate-pulse">
         <div className="h-8 bg-slate-200 rounded w-1/3"></div>
@@ -180,21 +160,34 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
           <p className="mt-1 text-slate-600">Welcome back! Here's your overview.</p>
         </div>
-        <div className="text-sm text-slate-500">
-          <Clock className="inline mr-1" size={14} />
-          Auto-refresh: 60s
+        <div className="text-sm text-slate-500 flex flex-col items-end">
+          <div>
+            <Clock className="inline mr-1" size={14} />
+            Auto-refresh: 60s
+            <span className="ml-2 font-medium text-slate-700">({countdown}s)</span>
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            Press F5 to refresh
+          </div>
         </div>
       </div>
 
       {/* Stat Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Open Tasks" value={stats.open} icon={<CheckCircle2 size={24} />} color="blue" />
+        <StatCard 
+          label="Open Tasks" 
+          value={stats.open} 
+          icon={<CheckCircle2 size={24} />} 
+          color="blue" 
+          href="/tasks?status=Open"
+        />
         <StatCard
           label="Overdue"
           value={stats.overdue}
           icon={<AlertTriangle size={24} />}
           color="red"
           highlight
+          href="/tasks?status=Open&overdue=1"
         />
         <StatCard
           label="SLA Breaches"
@@ -202,8 +195,15 @@ export default function DashboardPage() {
           icon={<Clock size={24} />}
           color="orange"
           highlight
+          href="/tasks?status=Open&slaBreach=1"
         />
-        <StatCard label="Critical" value={stats.critical} icon={<AlertCircle size={24} />} color="purple" />
+        <StatCard 
+          label="Critical" 
+          value={stats.critical} 
+          icon={<AlertCircle size={24} />} 
+          color="purple"
+          href="/tasks?priority=Critical"
+        />
       </div>
 
       {/* My Open Tasks and My Day Sections */}
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                         </Link>
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {task.slaDeadline ? new Date(task.slaDeadline).toLocaleString() : "-"}
+                        {formatDateTime(task.slaDeadline)}
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant="priority" value={task.priority as TaskPriority} />
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                         </Link>
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleString() : "-"}
+                        {formatDateTime(task.dueDate)}
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant="priority" value={task.priority as TaskPriority} />
@@ -413,7 +413,7 @@ export default function DashboardPage() {
                       <div className="font-medium text-slate-900 text-sm truncate">{task.title}</div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-slate-500">
-                          Last update: {new Date(task.updatedAt).toLocaleDateString()}
+                          Last update: {formatDate(task.updatedAt)}
                         </span>
                         <Badge variant="priority" value={task.priority} />
                       </div>
@@ -436,12 +436,14 @@ function StatCard({
   icon,
   color,
   highlight,
+  href,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
   color: "blue" | "red" | "orange" | "purple";
   highlight?: boolean;
+  href?: string;
 }) {
   const colorClasses = {
     blue: "from-blue-500 to-blue-600 text-blue-600 bg-blue-50",
@@ -450,11 +452,11 @@ function StatCard({
     purple: "from-purple-500 to-purple-600 text-purple-600 bg-purple-50",
   };
 
-  return (
+  const cardContent = (
     <motion.div
       className={`group relative overflow-hidden rounded-xl border ${
         highlight ? "border-red-300 shadow-lg shadow-red-100" : "border-slate-200"
-      } bg-white p-6`}
+      } bg-white p-6 ${href ? "cursor-pointer" : ""}`}
       whileHover={{ y: -4, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
       transition={{ duration: 0.2 }}
     >
@@ -480,5 +482,11 @@ function StatCard({
       ></div>
     </motion.div>
   );
+
+  if (href) {
+    return <Link href={href}>{cardContent}</Link>;
+  }
+
+  return cardContent;
 }
 

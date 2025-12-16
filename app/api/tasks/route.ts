@@ -76,7 +76,62 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const currentUser = await requireAuth();
     const body = await request.json();
+
+    // Fetch current user with teamId and role
+    const currentUserWithTeam = await db.user.findUnique({
+      where: { id: currentUser.id },
+      select: { id: true, role: true, teamId: true },
+    });
+
+    if (!currentUserWithTeam) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Enforce assignment rules - no one can assign tasks to users above their permission level
+    if (body.assigneeId && body.assigneeId !== currentUserWithTeam.id) {
+      const assignee = await db.user.findUnique({
+        where: { id: body.assigneeId },
+        select: { role: true, teamId: true },
+      });
+
+      if (!assignee) {
+        return NextResponse.json({ error: "Assignee not found" }, { status: 404 });
+      }
+
+      // Check permission hierarchy: Admin > TeamLead > Technician/Viewer
+      const roleHierarchy = { Admin: 3, TeamLead: 2, Technician: 1, Viewer: 1 };
+      const currentUserLevel = roleHierarchy[currentUserWithTeam.role];
+      const assigneeLevel = roleHierarchy[assignee.role];
+
+      // Cannot assign to users with higher or equal permission level (except self)
+      if (assigneeLevel >= currentUserLevel) {
+        return NextResponse.json(
+          { error: "You cannot assign tasks to users with equal or higher permission level" },
+          { status: 403 }
+        );
+      }
+
+      // TeamLead can only assign to users in their team (or themselves)
+      if (currentUserWithTeam.role === Role.TeamLead) {
+        if (currentUserWithTeam.teamId && assignee.teamId !== currentUserWithTeam.teamId) {
+          return NextResponse.json(
+            { error: "You can only assign tasks to users in your team" },
+            { status: 403 }
+          );
+        }
+      }
+
+      // Technician/Viewer can only assign to themselves
+      if (currentUserWithTeam.role === Role.Technician || currentUserWithTeam.role === Role.Viewer) {
+        return NextResponse.json(
+          { error: "You can only assign tasks to yourself" },
+          { status: 403 }
+        );
+      }
+    }
+
     const task = await createTask(body);
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

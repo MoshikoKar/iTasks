@@ -3,6 +3,7 @@ import { TaskStatus, TaskPriority, Role } from "@prisma/client";
 
 /**
  * Helper function to build task query filters based on user role (RBAC)
+ * For dashboard summary cards and analytics, users see their team's tasks
  */
 function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }) {
   switch (user.role) {
@@ -29,7 +30,13 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
     case Role.Technician:
     case Role.Viewer:
     default:
-      // Technician/Viewer sees only tasks assigned to them or created by them
+      // Technician/Viewer sees tasks from their team (for dashboard summaries and analytics)
+      if (user.teamId) {
+        return {
+          assignee: { teamId: user.teamId },
+        };
+      }
+      // If no team, fall back to their own tasks
       return {
         OR: [{ assigneeId: user.id }, { creatorId: user.id }],
       };
@@ -93,7 +100,7 @@ export async function getDashboardStats(userId: string) {
   // Top stat cards with RBAC - Parallelized for performance
   const [open, overdue, slaBreaches, critical] = await Promise.all([
     db.task.count({
-      where: { ...taskFilter, status: TaskStatus.Open },
+      where: { ...taskFilter, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
     }),
     db.task.count({
       where: {
@@ -129,10 +136,11 @@ export async function getDashboardStats(userId: string) {
   });
 
   // My Open Tasks - Always personal (user's own tasks)
+  // Include all tasks that are not resolved or closed (Open, InProgress, PendingVendor, PendingUser)
   const myOpenTasks = await db.task.findMany({
     where: {
       assigneeId: userId,
-      status: TaskStatus.Open,
+      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
     },
     include: { assignee: true, context: true },
   });
