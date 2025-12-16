@@ -70,7 +70,16 @@ export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn
   const filteredTasks = useMemo(() => {
     const now = new Date();
     return tasks.filter(task => {
-      if (statusFilter !== 'all' && task.status !== statusFilter) return false;
+      // Handle status filter - treat "Open" as all non-resolved/closed statuses
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'Open') {
+          // "Open" means all tasks that are not Resolved or Closed
+          if (task.status === TaskStatus.Resolved || task.status === TaskStatus.Closed) return false;
+        } else {
+          // Exact status match for other statuses
+          if (task.status !== statusFilter) return false;
+        }
+      }
       if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
       if (branchFilter !== 'all' && task.branch !== branchFilter) return false;
       if (assigneeFilter !== 'all' && task.assignee.name !== assigneeFilter) return false;
