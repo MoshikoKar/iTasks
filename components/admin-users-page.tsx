@@ -174,31 +174,31 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900">Users & Teams</h1>
+      <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Users & Teams</h1>
 
       {/* User Statistics and Teams Management - Side by Side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Statistics */}
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <UserPlus size={20} className="text-blue-600" />
+        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+            <UserPlus size={20} className="text-blue-600 dark:text-blue-400" />
             User Statistics
           </h2>
           <div className="grid gap-4 sm:grid-cols-4">
             {sortedStats.map((stat) => (
-              <div key={stat.role} className="rounded-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm font-medium text-slate-600">{stat.role}</div>
-                <div className="text-3xl font-bold text-slate-900 mt-1">{stat._count}</div>
+              <div key={stat.role} className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-slate-600 dark:text-neutral-400">{stat.role}</div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{stat._count}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Teams Management */}
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <Building2 size={20} className="text-blue-600" />
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+            <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
             Teams / Departments
           </h2>
           <Button
@@ -216,20 +216,20 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {teams.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-slate-500">
+            <div className="col-span-full text-center py-8 text-slate-500 dark:text-neutral-400">
               No teams created yet. Create your first team to organize users.
             </div>
           ) : (
             teams.map((team) => (
               <div
                 key={team.id}
-                className="rounded-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{team.name}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-neutral-100 truncate">{team.name}</h3>
                     {team.description && (
-                      <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+                      <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1 line-clamp-2">
                         {team.description}
                       </p>
                     )}
@@ -240,20 +240,20 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
                         setSelectedTeam(team);
                         setIsTeamModalOpen(true);
                       }}
-                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => handleDeleteTeam(team)}
                       disabled={isTeamDeleting}
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                      className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 flex items-center gap-1 mt-2">
+                <div className="text-xs text-slate-500 dark:text-neutral-400 flex items-center gap-1 mt-2">
                   <UserPlus size={12} />
                   {team._count.members} member{team._count.members !== 1 ? 's' : ''}
                 </div>
@@ -265,9 +265,9 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
       </div>
 
       {/* Users Table */}
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Users</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Users</h2>
           <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
@@ -275,53 +275,53 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gradient-to-r from-slate-100 to-slate-50">
+            <thead className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-700 dark:to-neutral-800">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Team</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Tasks Assigned</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Tasks Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Name</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Email</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Role</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Team</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Tasks Assigned</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Tasks Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-t border-slate-200 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900">{user.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{user.email}</td>
+                <tr key={user.id} className="border-t border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">{user.name}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user.email}</td>
                   <td className="px-4 py-3">
                     <RoleBadge role={user.role} />
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">
                     {user.team ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                         <Building2 size={12} />
                         {user.team.name}
                       </span>
                     ) : (
-                      <span className="text-slate-400">-</span>
+                      <span className="text-slate-400 dark:text-neutral-500">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{user._count.tasksAssigned}</td>
-                  <td className="px-4 py-3 text-slate-600">{user._count.tasksCreated}</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user._count.tasksAssigned}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user._count.tasksCreated}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">
                     {formatDateTimeStable(user.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="text-blue-600 hover:text-blue-800 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Edit2 size={14} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 hover:text-red-800 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Trash2 size={14} />
                         Delete
@@ -474,10 +474,10 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
 function RoleBadge({ role }: { role: Role }) {
   const colors: Record<Role, string> = {
-    Admin: 'bg-purple-100 text-purple-800 border border-purple-200',
-    TeamLead: 'bg-blue-100 text-blue-800 border border-blue-200',
-    Technician: 'bg-green-100 text-green-800 border border-green-200',
-    Viewer: 'bg-slate-100 text-slate-800 border border-slate-200',
+    Admin: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+    TeamLead: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+    Technician: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800',
+    Viewer: 'bg-slate-100 dark:bg-neutral-700 text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-neutral-600',
   };
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[role]}`}>

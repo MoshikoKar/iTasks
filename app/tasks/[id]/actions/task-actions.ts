@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { updateTask } from "@/app/actions/tasks";
 import { requireAuth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { TaskStatus, TaskPriority, Role } from "@prisma/client";
 
 /**
@@ -134,4 +135,5 @@ export async function saveTask(formData: FormData) {
   });
 
   revalidatePath(`/tasks/${taskId}`);
+  redirect(`/tasks/${taskId}`);
 }

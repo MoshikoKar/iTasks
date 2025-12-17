@@ -141,6 +141,13 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
           </div>
         </div>
         <div>
+          <motion.div
+            animate={{
+              display: open ? "block" : "none",
+              opacity: open ? 1 : 0,
+            }}
+            className="mb-2 flex-1"
+          />
           <SidebarLink
             link={{
               label: userName,

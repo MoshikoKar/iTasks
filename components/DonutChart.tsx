@@ -19,7 +19,7 @@ export function DonutChart({ data }: DonutChartProps) {
   if (total === 0) {
     return (
       <div className="w-full h-64 flex items-center justify-center">
-        <div className="text-center text-slate-500">
+        <div className="text-center text-slate-500 dark:text-neutral-400">
           <div className="text-4xl mb-2">📊</div>
           <p className="text-sm">No active tasks</p>
         </div>
@@ -123,13 +123,13 @@ export function DonutChart({ data }: DonutChartProps) {
             </g>
           ))}
           {/* Center Circle */}
-          <circle cx={centerX} cy={centerY} r={innerRadius} fill="white" />
+          <circle cx={centerX} cy={centerY} r={innerRadius} className="fill-white dark:fill-neutral-800" />
           {/* Total Count in Center */}
           <text
             x={centerX}
             y={centerY - 10}
             textAnchor="middle"
-            className="text-2xl font-bold fill-slate-900"
+            className="text-2xl font-bold fill-slate-900 dark:fill-neutral-100"
           >
             {total}
           </text>
@@ -137,7 +137,7 @@ export function DonutChart({ data }: DonutChartProps) {
             x={centerX}
             y={centerY + 15}
             textAnchor="middle"
-            className="text-xs fill-slate-600"
+            className="text-xs fill-slate-600 dark:fill-neutral-400"
           >
             Total Tasks
           </text>
@@ -151,12 +151,12 @@ export function DonutChart({ data }: DonutChartProps) {
             {/* Left group: color dot + priority label */}
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-sm flex-shrink-0 ${priorityColors[item.priority].bg}`}></div>
-              <span className="text-sm text-slate-700 whitespace-nowrap">{item.priority}</span>
+              <span className="text-sm text-slate-700 dark:text-neutral-300 whitespace-nowrap">{item.priority}</span>
             </div>
             {/* Right group: count + percentage */}
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-semibold text-slate-900">{item.count}</span>
-              <span className="text-xs text-slate-500">
+              <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100">{item.count}</span>
+              <span className="text-xs text-slate-500 dark:text-neutral-400">
                 ({((item.count / total) * 100).toFixed(0)}%)
               </span>
             </div>

@@ -90,7 +90,7 @@ export default async function TasksPage() {
     ]);
 
     return (
-      <Suspense fallback={<div className="space-y-4"><h1 className="text-2xl font-semibold text-slate-900">All Tasks</h1><div>Loading...</div></div>}>
+      <Suspense fallback={<div className="space-y-4"><h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1><div className="text-slate-600 dark:text-neutral-400">Loading...</div></div>}>
         <TasksPageWrapper
           tasks={tasks}
           currentUser={{ id: currentUser.id, name: currentUser.name }}
@@ -103,8 +103,8 @@ export default async function TasksPage() {
     console.error("Error loading tasks:", error);
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">All Tasks</h1>
-        <div className="rounded-lg border bg-white p-6 text-center text-red-600">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1>
+        <div className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 text-center text-red-600 dark:text-red-400">
           Failed to load tasks. Please try again later.
         </div>
       </div>

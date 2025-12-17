@@ -97,7 +97,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-slate-500">Loading configuration...</div>
+        <div className="text-slate-500 dark:text-neutral-400">Loading configuration...</div>
       </div>
     );
   }
@@ -105,16 +105,16 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-3 flex items-start gap-3">
-          <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-          <span className="text-sm text-red-800">{error}</span>
+        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 flex items-start gap-3">
+          <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
+          <span className="text-sm text-red-800 dark:text-red-300">{error}</span>
         </div>
       )}
 
-      <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-4">
+      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 mb-4">
         <div className="flex items-start gap-3">
-          <Clock className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
-          <div className="text-sm text-blue-800">
+          <Clock className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" size={20} />
+          <div className="text-sm text-blue-800 dark:text-blue-300">
             <p className="font-semibold mb-1">SLA Defaults</p>
             <p>
               Configure default Service Level Agreement deadlines (in hours) for each priority level.
@@ -126,8 +126,8 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="slaCriticalHours" className="block text-sm font-medium text-slate-700 mb-1">
-            Critical Priority (hours) <span className="text-red-500">*</span>
+          <label htmlFor="slaCriticalHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            Critical Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -136,16 +136,16 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaCriticalHours ?? 4}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaCriticalHours ?? 4)} - Tasks with Critical priority must be resolved within this time
           </p>
         </div>
 
         <div>
-          <label htmlFor="slaHighHours" className="block text-sm font-medium text-slate-700 mb-1">
-            High Priority (hours) <span className="text-red-500">*</span>
+          <label htmlFor="slaHighHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            High Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -154,16 +154,16 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaHighHours ?? 24}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaHighHours ?? 24)} - Tasks with High priority must be resolved within this time
           </p>
         </div>
 
         <div>
-          <label htmlFor="slaMediumHours" className="block text-sm font-medium text-slate-700 mb-1">
-            Medium Priority (hours) <span className="text-red-500">*</span>
+          <label htmlFor="slaMediumHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            Medium Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -172,16 +172,16 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaMediumHours ?? 48}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaMediumHours ?? 48)} - Tasks with Medium priority must be resolved within this time
           </p>
         </div>
 
         <div>
-          <label htmlFor="slaLowHours" className="block text-sm font-medium text-slate-700 mb-1">
-            Low Priority (hours) <span className="text-red-500">*</span>
+          <label htmlFor="slaLowHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            Low Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -190,15 +190,15 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaLowHours ?? 120}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaLowHours ?? 120)} - Tasks with Low priority must be resolved within this time
           </p>
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-neutral-700">
         {onCancel && (
           <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel

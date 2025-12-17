@@ -110,11 +110,11 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <Repeat size={28} className="text-blue-600" />
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+            <Repeat size={28} className="text-blue-600 dark:text-blue-400" />
             Recurring Tasks
           </h1>
-          <p className="mt-1 text-slate-600">Manage automated task generation schedules</p>
+          <p className="mt-1 text-slate-600 dark:text-neutral-400">Manage automated task generation schedules</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -127,10 +127,10 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
       </div>
 
       {configs.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-          <Repeat size={64} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">No recurring tasks configured</h3>
-          <p className="text-slate-500 mb-6">Get started by creating your first recurring task configuration</p>
+        <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-12 text-center shadow-sm">
+          <Repeat size={64} className="mx-auto text-slate-300 dark:text-neutral-600 mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-2">No recurring tasks configured</h3>
+          <p className="text-slate-500 dark:text-neutral-400 mb-6">Get started by creating your first recurring task configuration</p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
@@ -141,20 +141,20 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
           </button>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-neutral-700 dark:to-neutral-800 border-b border-slate-200 dark:border-neutral-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Frequency</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Last Run</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Next Run</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Last Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Assignee</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Frequency</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Last Run</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Next Run</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Last Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Assignee</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-200 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-neutral-700">
               {configs.map((config) => {
                 const lastTask = config.tasks[0];
                 const isLastTaskIncomplete = lastTask && lastTask.status !== TaskStatus.Resolved && lastTask.status !== TaskStatus.Closed;
@@ -162,37 +162,37 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                 const isOverdue = nextRun && nextRun < new Date();
 
                 return (
-                  <tr key={config.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={config.id} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-blue-100 p-2">
-                          <Repeat size={16} className="text-blue-600" />
+                        <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
+                          <Repeat size={16} className="text-blue-600 dark:text-blue-400" />
                         </div>
-                        <span className="font-semibold text-slate-900">{config.name}</span>
+                        <span className="font-semibold text-slate-900 dark:text-neutral-100">{config.name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Calendar size={14} className="text-slate-400" />
-                        <code className="text-xs bg-slate-100 px-2 py-1 rounded font-mono">{config.cron}</code>
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-neutral-300">
+                        <Calendar size={14} className="text-slate-400 dark:text-neutral-500" />
+                        <code className="text-xs bg-slate-100 dark:bg-neutral-700 px-2 py-1 rounded font-mono text-slate-900 dark:text-neutral-100">{config.cron}</code>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-6 py-4 text-slate-600 dark:text-neutral-300">
                       <div className="flex items-center gap-2">
-                        <Clock size={14} className="text-slate-400" />
-                        {config.lastGeneratedAt ? formatDateTime(config.lastGeneratedAt) : <span className="text-slate-400">Never</span>}
+                        <Clock size={14} className="text-slate-400 dark:text-neutral-500" />
+                        {config.lastGeneratedAt ? formatDateTime(config.lastGeneratedAt) : <span className="text-slate-400 dark:text-neutral-500">Never</span>}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {isOverdue ? (
-                        <div className="flex items-center gap-2 text-red-600 font-semibold">
+                        <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold">
                           <AlertTriangle size={16} />
-                          {nextRun ? formatDateTime(nextRun) : <span className="text-slate-400">Not scheduled</span>}
+                          {nextRun ? formatDateTime(nextRun) : <span className="text-slate-400 dark:text-neutral-500">Not scheduled</span>}
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Clock size={14} className="text-slate-400" />
-                          {nextRun ? formatDateTime(nextRun) : <span className="text-slate-400">Not scheduled</span>}
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-neutral-300">
+                          <Clock size={14} className="text-slate-400 dark:text-neutral-500" />
+                          {nextRun ? formatDateTime(nextRun) : <span className="text-slate-400 dark:text-neutral-500">Not scheduled</span>}
                         </div>
                       )}
                     </td>
@@ -201,19 +201,19 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                         <div className="flex items-center gap-2">
                           <StatusBadge status={lastTask.status} />
                           {isLastTaskIncomplete && (
-                            <div className="flex items-center gap-1 text-xs text-red-600 font-semibold">
+                            <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 font-semibold">
                               <AlertTriangle size={12} />
                               Incomplete
                             </div>
                           )}
                         </div>
                       ) : (
-                        <span className="text-slate-400 text-xs">No instances</span>
+                        <span className="text-slate-400 dark:text-neutral-500 text-xs">No instances</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <UserIcon size={14} className="text-slate-400" />
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-neutral-300">
+                        <UserIcon size={14} className="text-slate-400 dark:text-neutral-500" />
                         <span className="font-medium">{config.templateAssignee.name}</span>
                       </div>
                     </td>
@@ -222,7 +222,7 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                         <button
                           onClick={() => handleRunNow(config)}
                           disabled={runningConfigId === config.id}
-                          className="flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline text-xs font-medium transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 hover:underline text-xs font-medium transition-colors disabled:opacity-50"
                           title="Run this recurring task now (creates a task immediately)"
                         >
                           <Play size={14} />
@@ -230,21 +230,21 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                         </button>
                         <button
                           onClick={() => handleView(config)}
-                          className="flex items-center gap-1 text-slate-600 hover:text-slate-800 hover:underline text-xs font-medium transition-colors"
+                          className="flex items-center gap-1 text-slate-600 dark:text-neutral-300 hover:text-slate-800 dark:hover:text-neutral-100 hover:underline text-xs font-medium transition-colors"
                         >
                           <Eye size={14} />
                           View
                         </button>
                         <button
                           onClick={() => handleEdit(config)}
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-xs font-medium transition-colors"
+                          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-xs font-medium transition-colors"
                         >
                           <Edit size={14} />
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteClick(config)}
-                          className="flex items-center gap-1 text-red-600 hover:text-red-800 hover:underline text-xs font-medium transition-colors"
+                          className="flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:underline text-xs font-medium transition-colors"
                         >
                           <Trash2 size={14} />
                           Delete
@@ -316,25 +316,25 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Name</label>
-                  <p className="text-slate-900 font-semibold">{selectedConfig.name}</p>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Name</label>
+                  <p className="text-slate-900 dark:text-neutral-100 font-semibold">{selectedConfig.name}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Assignee</label>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Assignee</label>
                   <div className="flex items-center gap-2">
-                    <UserIcon size={14} className="text-slate-400" />
-                    <p className="text-slate-900">{selectedConfig.templateAssignee.name}</p>
+                    <UserIcon size={14} className="text-slate-400 dark:text-neutral-500" />
+                    <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.templateAssignee.name}</p>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Schedule (Cron)</label>
-                  <code className="text-sm bg-slate-100 px-3 py-1 rounded font-mono">{selectedConfig.cron}</code>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Schedule (Cron)</label>
+                  <code className="text-sm bg-slate-100 dark:bg-neutral-700 px-3 py-1 rounded font-mono text-slate-900 dark:text-neutral-100">{selectedConfig.cron}</code>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Priority</label>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Priority</label>
                   <PriorityBadge priority={selectedConfig.templatePriority} />
                 </div>
               </div>
@@ -343,26 +343,26 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                 <div className="grid grid-cols-2 gap-4">
                   {selectedConfig.templateBranch && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Branch</label>
-                      <p className="text-slate-900">{selectedConfig.templateBranch}</p>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Branch</label>
+                      <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.templateBranch}</p>
                     </div>
                   )}
                   {selectedConfig.templateServerName && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Server Name</label>
-                      <p className="text-slate-900">{selectedConfig.templateServerName}</p>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Server Name</label>
+                      <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.templateServerName}</p>
                     </div>
                   )}
                   {selectedConfig.templateApplication && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Application</label>
-                      <p className="text-slate-900">{selectedConfig.templateApplication}</p>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Application</label>
+                      <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.templateApplication}</p>
                     </div>
                   )}
                   {selectedConfig.templateIpAddress && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">IP Address</label>
-                      <p className="text-slate-900">{selectedConfig.templateIpAddress}</p>
+                      <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">IP Address</label>
+                      <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.templateIpAddress}</p>
                     </div>
                   )}
                 </div>
@@ -370,49 +370,49 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Last Generated</label>
-                  <p className="text-slate-900">{selectedConfig.lastGeneratedAt ? formatDateTime(selectedConfig.lastGeneratedAt) : 'Never'}</p>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Last Generated</label>
+                  <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.lastGeneratedAt ? formatDateTime(selectedConfig.lastGeneratedAt) : 'Never'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Next Generation</label>
-                  <p className="text-slate-900">{selectedConfig.nextGenerationAt ? formatDateTime(selectedConfig.nextGenerationAt) : 'Not scheduled'}</p>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Next Generation</label>
+                  <p className="text-slate-900 dark:text-neutral-100">{selectedConfig.nextGenerationAt ? formatDateTime(selectedConfig.nextGenerationAt) : 'Not scheduled'}</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Task Title Template</label>
-                <p className="text-slate-900 font-medium">{selectedConfig.templateTitle}</p>
+                <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Task Title Template</label>
+                <p className="text-slate-900 dark:text-neutral-100 font-medium">{selectedConfig.templateTitle}</p>
               </div>
 
               {selectedConfig.templateDescription && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Task Description Template</label>
-                  <p className="text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg border border-slate-200">{selectedConfig.templateDescription}</p>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Task Description Template</label>
+                  <p className="text-slate-700 dark:text-neutral-300 whitespace-pre-wrap bg-slate-50 dark:bg-neutral-700/50 p-3 rounded-lg border border-slate-200 dark:border-neutral-700">{selectedConfig.templateDescription}</p>
                 </div>
               )}
             </div>
 
             {/* Generated Tasks History */}
-            <div className="border-t border-slate-200 pt-4">
-              <h4 className="text-sm font-semibold text-slate-900 mb-3">Generated Task Instances</h4>
+            <div className="border-t border-slate-200 dark:border-neutral-700 pt-4">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 mb-3">Generated Task Instances</h4>
               {selectedConfig.tasks.length > 0 ? (
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {selectedConfig.tasks.map((task) => (
                     <Link
                       key={task.id}
                       href={`/tasks/${task.id}`}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
+                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-700 transition-colors border border-slate-200 dark:border-neutral-700"
                     >
                       <div className="flex items-center gap-3">
                         <StatusBadge status={task.status} />
-                        <span className="text-sm text-slate-600">{formatDateTime(task.createdAt)}</span>
+                        <span className="text-sm text-slate-600 dark:text-neutral-300">{formatDateTime(task.createdAt)}</span>
                       </div>
-                      <ExternalLink size={14} className="text-slate-400" />
+                      <ExternalLink size={14} className="text-slate-400 dark:text-neutral-500" />
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500 italic">No task instances generated yet</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-400 italic">No task instances generated yet</p>
               )}
             </div>
           </div>
@@ -430,13 +430,13 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
         size="sm"
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
-            <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <AlertTriangle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
             <div>
-              <p className="text-sm text-red-800">
+              <p className="text-sm text-red-800 dark:text-red-300">
                 Are you sure you want to delete the recurring task <strong>"{selectedConfig?.name}"</strong>?
               </p>
-              <p className="text-xs text-red-600 mt-1">
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                 This action cannot be undone. Previously generated tasks will not be deleted.
               </p>
             </div>
@@ -469,22 +469,22 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
 
 function StatusBadge({ status }: { status: TaskStatus }) {
   const colors: Record<TaskStatus, string> = {
-    Open: "bg-blue-100 text-blue-800 border border-blue-200",
-    InProgress: "bg-purple-100 text-purple-800 border border-purple-200",
-    PendingVendor: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-    PendingUser: "bg-orange-100 text-orange-800 border border-orange-200",
-    Resolved: "bg-green-100 text-green-800 border border-green-200",
-    Closed: "bg-slate-100 text-slate-800 border border-slate-200",
+    Open: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
+    InProgress: "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
+    PendingVendor: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800",
+    PendingUser: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800",
+    Resolved: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800",
+    Closed: "bg-slate-100 dark:bg-neutral-700 text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-neutral-600",
   };
   return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[status]}`}>{status}</span>;
 }
 
 function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const colors: Record<TaskPriority, string> = {
-    Low: "bg-green-100 text-green-800 border border-green-200",
-    Medium: "bg-blue-100 text-blue-800 border border-blue-200",
-    High: "bg-orange-100 text-orange-800 border border-orange-200",
-    Critical: "bg-red-100 text-red-800 border border-red-200",
+    Low: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800",
+    Medium: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
+    High: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800",
+    Critical: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800",
   };
   return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[priority]}`}>{priority}</span>;
 }

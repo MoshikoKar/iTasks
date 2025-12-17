@@ -16,19 +16,19 @@ export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: Sta
   const getStatusTextColorClass = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.Open:
-        return 'text-blue-800';
+        return 'text-blue-800 dark:text-blue-300';
       case TaskStatus.InProgress:
-        return 'text-purple-800';
+        return 'text-purple-800 dark:text-purple-300';
       case TaskStatus.PendingVendor:
-        return 'text-amber-800';
+        return 'text-amber-800 dark:text-amber-300';
       case TaskStatus.PendingUser:
-        return 'text-orange-800';
+        return 'text-orange-800 dark:text-orange-300';
       case TaskStatus.Resolved:
-        return 'text-green-800';
+        return 'text-green-800 dark:text-green-300';
       case TaskStatus.Closed:
-        return 'text-slate-800';
+        return 'text-slate-800 dark:text-neutral-300';
       default:
-        return 'text-slate-800';
+        return 'text-slate-800 dark:text-neutral-300';
     }
   };
 

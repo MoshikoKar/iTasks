@@ -70,9 +70,9 @@ export function TaskAssignment({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-        <UserPlus size={20} className="text-blue-600" />
+    <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+        <UserPlus size={20} className="text-blue-600 dark:text-blue-400" />
         Assign Task
       </h2>
 
@@ -81,14 +81,14 @@ export function TaskAssignment({
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-blue-100 p-2">
-                <UserIcon size={18} className="text-blue-600" />
+              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-2">
+                <UserIcon size={18} className="text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <div className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wide">
                   Main Assignee
                 </div>
-                <div className="font-semibold text-slate-900">
+                <div className="font-semibold text-slate-900 dark:text-neutral-100">
                   {currentAssignee?.name || "Unassigned"}
                 </div>
               </div>
@@ -120,19 +120,19 @@ export function TaskAssignment({
                 </button>
               </div>
               {loading && (
-                <div className="text-sm text-slate-500">Updating main assignee...</div>
+                <div className="text-sm text-slate-500 dark:text-neutral-400">Updating main assignee...</div>
               )}
             </div>
           )}
         </div>
 
         {/* Technicians */}
-        <div className="border-t border-slate-200 pt-4">
+        <div className="border-t border-slate-200 dark:border-neutral-700 pt-4">
           <div className="mb-3">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wide">
               Technicians (Viewers / Secondary Contributors)
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
               Add additional technicians who should follow or help with this task.
             </p>
           </div>
@@ -149,14 +149,14 @@ export function TaskAssignment({
                   style={{ fontSize: '12px', padding: '4px 12px' }}
                 >
                   <span>{tech.name}</span>
-                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                  <span className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-neutral-500">
                     Remove
                   </span>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="mb-3 text-xs text-slate-500">
+            <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
               No technicians added yet.
             </div>
           )}
@@ -171,7 +171,7 @@ export function TaskAssignment({
           />
 
           {loading && !isChangingAssignee && (
-            <div className="mt-2 text-sm text-slate-500">Updating technicians...</div>
+            <div className="mt-2 text-sm text-slate-500 dark:text-neutral-400">Updating technicians...</div>
           )}
         </div>
       </div>

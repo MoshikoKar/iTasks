@@ -18,18 +18,18 @@ export function BarChart({ data }: BarChartProps) {
             <div key={index} className="flex-1 flex flex-col items-center gap-1">
               {/* Value Label */}
               {item.count > 0 && (
-                <span className="text-xs font-semibold text-slate-700">
+                <span className="text-xs font-semibold text-slate-700 dark:text-neutral-300">
                   {item.count}
                 </span>
               )}
               {/* Bar */}
               <div
-                className="w-full bg-gradient-to-t from-blue-600 to-blue-500 rounded-t-md transition-all hover:from-blue-700 hover:to-blue-600 relative group"
+                className="w-full bg-gradient-to-t from-blue-600 to-blue-500 dark:from-blue-500 dark:to-blue-400 rounded-t-md transition-all hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-500 relative group"
                 style={{ height: `${height}%`, minHeight: item.count > 0 ? "8px" : "0" }}
               >
                 {/* Tooltip */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="bg-slate-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                  <div className="bg-slate-900 dark:bg-neutral-700 text-white dark:text-neutral-100 text-xs rounded px-2 py-1 whitespace-nowrap">
                     {item.count} task{item.count !== 1 ? 's' : ''}
                   </div>
                 </div>
@@ -40,10 +40,10 @@ export function BarChart({ data }: BarChartProps) {
       </div>
 
       {/* X-Axis Labels */}
-      <div className="flex justify-between gap-2 px-4 pt-2 border-t border-slate-200">
+      <div className="flex justify-between gap-2 px-4 pt-2 border-t border-slate-200 dark:border-neutral-700">
         {data.map((item, index) => (
           <div key={index} className="flex-1 text-center">
-            <span className="text-xs text-slate-600">{item.date}</span>
+            <span className="text-xs text-slate-600 dark:text-neutral-400">{item.date}</span>
           </div>
         ))}
       </div>

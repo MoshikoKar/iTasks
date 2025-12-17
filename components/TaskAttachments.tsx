@@ -46,11 +46,11 @@ export function TaskAttachments({ taskId, attachments: initialAttachments, curre
     <div className="flex flex-col h-full min-h-0">
       {/* Header - Fixed Height */}
       <div className="flex items-center justify-between mb-2 shrink-0">
-        <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-          <Paperclip size={16} className="text-slate-600" />
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+          <Paperclip size={16} className="text-slate-600 dark:text-neutral-400" />
           Attachments
           {attachments.length > 0 && (
-            <span className="text-xs font-normal text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-normal text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-700 px-1.5 py-0.5 rounded">
               {attachments.length}
             </span>
           )}
@@ -61,7 +61,7 @@ export function TaskAttachments({ taskId, attachments: initialAttachments, curre
       {/* Scrollable Content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {attachments.length === 0 ? (
-          <div className="text-center py-4 text-xs text-slate-400">
+          <div className="text-center py-4 text-xs text-slate-400 dark:text-neutral-500">
             No attachments
           </div>
         ) : (
@@ -113,19 +113,19 @@ function AttachmentItem({
   };
 
   return (
-    <div className="flex items-center gap-2 p-1.5 rounded-md border border-slate-200 hover:border-blue-300 hover:bg-slate-50 transition-all group shrink-0">
-      <Paperclip size={12} className="text-slate-400 shrink-0 group-hover:text-blue-600 transition-colors" />
+    <div className="flex items-center gap-2 p-1.5 rounded-md border border-slate-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-all group shrink-0">
+      <Paperclip size={12} className="text-slate-400 dark:text-neutral-500 shrink-0 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
       <div className="flex-1 min-w-0">
         <a
           href={attachment.filePath}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-medium text-slate-900 hover:text-blue-600 transition-colors truncate block whitespace-nowrap"
+          className="text-xs font-medium text-slate-900 dark:text-neutral-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block whitespace-nowrap"
           title={fileName}
         >
           {fileName}
         </a>
-        <div className="text-[10px] text-slate-400 mt-0.5 truncate whitespace-nowrap">
+        <div className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5 truncate whitespace-nowrap">
           {attachment.user?.name || 'Unknown'} • {formatDateTime(typeof attachment.createdAt === 'string' ? new Date(attachment.createdAt) : attachment.createdAt)}
         </div>
       </div>
@@ -133,7 +133,7 @@ function AttachmentItem({
         <a
           href={attachment.filePath}
           download
-          className="p-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+          className="p-1 text-slate-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
           title="Download"
         >
           <Download size={12} />
@@ -141,7 +141,7 @@ function AttachmentItem({
         {canDelete && (
           <button
             onClick={handleDelete}
-            className="p-1 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+            className="p-1 text-slate-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
             title="Delete"
           >
             <X size={12} />

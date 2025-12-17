@@ -57,12 +57,12 @@ export default function MyTasksPage() {
   }, [router, userId]);
 
   if (loading) {
-    return <div className="p-6">Loading tasks...</div>;
+    return <div className="p-6 text-slate-600 dark:text-neutral-400">Loading tasks...</div>;
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">My Tasks</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">My Tasks</h1>
       <DataTable tasks={tasks} showFilters={true} />
     </div>
   );

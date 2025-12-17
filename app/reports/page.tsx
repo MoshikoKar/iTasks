@@ -56,27 +56,27 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Reports</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">Reports</h1>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-lg border bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold">Workload per Technician</h2>
+        <section className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Workload per Technician</h2>
           <div className="space-y-3">
             {Object.entries(workloadByTechnician)
               .sort((a, b) => b[1].total - a[1].total)
               .map(([name, stats]) => (
                 <div key={name}>
                   <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-medium">{name}</span>
-                    <span className="text-slate-600">{stats.total} total</span>
+                    <span className="font-medium text-slate-900 dark:text-neutral-100">{name}</span>
+                    <span className="text-slate-600 dark:text-neutral-400">{stats.total} total</span>
                   </div>
-                  <div className="h-4 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-4 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700">
                     <div
-                      className="h-full bg-blue-600"
+                      className="h-full bg-blue-600 dark:bg-blue-500"
                       style={{ width: `${(stats.total / Math.max(...Object.values(workloadByTechnician).map((s) => s.total))) * 100}%` }}
                     />
                   </div>
-                  <div className="mt-1 flex gap-4 text-xs text-slate-600">
+                  <div className="mt-1 flex gap-4 text-xs text-slate-600 dark:text-neutral-400">
                     <span>Open: {stats.open}</span>
                     <span>In Progress: {stats.inProgress}</span>
                     <span>Resolved: {stats.resolved}</span>
@@ -86,28 +86,28 @@ export default async function ReportsPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold">Average Resolution Time</h2>
+        <section className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Average Resolution Time</h2>
           <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">{avgResolutionTime.toFixed(1)}</div>
-            <div className="mt-2 text-sm text-slate-600">hours</div>
-            <div className="mt-4 text-xs text-slate-500">
+            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">{avgResolutionTime.toFixed(1)}</div>
+            <div className="mt-2 text-sm text-slate-600 dark:text-neutral-400">hours</div>
+            <div className="mt-4 text-xs text-slate-500 dark:text-neutral-500">
               Based on {resolvedTasks.length} resolved tasks
             </div>
           </div>
         </section>
       </div>
 
-      <section className="rounded-lg border bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">Most Frequent Asset Issues</h2>
+      <section className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6">
+        <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100">Most Frequent Asset Issues</h2>
         {topAssets.length === 0 ? (
-          <div className="text-center text-slate-500">No asset data available</div>
+          <div className="text-center text-slate-500 dark:text-neutral-400">No asset data available</div>
         ) : (
           <div className="space-y-2">
             {topAssets.map(([asset, count]) => (
-              <div key={asset} className="flex items-center justify-between rounded-md border p-3">
-                <span className="font-medium">{asset}</span>
-                <span className="rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800">
+              <div key={asset} className="flex items-center justify-between rounded-md border border-slate-200 dark:border-neutral-700 p-3">
+                <span className="font-medium text-slate-900 dark:text-neutral-100">{asset}</span>
+                <span className="rounded-full bg-red-100 dark:bg-red-900/30 px-3 py-1 text-sm font-semibold text-red-800 dark:text-red-300">
                   {count} {count === 1 ? "issue" : "issues"}
                 </span>
               </div>

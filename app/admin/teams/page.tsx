@@ -156,7 +156,7 @@ export default function TeamsManagementPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-600">Loading...</div>
+        <div className="text-slate-600 dark:text-neutral-400">Loading...</div>
       </div>
     );
   }
@@ -164,15 +164,15 @@ export default function TeamsManagementPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Team & User Management</h1>
-        <p className="mt-1 text-slate-600">Manage teams and assign users to departments</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Team & User Management</h1>
+        <p className="mt-1 text-slate-600 dark:text-neutral-400">Manage teams and assign users to departments</p>
       </div>
 
       {/* Teams Section */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-            <Building2 size={20} className="text-blue-600" />
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+            <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
             Teams / Departments
           </h2>
           <button
@@ -190,12 +190,12 @@ export default function TeamsManagementPage() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
-            <div key={team.id} className="rounded-lg border border-slate-200 p-4">
+            <div key={team.id} className="rounded-lg border border-slate-200 dark:border-neutral-700 p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-slate-900 truncate">{team.name}</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-neutral-100 truncate">{team.name}</h3>
                   {team.description && (
-                    <p className="text-sm text-slate-600 mt-1">{team.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1">{team.description}</p>
                   )}
                 </div>
                 <div className="flex gap-1 ml-2">
@@ -204,19 +204,19 @@ export default function TeamsManagementPage() {
                       setEditingTeam(team);
                       setShowTeamModal(true);
                     }}
-                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                   >
                     <Edit2 size={14} />
                   </button>
                   <button
                     onClick={() => handleDeleteTeam(team.id)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 dark:text-neutral-400">
                 {team._count.members} member{team._count.members !== 1 ? "s" : ""}
               </div>
             </div>
@@ -225,43 +225,43 @@ export default function TeamsManagementPage() {
       </div>
 
       {/* Users Section */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-            <Users size={20} className="text-blue-600" />
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+            <Users size={20} className="text-blue-600 dark:text-blue-400" />
             Users & Team Assignments
           </h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-50 dark:bg-neutral-700/50 border-b border-slate-200 dark:border-neutral-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">Team</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Team</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-neutral-700">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{user.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{user.email}</td>
+                <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50">
+                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">{user.name}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user.email}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex rounded-full px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800">
+                    <span className="inline-flex rounded-full px-2 py-1 text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{user.team?.name || "-"}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user.team?.name || "-"}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => {
                         setEditingUser(user);
                         setShowUserModal(true);
                       }}
-                      className="text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                     >
                       Edit
                     </button>
@@ -275,10 +275,10 @@ export default function TeamsManagementPage() {
 
       {/* Team Modal */}
       {showTeamModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
                 {editingTeam ? "Edit Team" : "Create Team"}
               </h3>
               <button
@@ -286,7 +286,7 @@ export default function TeamsManagementPage() {
                   setShowTeamModal(false);
                   setEditingTeam(null);
                 }}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
               >
                 <X size={20} />
               </button>
@@ -294,7 +294,7 @@ export default function TeamsManagementPage() {
 
             <form onSubmit={editingTeam ? handleUpdateTeam : handleCreateTeam} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
                   Team Name *
                 </label>
                 <input
@@ -302,19 +302,19 @@ export default function TeamsManagementPage() {
                   name="name"
                   defaultValue={editingTeam?.name}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
                   Description
                 </label>
                 <textarea
                   name="description"
                   defaultValue={editingTeam?.description || ""}
                   rows={3}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 />
               </div>
 
@@ -345,16 +345,16 @@ export default function TeamsManagementPage() {
 
       {/* User Modal */}
       {showUserModal && editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Edit User</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Edit User</h3>
               <button
                 onClick={() => {
                   setShowUserModal(false);
                   setEditingUser(null);
                 }}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
               >
                 <X size={20} />
               </button>
@@ -362,34 +362,34 @@ export default function TeamsManagementPage() {
 
             <form onSubmit={handleUpdateUser} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Name *</label>
                 <input
                   type="text"
                   name="name"
                   defaultValue={editingUser.name}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Email *</label>
                 <input
                   type="email"
                   name="email"
                   defaultValue={editingUser.email}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Role *</label>
                 <select
                   name="role"
                   defaultValue={editingUser.role}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 >
                   <option value="Admin">Admin</option>
                   <option value="TeamLead">Team Lead</option>
@@ -399,11 +399,11 @@ export default function TeamsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Team</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Team</label>
                 <select
                   name="teamId"
                   defaultValue={editingUser.teamId || ""}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 >
                   <option value="">No Team</option>
                   {teams.map((team) => (

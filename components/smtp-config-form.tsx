@@ -158,7 +158,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-slate-500">Loading configuration...</div>
+        <div className="text-slate-500 dark:text-neutral-400">Loading configuration...</div>
       </div>
     );
   }
@@ -166,16 +166,16 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-3 flex items-start gap-3">
-          <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-          <span className="text-sm text-red-800">{error}</span>
+        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 flex items-start gap-3">
+          <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
+          <span className="text-sm text-red-800 dark:text-red-300">{error}</span>
         </div>
       )}
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="smtpHost" className="block text-sm font-medium text-slate-700 mb-1">
-            SMTP Host <span className="text-red-500">*</span>
+          <label htmlFor="smtpHost" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            SMTP Host <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -184,14 +184,14 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             required
             value={smtpHost}
             onChange={(e) => setSmtpHost(handleHostChange(e.target.value))}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="localhost or smtp://mail.example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="smtpPort" className="block text-sm font-medium text-slate-700 mb-1">
-            SMTP Port <span className="text-red-500">*</span>
+          <label htmlFor="smtpPort" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            SMTP Port <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -202,9 +202,9 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             max="65535"
             value={smtpPort}
             onChange={(e) => setSmtpPort(parseInt(e.target.value, 10) || 25)}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             {smtpSecure
               ? '587 (SMTP with STARTTLS) or 465 (SMTPS recommended)'
               : '25 (SMTP) or 587 (SMTP with STARTTLS)'}
@@ -212,8 +212,8 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
         </div>
 
         <div>
-          <label htmlFor="smtpFrom" className="block text-sm font-medium text-slate-700 mb-1">
-            From Email Address <span className="text-red-500">*</span>
+          <label htmlFor="smtpFrom" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            From Email Address <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="email"
@@ -222,7 +222,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             required
             value={smtpFrom}
             onChange={(e) => setSmtpFrom(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="no-reply@local"
           />
         </div>
@@ -236,14 +236,14 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
               checked={smtpSecure}
               onChange={(e) => setSmtpSecure(e.target.checked)}
             />
-            <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
+            <span className="text-sm font-medium text-slate-700 dark:text-neutral-300 whitespace-nowrap">
               Use secure connection (TLS/SSL)
             </span>
           </label>
         </div>
 
         <div>
-          <label htmlFor="smtpUser" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="smtpUser" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
             SMTP Username (optional)
           </label>
           <input
@@ -252,14 +252,14 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             name="smtpUser"
             value={smtpUser}
             onChange={(e) => setSmtpUser(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="Leave empty for no authentication"
           />
         </div>
 
         <div>
-          <label htmlFor="smtpPassword" className="block text-sm font-medium text-slate-700 mb-1">
-            SMTP Password {smtpUser ? <span className="text-red-500">*</span> : '(optional)'}
+          <label htmlFor="smtpPassword" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            SMTP Password {smtpUser ? <span className="text-red-500 dark:text-red-400">*</span> : <span className="text-slate-500 dark:text-neutral-400">(optional)</span>}
           </label>
           <div className="relative">
             <input
@@ -269,18 +269,18 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
               required={!!smtpUser}
               value={smtpPassword}
               onChange={(e) => setSmtpPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
               placeholder={smtpUser ? 'Enter password' : 'Leave empty to keep current password'}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-300"
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             {smtpUser
               ? 'Password is required when username is set'
               : 'Leave empty to keep current password unchanged'}
@@ -288,7 +288,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-neutral-700">
         {onCancel && (
           <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel

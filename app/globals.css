@@ -1,71 +1,115 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222.2 84% 4.9%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222.2 84% 4.9%);
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222.2 84% 4.9%);
-  --color-primary: hsl(222.2 47.4% 11.2%);
-  --color-primary-foreground: hsl(210 40% 98%);
-  --color-secondary: hsl(210 40% 96.1%);
-  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
-  --color-muted: hsl(210 40% 96.1%);
-  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
-  --color-accent: hsl(210 40% 96.1%);
-  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(214.3 31.8% 91.4%);
-  --color-input: hsl(214.3 31.8% 91.4%);
-  --color-ring: hsl(222.2 84% 4.9%);
-  --radius: 0.5rem;
-  
-  /* Primary color scale */
-  --color-primary-50: 222.2 47.4% 95%;
-  --color-primary-100: 222.2 47.4% 90%;
-  --color-primary-200: 222.2 47.4% 80%;
-  --color-primary-300: 222.2 47.4% 70%;
-  --color-primary-400: 222.2 47.4% 60%;
-  --color-primary-500: 222.2 47.4% 50%;
-  --color-primary-600: 222.2 47.4% 40%;
-  --color-primary-700: 222.2 47.4% 30%;
-  --color-primary-800: 222.2 47.4% 20%;
-  --color-primary-900: 222.2 47.4% 11.2%;
-  
-  /* Semantic colors */
-  --color-success: 142 76% 36%;
-  --color-warning: 38 92% 50%;
-  
-  /* Legacy HSL variables for backward compatibility */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-}
-
 @layer base {
+  :root {
+    --color-background: hsl(0 0% 100%);
+    --color-foreground: hsl(222.2 84% 4.9%);
+    --color-card: hsl(0 0% 100%);
+    --color-card-foreground: hsl(222.2 84% 4.9%);
+    --color-popover: hsl(0 0% 100%);
+    --color-popover-foreground: hsl(222.2 84% 4.9%);
+    --color-primary: hsl(222.2 47.4% 11.2%);
+    --color-primary-foreground: hsl(210 40% 98%);
+    --color-secondary: hsl(210 40% 96.1%);
+    --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+    --color-muted: hsl(210 40% 96.1%);
+    --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+    --color-accent: hsl(210 40% 96.1%);
+    --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+    --color-destructive: hsl(0 84.2% 60.2%);
+    --color-destructive-foreground: hsl(210 40% 98%);
+    --color-border: hsl(214.3 31.8% 91.4%);
+    --color-input: hsl(214.3 31.8% 91.4%);
+    --color-ring: hsl(222.2 84% 4.9%);
+    --radius: 0.5rem;
+    
+    /* Primary color scale */
+    --color-primary-50: 222.2 47.4% 95%;
+    --color-primary-100: 222.2 47.4% 90%;
+    --color-primary-200: 222.2 47.4% 80%;
+    --color-primary-300: 222.2 47.4% 70%;
+    --color-primary-400: 222.2 47.4% 60%;
+    --color-primary-500: 222.2 47.4% 50%;
+    --color-primary-600: 222.2 47.4% 40%;
+    --color-primary-700: 222.2 47.4% 30%;
+    --color-primary-800: 222.2 47.4% 20%;
+    --color-primary-900: 222.2 47.4% 11.2%;
+    
+    /* Semantic colors */
+    --color-success: 142 76% 36%;
+    --color-warning: 38 92% 50%;
+    
+    /* Legacy HSL variables for backward compatibility */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --color-background: hsl(222.2 47.4% 11.2%);
+    --color-foreground: hsl(210 40% 98%);
+    --color-card: hsl(222.2 47.4% 15%);
+    --color-card-foreground: hsl(210 40% 98%);
+    --color-popover: hsl(222.2 47.4% 15%);
+    --color-popover-foreground: hsl(210 40% 98%);
+    --color-primary: hsl(210 40% 98%);
+    --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+    --color-secondary: hsl(217.2 32.6% 17.5%);
+    --color-secondary-foreground: hsl(210 40% 98%);
+    --color-muted: hsl(217.2 32.6% 17.5%);
+    --color-muted-foreground: hsl(215 20.2% 65.1%);
+    --color-accent: hsl(217.2 32.6% 17.5%);
+    --color-accent-foreground: hsl(210 40% 98%);
+    --color-destructive: hsl(0 62.8% 30.6%);
+    --color-destructive-foreground: hsl(210 40% 98%);
+    --color-border: hsl(217.2 32.6% 17.5%);
+    --color-input: hsl(217.2 32.6% 17.5%);
+    --color-ring: hsl(212.7 26.8% 83.9%);
+    
+    /* Legacy HSL variables for backward compatibility */
+    --background: 222.2 47.4% 11.2%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 47.4% 15%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 47.4% 15%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
   * {
-    @apply border-border;
+    border-color: hsl(var(--color-border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
   }
 }
 
@@ -91,6 +135,21 @@
 .neu-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.dark .neu-button {
+  background-color: #2d2d2d;
+  box-shadow: inset 4px 4px 10px #1a1a1a, inset -4px -4px 10px #404040;
+  color: #d0d0d0;
+  border: 2px solid rgb(60, 60, 60);
+}
+
+.dark .neu-button:hover:not(:disabled) {
+  box-shadow: inset 2px 2px 5px #1a1a1a, inset -2px -2px 5px #404040, 2px 2px 5px #1a1a1a, -2px -2px 5px #404040;
+}
+
+.dark .neu-button:focus {
+  box-shadow: inset 2px 2px 5px #1a1a1a, inset -4px -4px 5px #404040, 2px 2px 5px #1a1a1a, -2px -2px 5px #404040;
 }
 
 /* Hide Next.js development overlay "N" tooltip */
@@ -146,5 +205,13 @@ button[data-nextjs-toast],
   stroke-dasharray: 70.5096664428711 9999999;
   stroke-dashoffset: -262.2723388671875;
   stroke: rgb(59, 130, 246);
+}
+
+.dark .container svg .path {
+  stroke: rgb(148, 163, 184);
+}
+
+.dark .container input[type="checkbox"]:checked ~ svg .path {
+  stroke: rgb(96, 165, 250);
 }
 
