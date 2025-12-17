@@ -13,6 +13,25 @@ interface StatusChangeButtonsProps {
 export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: StatusChangeButtonsProps) {
   const [changingStatus, setChangingStatus] = useState<TaskStatus | null>(null);
 
+  const getStatusTextColorClass = (status: TaskStatus) => {
+    switch (status) {
+      case TaskStatus.Open:
+        return 'text-blue-800';
+      case TaskStatus.InProgress:
+        return 'text-purple-800';
+      case TaskStatus.PendingVendor:
+        return 'text-amber-800';
+      case TaskStatus.PendingUser:
+        return 'text-orange-800';
+      case TaskStatus.Resolved:
+        return 'text-green-800';
+      case TaskStatus.Closed:
+        return 'text-slate-800';
+      default:
+        return 'text-slate-800';
+    }
+  };
+
   const handleStatusChange = async (status: TaskStatus) => {
     setChangingStatus(status);
     const formData = new FormData();
@@ -45,7 +64,7 @@ export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: Sta
               handleStatusChange(status);
             }}
           >
-            {status}
+            <span className={getStatusTextColorClass(status)}>{status}</span>
           </Button>
         </form>
       ))}
