@@ -499,7 +499,8 @@ export default async function TaskDetail({
                             <input type="hidden" name="commentId" value={comment.id} />
                             <button
                               type="submit"
-                              className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-100 hover:text-red-700"
+                              className="neu-button inline-flex items-center justify-center gap-1 text-xs font-medium"
+                              style={{ fontSize: '12px', padding: '4px 10px' }}
                               aria-label="Delete comment"
                             >
                               <Trash2 size={14} className="shrink-0" />

@@ -118,7 +118,8 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
+          className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+          style={{ fontSize: '14px', padding: '10px 20px' }}
         >
           <Plus size={18} />
           Create Recurring Task
@@ -132,7 +133,8 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
           <p className="text-slate-500 mb-6">Get started by creating your first recurring task configuration</p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+            style={{ fontSize: '14px', padding: '10px 20px' }}
           >
             <Plus size={18} />
             Create Your First Recurring Task
@@ -445,14 +447,16 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                 setIsDeleteModalOpen(false);
                 setSelectedConfig(null);
               }}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              className="neu-button inline-flex items-center justify-center text-sm font-medium"
+              style={{ fontSize: '14px', padding: '8px 20px' }}
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              className="neu-button inline-flex items-center justify-center text-sm font-medium disabled:opacity-50"
+              style={{ fontSize: '14px', padding: '8px 20px' }}
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </button>

@@ -207,7 +207,8 @@ function AttachmentUploader({ taskId, onUploadSuccess }: { taskId: string; onUpl
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="neu-button inline-flex items-center justify-center gap-1.5 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ fontSize: '12px', padding: '6px 12px' }}
       >
         <Paperclip size={14} />
         {isUploading ? 'Uploading...' : 'Add'}

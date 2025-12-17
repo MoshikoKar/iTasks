@@ -52,6 +52,7 @@ export function TasksPageWrapper({ tasks, currentUser, users, showFilters = true
           variant="primary"
           onClick={() => setIsCreateModalOpen(true)}
           className="gap-2"
+          style={{ padding: '10px 20px' }}
         >
           <Plus size={20} />
           Create Task

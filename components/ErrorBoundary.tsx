@@ -57,7 +57,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             )}
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+              className="neu-button mt-4 inline-flex items-center justify-center gap-2 text-sm font-medium"
+              style={{ fontSize: '14px', padding: '8px 20px' }}
             >
               Refresh Page
             </button>

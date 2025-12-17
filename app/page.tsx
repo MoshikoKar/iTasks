@@ -217,7 +217,8 @@ export default function DashboardPage() {
                 <p className="text-sm text-slate-600 font-medium mb-3">No open tasks!</p>
                 <Link 
                   href="/tasks?create=1" 
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                  className="neu-button inline-flex items-center justify-center gap-2 text-xs font-medium"
+                  style={{ fontSize: '12px', padding: '6px 16px' }}
                 >
                   Create Your First Task
                 </Link>

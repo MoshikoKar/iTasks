@@ -12,30 +12,22 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, variant = 'primary', size = 'md', isLoading, className, disabled, ...props }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed';
-
-    const variantClasses = {
-      primary: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-md hover:shadow-lg',
-      secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500 shadow-sm hover:shadow-md',
-      danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-md hover:shadow-lg',
-      ghost: 'text-slate-700 hover:bg-slate-100 focus:ring-slate-500',
-    };
-
-    const sizeClasses = {
-      sm: 'px-3 py-1.5 text-sm min-h-[36px]',
-      md: 'px-4 py-2 text-base min-h-[44px]',
-      lg: 'px-6 py-3 text-lg min-h-[52px]',
+    const sizeStyles = {
+      sm: { fontSize: '14px', padding: '6px 16px' },
+      md: { fontSize: '16px', padding: '10px 30px' },
+      lg: { fontSize: '18px', padding: '15px 40px' },
     };
 
     return (
       <motion.button
         ref={ref}
-        className={clsx(baseClasses, variantClasses[variant], sizeClasses[size], className)}
+        className={clsx('neu-button inline-flex items-center justify-center font-medium', className)}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         whileHover={{ scale: disabled || isLoading ? 1 : 1.02 }}
         whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
         transition={{ duration: 0.1 }}
+        style={sizeStyles[size]}
         {...props}
       >
         {isLoading ? (

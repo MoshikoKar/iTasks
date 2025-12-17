@@ -5,6 +5,7 @@ import { Role } from '@prisma/client';
 import { UserPlus, Edit2, Trash2, Settings, Mail, Activity, Building2, Plus, X, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
+import { Pagination } from './pagination';
 import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
 
@@ -295,6 +296,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               setIsTeamModalOpen(true);
             }}
             className="gap-2"
+            style={{ padding: '10px 20px' }}
           >
             <Plus size={18} />
             Create Team
@@ -354,7 +356,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Users</h2>
-          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2">
+          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
           </Button>
@@ -533,33 +535,12 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                 <span className="font-semibold">{filteredActivity.length}</span>{' '}
                 activities
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => handleActivityPageChange(activityPage - 1)}
-                  disabled={activityPage <= 1}
-                  className="h-7 px-2 text-xs"
-                >
-                  Prev
-                </Button>
-                <span className="text-slate-500">
-                  Page{' '}
-                  <span className="font-semibold text-slate-800">
-                    {activityPage}
-                  </span>{' '}
-                  of{' '}
-                  <span className="font-semibold text-slate-800">
-                    {totalActivityPages}
-                  </span>
-                </span>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleActivityPageChange(activityPage + 1)}
-                  disabled={activityPage >= totalActivityPages}
-                  className="h-7 px-2 text-xs"
-                >
-                  Next
-                </Button>
+              <div className="flex items-center justify-end">
+                <Pagination
+                  currentPage={activityPage}
+                  totalPages={totalActivityPages}
+                  onPageChange={handleActivityPageChange}
+                />
               </div>
             </div>
           </div>

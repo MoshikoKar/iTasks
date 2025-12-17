@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Activity } from 'lucide-react';
-import { Button } from './button';
+import { Pagination } from './pagination';
 import { formatDateTimeStable } from '@/lib/utils/date';
 
 interface RecentActivity {
@@ -198,33 +198,12 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
                 <span className="font-semibold">{filteredActivity.length}</span>{' '}
                 activities
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => handleActivityPageChange(activityPage - 1)}
-                  disabled={activityPage <= 1}
-                  className="h-7 px-2 text-xs"
-                >
-                  Prev
-                </Button>
-                <span className="text-slate-500">
-                  Page{' '}
-                  <span className="font-semibold text-slate-800">
-                    {activityPage}
-                  </span>{' '}
-                  of{' '}
-                  <span className="font-semibold text-slate-800">
-                    {totalActivityPages}
-                  </span>
-                </span>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleActivityPageChange(activityPage + 1)}
-                  disabled={activityPage >= totalActivityPages}
-                  className="h-7 px-2 text-xs"
-                >
-                  Next
-                </Button>
+              <div className="flex items-center justify-end">
+                <Pagination
+                  currentPage={activityPage}
+                  totalPages={totalActivityPages}
+                  onPageChange={handleActivityPageChange}
+                />
               </div>
             </div>
           </div>

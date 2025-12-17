@@ -245,7 +245,8 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+              className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+              style={{ fontSize: '14px', padding: '8px 20px' }}
             >
               <Paperclip size={16} />
               Add Files
@@ -263,7 +264,8 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                      className="neu-button ml-2 inline-flex items-center justify-center"
+                      style={{ fontSize: '12px', padding: '4px 8px', minWidth: 'auto' }}
                     >
                       <X size={14} />
                     </button>

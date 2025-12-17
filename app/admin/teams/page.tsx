@@ -180,7 +180,8 @@ export default function TeamsManagementPage() {
               setEditingTeam(null);
               setShowTeamModal(true);
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+            style={{ fontSize: '14px', padding: '6px 12px' }}
           >
             <Plus size={16} />
             Create Team
@@ -320,7 +321,8 @@ export default function TeamsManagementPage() {
               <div className="flex gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
                 >
                   {editingTeam ? "Update" : "Create"}
                 </button>
@@ -330,7 +332,8 @@ export default function TeamsManagementPage() {
                     setShowTeamModal(false);
                     setEditingTeam(null);
                   }}
-                  className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
                 >
                   Cancel
                 </button>
@@ -414,7 +417,8 @@ export default function TeamsManagementPage() {
               <div className="flex gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
                 >
                   Update
                 </button>
@@ -424,7 +428,8 @@ export default function TeamsManagementPage() {
                     setShowUserModal(false);
                     setEditingUser(null);
                   }}
-                  className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
                 >
                   Cancel
                 </button>

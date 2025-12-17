@@ -208,8 +208,9 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
               setIsTeamModalOpen(true);
             }}
             className="gap-2"
+            style={{ padding: '10px 20px' }}
           >
-            <Plus size={18} />
+            <Plus size={16} />
             Create Team
           </Button>
         </div>
@@ -267,7 +268,7 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
       <section className="rounded-xl border bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Users</h2>
-          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2">
+          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
           </Button>

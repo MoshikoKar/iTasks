@@ -86,7 +86,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-70"
+            className="neu-button w-full inline-flex items-center justify-center text-sm font-medium disabled:opacity-70"
+            style={{ fontSize: '14px', padding: '10px 30px' }}
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

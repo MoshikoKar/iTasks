@@ -95,7 +95,8 @@ export function TaskAssignment({
             </div>
             <button
               onClick={() => setIsChangingAssignee(true)}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              className="neu-button inline-flex items-center justify-center text-sm font-medium"
+              style={{ fontSize: '14px', padding: '8px 20px' }}
             >
               Change
             </button>
@@ -112,7 +113,8 @@ export function TaskAssignment({
                 <button
                   onClick={() => setIsChangingAssignee(false)}
                   disabled={loading}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                  className="neu-button inline-flex items-center justify-center text-sm font-medium disabled:opacity-50"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
                 >
                   Cancel
                 </button>
@@ -143,9 +145,10 @@ export function TaskAssignment({
                   type="button"
                   onClick={() => handleRemoveTechnician(tech.id)}
                   disabled={changingTechnicianId === tech.id}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-colors disabled:opacity-60"
+                  className="neu-button inline-flex items-center gap-2 text-xs font-medium disabled:opacity-60"
+                  style={{ fontSize: '12px', padding: '4px 12px' }}
                 >
-                  <span className="font-medium">{tech.name}</span>
+                  <span>{tech.name}</span>
                   <span className="text-[10px] uppercase tracking-wide text-slate-400">
                     Remove
                   </span>

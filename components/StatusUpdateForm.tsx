@@ -148,7 +148,8 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 rounded-md hover:bg-slate-50 hover:border-slate-300 transition-colors"
+              className="neu-button inline-flex items-center justify-center gap-1.5 text-xs font-medium"
+              style={{ fontSize: '12px', padding: '6px 12px' }}
             >
               <Paperclip size={14} />
               {selectedFiles.length > 0 ? 'Add More' : 'Attach Files'}
@@ -166,7 +167,8 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="ml-2 p-0.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="neu-button ml-2 inline-flex items-center justify-center"
+                      style={{ fontSize: '10px', padding: '2px 6px', minWidth: 'auto' }}
                     >
                       <X size={12} />
                     </button>
