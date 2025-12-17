@@ -14,6 +14,8 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Users,
+  FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -34,6 +36,9 @@ const subItems: Array<{
   parent: string;
 }> = [
   { href: "/tasks/my", label: "My Tasks", icon: CheckSquare, roles: [Role.Admin, Role.TeamLead, Role.Technician], parent: "/tasks" },
+  { href: "/admin/users", label: "Users & Teams", icon: Users, roles: [Role.Admin], parent: "/admin" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, roles: [Role.Admin], parent: "/admin" },
+  { href: "/admin/logs", label: "Logs", icon: FileText, roles: [Role.Admin], parent: "/admin" },
 ];
 
 export function Sidebar({ userRole, userName }: { userRole: Role; userName: string }) {
