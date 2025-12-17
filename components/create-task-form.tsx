@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './button';
 import { TaskPriority, User } from '@prisma/client';
+import { Paperclip, X } from 'lucide-react';
 
 interface CreateTaskFormProps {
   currentUserId: string;
@@ -16,6 +17,8 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Fetch existing branches for autocomplete
@@ -61,6 +64,28 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         throw new Error('Failed to create task');
       }
 
+      const task = await response.json();
+
+      // Upload files if any
+      if (selectedFiles.length > 0 && task.id) {
+        const uploadPromises = selectedFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('taskId', task.id);
+          formData.append('file', file);
+          
+          const uploadResponse = await fetch('/api/attachments', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload ${file.name}`);
+          }
+        });
+
+        await Promise.all(uploadPromises);
+      }
+
       router.refresh();
       onSuccess?.();
     } catch (err) {
@@ -68,6 +93,15 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -191,6 +225,52 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
               name="slaDeadline"
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
+          </div>
+        </div>
+
+        {/* File Attachments */}
+        <div className="pt-4 border-t border-slate-200">
+          <label htmlFor="files" className="block text-sm font-medium text-slate-700 mb-2">
+            Attachments (Optional)
+          </label>
+          <div className="space-y-2">
+            <input
+              type="file"
+              id="files"
+              ref={fileInputRef}
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              <Paperclip size={16} />
+              Add Files
+            </button>
+            {selectedFiles.length > 0 && (
+              <div className="space-y-1 mt-2">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200"
+                  >
+                    <span className="text-sm text-slate-700 truncate flex-1">
+                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

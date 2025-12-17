@@ -98,10 +98,14 @@ export function DonutChart({ data }: DonutChartProps) {
   };
 
   return (
-    <div className="w-full h-64 flex items-center justify-center gap-8">
+    <div className="w-full h-64 grid grid-cols-[auto_1fr] items-center gap-4">
       {/* Donut Chart SVG */}
-      <div className="relative">
-        <svg width="240" height="240" viewBox="0 0 240 240">
+      <div className="flex items-center justify-center max-w-[180px] w-full aspect-square">
+        <svg 
+          viewBox="0 0 240 240"
+          className="w-full h-full"
+          preserveAspectRatio="xMidYMid meet"
+        >
           {segments.map((segment, index) => (
             <g key={segment.priority}>
               <path
@@ -141,15 +145,21 @@ export function DonutChart({ data }: DonutChartProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-full min-w-0">
         {data.map((item) => (
-          <div key={item.priority} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-sm ${priorityColors[item.priority].bg}`}></div>
-            <span className="text-sm text-slate-700 min-w-[60px]">{item.priority}</span>
-            <span className="text-sm font-semibold text-slate-900">{item.count}</span>
-            <span className="text-xs text-slate-500">
-              ({((item.count / total) * 100).toFixed(0)}%)
-            </span>
+          <div key={item.priority} className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 w-full min-w-0">
+            {/* Left group: color dot + priority label */}
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-sm flex-shrink-0 ${priorityColors[item.priority].bg}`}></div>
+              <span className="text-sm text-slate-700 whitespace-nowrap">{item.priority}</span>
+            </div>
+            {/* Right group: count + percentage */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-semibold text-slate-900">{item.count}</span>
+              <span className="text-xs text-slate-500">
+                ({((item.count / total) * 100).toFixed(0)}%)
+              </span>
+            </div>
           </div>
         ))}
       </div>

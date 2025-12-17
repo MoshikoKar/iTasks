@@ -235,29 +235,51 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
     setActivityPage(1);
   };
 
+  const sortedStats = useMemo(() => {
+    const roleOrder: Record<Role, number> = {
+      Admin: 1,
+      TeamLead: 2,
+      Technician: 3,
+      Viewer: 4,
+    };
+
+    return [...stats].sort((a, b) => {
+      const orderA = roleOrder[a.role];
+      const orderB = roleOrder[b.role];
+      
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      
+      return a.role.localeCompare(b.role);
+    });
+  }, [stats]);
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-slate-900">Admin Settings</h1>
 
-      {/* User Statistics */}
-      <section className="rounded-xl border bg-gradient-to-br from-white to-slate-50 p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <UserPlus size={20} className="text-blue-600" />
-          User Statistics
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.role} className="rounded-lg bg-white border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-sm font-medium text-slate-600">{stat.role}</div>
-              <div className="text-3xl font-bold text-slate-900 mt-1">{stat._count}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* User Statistics and Teams Management - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* User Statistics */}
+        <section className="rounded-xl border bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <UserPlus size={20} className="text-blue-600" />
+            User Statistics
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-4">
+            {sortedStats.map((stat) => (
+              <div key={stat.role} className="rounded-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-slate-600">{stat.role}</div>
+                <div className="text-3xl font-bold text-slate-900 mt-1">{stat._count}</div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* Teams Management */}
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
+        {/* Teams Management */}
+        <section className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <Building2 size={20} className="text-blue-600" />
             Teams / Departments
@@ -274,7 +296,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             Create Team
           </Button>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {teams.length === 0 ? (
             <div className="col-span-full text-center py-8 text-slate-500">
               No teams created yet. Create your first team to organize users.
@@ -283,7 +305,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             teams.map((team) => (
               <div
                 key={team.id}
-                className="rounded-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 hover:shadow-md transition-shadow"
+                className="rounded-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
@@ -322,6 +344,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
           )}
         </div>
       </section>
+      </div>
 
       {/* Users Table */}
       <section className="rounded-xl border bg-white p-6 shadow-sm">

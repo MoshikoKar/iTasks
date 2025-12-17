@@ -341,7 +341,9 @@ export default function DashboardPage() {
               Tasks by Priority
             </h2>
           </div>
-          <DonutChart data={stats.priorityDistribution} />
+          <div className="w-full">
+            <DonutChart data={stats.priorityDistribution} />
+          </div>
         </section>
 
         {/* Tasks by Branch */}
