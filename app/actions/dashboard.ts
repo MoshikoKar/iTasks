@@ -43,42 +43,6 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
   }
 }
 
-/**
- * Helper function to build audit log filter based on user role (RBAC)
- */
-function buildAuditLogFilter(user: { id: string; role: Role; teamId: string | null }) {
-  switch (user.role) {
-    case Role.Admin:
-      return {};
-
-    case Role.TeamLead:
-      if (user.teamId) {
-        return {
-          OR: [
-            { task: { assignee: { teamId: user.teamId } } },
-            { task: { assigneeId: user.id } },
-            { task: { creatorId: user.id } },
-          ],
-        };
-      }
-      return {
-        OR: [
-          { task: { assigneeId: user.id } },
-          { task: { creatorId: user.id } },
-        ],
-      };
-
-    case Role.Technician:
-    case Role.Viewer:
-    default:
-      return {
-        OR: [
-          { task: { assigneeId: user.id } },
-          { task: { creatorId: user.id } },
-        ],
-      };
-  }
-}
 
 export async function getDashboardStats(userId: string) {
   const now = new Date();
@@ -122,12 +86,15 @@ export async function getDashboardStats(userId: string) {
   ]);
 
   // My Day - Always personal (user's own tasks)
+  // Shows: tasks due today, overdue tasks, or open tasks with no due date
   const myDay = await db.task.findMany({
     where: {
       assigneeId: userId,
+      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
       OR: [
         { dueDate: { gte: startOfDay, lte: endOfDay } },
-        { dueDate: { lt: now }, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
+        { dueDate: { lt: now } },
+        { dueDate: null },
       ],
     },
     orderBy: { dueDate: "asc" },
@@ -180,7 +147,7 @@ export async function getDashboardStats(userId: string) {
     ).length;
 
     return {
-      date: dayStart.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      date: dayStart.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "Asia/Jerusalem" }),
       count,
     };
   });
@@ -222,6 +189,33 @@ export async function getDashboardStats(userId: string) {
     count,
   })).sort((a, b) => b.count - a.count);
 
+  // Tasks per User/Technician Distribution with RBAC
+  const tasksPerUser = await db.task.groupBy({
+    by: ['assigneeId'],
+    where: {
+      ...taskFilter,
+      status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
+    },
+    _count: { assigneeId: true },
+  });
+
+  const userIds = tasksPerUser
+    .map(t => t.assigneeId)
+    .filter((id): id is string => id !== null);
+  const users = await db.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, name: true },
+  });
+
+  const userMap = new Map(users.map(u => [u.id, u.name]));
+  const userDistribution = tasksPerUser
+    .filter(({ assigneeId }) => assigneeId !== null)
+    .map(({ assigneeId, _count }) => ({
+      user: userMap.get(assigneeId!) || 'Unassigned',
+      count: _count.assigneeId,
+    }))
+    .sort((a, b) => b.count - a.count);
+
   // Stale Tasks (no updates > 7 days) with RBAC
   const staleTasks = await db.task.findMany({
     where: {
@@ -237,18 +231,6 @@ export async function getDashboardStats(userId: string) {
     },
   });
 
-  // Recent Activity (Audit Logs) with RBAC
-  const auditLogFilter = buildAuditLogFilter(currentUser);
-  const recentActivity = await db.auditLog.findMany({
-    where: auditLogFilter,
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    include: {
-      actor: { select: { id: true, name: true } },
-      task: { select: { id: true, title: true } },
-    },
-  });
-
   return {
     open,
     overdue,
@@ -259,7 +241,8 @@ export async function getDashboardStats(userId: string) {
     weeklyVolume,
     priorityDistribution,
     branchDistribution,
+    userDistribution,
     staleTasks,
-    recentActivity,
   };
 }
+

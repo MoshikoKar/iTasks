@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { TaskPriority, Role } from "@prisma/client";
 import parser from "cron-parser";
 import { requireAuth } from "@/lib/auth";
+import { logRecurringTaskCreated } from "@/lib/logging/system-logger";
 
 export const runtime = "nodejs";
 
@@ -74,6 +75,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Log recurring task creation
+    await logRecurringTaskCreated(
+      config.id,
+      config.name,
+      currentUserWithTeam.id,
+      {
+        cron: config.cron,
+        priority: config.templatePriority,
+        assigneeId: config.templateAssigneeId,
+      }
+    );
+
     return NextResponse.json(config, { status: 201 });
   } catch (error) {
     console.error("Error creating recurring task config:", error);
@@ -90,7 +103,7 @@ export async function POST(request: NextRequest) {
 function computeNextGeneration(cron: string): Date {
   try {
     const interval = parser.parse(cron, {
-      tz: 'UTC',
+      tz: 'Asia/Jerusalem',
       currentDate: new Date(),
     });
     return interval.next().toDate();

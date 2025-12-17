@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { TaskType, TaskStatus } from "@prisma/client";
 import { sendMail } from "@/lib/smtp";
 import parser from "cron-parser";
+import { logRecurringTaskGenerated } from "@/lib/logging/system-logger";
 
 export async function generateRecurringTasks() {
   const now = new Date();
@@ -55,6 +56,20 @@ export async function generateRecurringTasks() {
         },
       });
 
+      // Log recurring task generation (persists even if task is deleted)
+      await logRecurringTaskGenerated(
+        config.id,
+        config.name,
+        task.id,
+        task.title,
+        config.templateAssigneeId,
+        false, // automatic generation
+        {
+          cron: config.cron,
+          priority: task.priority,
+        }
+      );
+
       const next = computeNext(config.cron, now);
       await db.recurringTaskConfig.update({
         where: { id: config.id },
@@ -102,7 +117,7 @@ export async function generateRecurringTasks() {
 function computeNext(cron: string, from: Date): Date {
   try {
     const interval = parser.parse(cron, {
-      tz: 'UTC',
+      tz: 'Asia/Jerusalem',
       currentDate: from,
     });
     const nextDate = interval.next().toDate();

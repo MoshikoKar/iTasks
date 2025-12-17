@@ -3,6 +3,7 @@ import { TaskStatus, TaskPriority, Role } from "@prisma/client";
 import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { formatDateTime } from "@/lib/utils/date";
 
 export default async function SLAPage() {
   try {
@@ -113,10 +114,10 @@ export default async function SLAPage() {
                             {task.context?.serverName || task.context?.application || "-"}
                           </td>
                           <td className={`px-4 py-2 ${isOverdue ? "font-semibold text-red-600" : ""}`}>
-                            {task.dueDate?.toLocaleString() || "-"}
+                            {task.dueDate ? formatDateTime(task.dueDate) : "-"}
                           </td>
                           <td className="px-4 py-2">
-                            {task.slaDeadline?.toLocaleString() || "-"}
+                            {task.slaDeadline ? formatDateTime(task.slaDeadline) : "-"}
                           </td>
                           <td className={`px-4 py-2 font-semibold ${isOverdue ? "text-red-600" : hoursRemaining && hoursRemaining < 24 ? "text-amber-600" : ""}`}>
                             {isOverdue ? "OVERDUE" : hoursRemaining !== null ? `${hoursRemaining}h` : "-"}

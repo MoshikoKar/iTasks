@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 import crypto from "crypto";
+import { logUserCreated } from "@/lib/logging/system-logger";
 
 export const runtime = "nodejs";
 
@@ -132,6 +133,17 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Log user creation
+    await logUserCreated(
+      user.id,
+      user.name,
+      user.email,
+      currentUser.id,
+      user.role,
+      user.teamId,
+      user.team?.name || null
+    );
 
     return NextResponse.json(
       {

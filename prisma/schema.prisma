@@ -56,6 +56,7 @@ model User {
   comments     Comment[]
   attachments  Attachment[]
   auditLogs    AuditLog[]
+  systemLogs   SystemLog[]
   mentions     Mention[] @relation("UserMentions")
 }
 
@@ -85,6 +86,7 @@ model Task {
   comments       Comment[]
   attachments    Attachment[]
   auditLogs      AuditLog[]
+  systemLogs     SystemLog[]
   subscribers    User[]            @relation("TaskSubscribers")
   incident       Incident?
 
@@ -199,6 +201,57 @@ model AuditLog {
   @@index([taskId])
   @@index([actorId])
   @@index([createdAt])
+}
+
+enum LogEntityType {
+  Task
+  Comment
+  Attachment
+  RecurringTask
+  User
+  Team
+  System
+}
+
+enum LogActionType {
+  Create
+  Update
+  Delete
+  Assign
+  StatusChange
+  PriorityChange
+  Comment
+  Attachment
+  Generate
+  Login
+  Logout
+  PermissionChange
+}
+
+model SystemLog {
+  id          String         @id @default(uuid())
+  entityType  LogEntityType
+  actionType  LogActionType
+  actorId     String
+  entityId    String?
+  taskId      String?
+  taskTitle   String?
+  description String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime       @default(now())
+  actor       User           @relation(fields: [actorId], references: [id])
+  task        Task?          @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([entityType])
+  @@index([actionType])
+  @@index([actorId])
+  @@index([taskId])
+  @@index([entityId])
+  @@index([createdAt])
+  @@index([entityType, actionType])
+  @@index([createdAt, entityType])
 }
 
 model SystemConfig {

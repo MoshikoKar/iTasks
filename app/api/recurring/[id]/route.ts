@@ -3,6 +3,10 @@ import { db } from "@/lib/db";
 import { TaskPriority, Role } from "@prisma/client";
 import parser from "cron-parser";
 import { requireAuth } from "@/lib/auth";
+import {
+  logRecurringTaskUpdated,
+  logRecurringTaskDeleted,
+} from "@/lib/logging/system-logger";
 
 export const runtime = "nodejs";
 
@@ -68,7 +72,19 @@ export async function PUT(
     // Check if config exists and user has permission to edit
     const existingConfig = await db.recurringTaskConfig.findUnique({
       where: { id },
-      select: { creatorId: true },
+      select: {
+        creatorId: true,
+        name: true,
+        cron: true,
+        templateTitle: true,
+        templateDescription: true,
+        templatePriority: true,
+        templateAssigneeId: true,
+        templateBranch: true,
+        templateServerName: true,
+        templateApplication: true,
+        templateIpAddress: true,
+      },
     });
 
     if (!existingConfig) {
@@ -129,6 +145,34 @@ export async function PUT(
       },
     });
 
+    // Track changes for logging
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+    if (body.name !== undefined && existingConfig.name !== config.name) {
+      changes.name = { old: existingConfig.name, new: config.name };
+    }
+    if (body.cron !== undefined && existingConfig.cron !== config.cron) {
+      changes.cron = { old: existingConfig.cron, new: config.cron };
+    }
+    if (body.templateTitle !== undefined && existingConfig.templateTitle !== config.templateTitle) {
+      changes.templateTitle = { old: existingConfig.templateTitle, new: config.templateTitle };
+    }
+    if (body.templatePriority !== undefined && existingConfig.templatePriority !== config.templatePriority) {
+      changes.templatePriority = { old: existingConfig.templatePriority, new: config.templatePriority };
+    }
+    if (body.templateAssigneeId !== undefined && existingConfig.templateAssigneeId !== config.templateAssigneeId) {
+      changes.templateAssigneeId = { old: existingConfig.templateAssigneeId, new: config.templateAssigneeId };
+    }
+
+    // Log recurring task update
+    if (Object.keys(changes).length > 0) {
+      await logRecurringTaskUpdated(
+        config.id,
+        config.name,
+        currentUserWithTeam.id,
+        changes
+      );
+    }
+
     return NextResponse.json(config);
   } catch (error) {
     console.error("Error updating recurring task config:", error);
@@ -153,7 +197,7 @@ export async function DELETE(
     // Check if config exists and user has permission to delete
     const existingConfig = await db.recurringTaskConfig.findUnique({
       where: { id },
-      select: { creatorId: true },
+      select: { creatorId: true, name: true },
     });
 
     if (!existingConfig) {
@@ -164,6 +208,13 @@ export async function DELETE(
     if (existingConfig.creatorId !== currentUser.id && currentUser.role !== Role.Admin && currentUser.role !== Role.TeamLead) {
       return NextResponse.json({ error: "You don't have permission to delete this configuration" }, { status: 403 });
     }
+
+    // Log deletion before deleting
+    await logRecurringTaskDeleted(
+      id,
+      existingConfig.name,
+      currentUser.id
+    );
 
     await db.recurringTaskConfig.delete({
       where: { id },
@@ -182,7 +233,7 @@ export async function DELETE(
 function computeNextGeneration(cron: string): Date {
   try {
     const interval = parser.parse(cron, {
-      tz: 'UTC',
+      tz: 'Asia/Jerusalem',
       currentDate: new Date(),
     });
     return interval.next().toDate();

@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { TaskType, TaskStatus } from "@prisma/client";
 import { sendMail } from "@/lib/smtp";
 import parser from "cron-parser";
+import { requireAuth } from "@/lib/auth";
+import { logRecurringTaskGenerated } from "@/lib/logging/system-logger";
 
 export const runtime = "nodejs";
 
@@ -66,6 +68,29 @@ export async function POST(
       },
     });
 
+    // Get current user for logging (if authenticated, otherwise use system)
+    let actorId = config.templateAssigneeId;
+    try {
+      const currentUser = await requireAuth();
+      actorId = currentUser.id;
+    } catch {
+      // Not authenticated, use assignee as actor
+    }
+
+    // Log recurring task generation (persists even if task is deleted)
+    await logRecurringTaskGenerated(
+      config.id,
+      config.name,
+      task.id,
+      task.title,
+      actorId,
+      true, // manual generation
+      {
+        cron: config.cron,
+        priority: task.priority,
+      }
+    );
+
     // Update the config with last generated time and next generation time
     const next = computeNext(config.cron, now);
     await db.recurringTaskConfig.update({
@@ -128,7 +153,7 @@ export async function POST(
 function computeNext(cron: string, from: Date): Date {
   try {
     const interval = parser.parse(cron, {
-      tz: 'UTC',
+      tz: 'Asia/Jerusalem',
       currentDate: from,
     });
     return interval.next().toDate();

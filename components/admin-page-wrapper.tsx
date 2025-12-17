@@ -46,10 +46,15 @@ interface User {
 
 interface RecentActivity {
   id: string;
-  action: string;
+  type: 'audit' | 'system';
+  action: string; // Concise action (e.g., "delete", "create", "update")
+  description?: string; // Full description for system logs
+  actionType?: string;
+  entityType?: string;
   createdAt: Date;
   actor: { name: string } | null;
   task: { title: string } | null;
+  taskTitle?: string | null;
 }
 
 interface AdminPageWrapperProps {
@@ -186,13 +191,15 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
     if (query) {
       result = result.filter((log) => {
-        const taskTitle = log.task?.title?.toLowerCase() ?? '';
+        const taskTitle = log.task?.title?.toLowerCase() ?? log.taskTitle?.toLowerCase() ?? '';
         const actorName = log.actor?.name?.toLowerCase() ?? '';
         const action = log.action.toLowerCase();
+        const description = log.description?.toLowerCase() ?? '';
         return (
           taskTitle.includes(query) ||
           actorName.includes(query) ||
-          action.includes(query)
+          action.includes(query) ||
+          description.includes(query)
         );
       });
     }
@@ -211,7 +218,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
   const uniqueActions = useMemo(() => {
     const actions = new Set<string>();
-    recentActivity.forEach((log) => actions.add(log.action));
+    recentActivity.forEach((log) => {
+      // Use the concise action for filtering
+      actions.add(log.action);
+    });
     return Array.from(actions).sort();
   }, [recentActivity]);
 
@@ -438,10 +448,11 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               <table className="min-w-full text-xs">
                 <thead className="bg-slate-50">
                   <tr className="text-left text-slate-600">
-                    <th className="px-3 py-2 font-semibold w-[30%]">Task</th>
-                    <th className="px-3 py-2 font-semibold w-[20%]">User</th>
-                    <th className="px-3 py-2 font-semibold w-[20%]">Action</th>
-                    <th className="px-3 py-2 font-semibold w-[30%]">When</th>
+                    <th className="px-3 py-2 font-semibold w-[25%]">Task</th>
+                    <th className="px-3 py-2 font-semibold w-[15%]">User</th>
+                    <th className="px-3 py-2 font-semibold w-[15%]">Action</th>
+                    <th className="px-3 py-2 font-semibold w-[30%]">Description</th>
+                    <th className="px-3 py-2 font-semibold w-[15%]">When</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -453,15 +464,24 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                             <Activity size={14} className="text-blue-600" />
                           </div>
                           <span className="line-clamp-1 text-slate-900">
-                            {log.task?.title || 'Task'}
+                            {log.task?.title || log.taskTitle || 'Task'}
                           </span>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-slate-700">
                         {log.actor?.name || 'User'}
                       </td>
-                      <td className="px-3 py-2 text-blue-700">
-                        {log.action}
+                      <td className="px-3 py-2">
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800">
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-slate-600 text-xs">
+                        {log.description ? (
+                          <span className="line-clamp-2">{log.description}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">No description</span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-slate-600">
                         {formatDateTimeStable(log.createdAt)}

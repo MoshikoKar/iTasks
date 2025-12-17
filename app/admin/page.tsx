@@ -54,11 +54,49 @@ export default async function AdminPage() {
     _count: true,
   });
 
-  const recentActivity = await db.auditLog.findMany({
+  const auditLogs = await db.auditLog.findMany({
     orderBy: { createdAt: "desc" },
     take: 20,
     include: { actor: true, task: true },
   });
+
+  const systemLogs = await db.systemLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    include: { actor: true, task: true },
+  });
+
+  // Helper function to get concise action from actionType
+  const getConciseAction = (actionType: string | null | undefined): string => {
+    if (!actionType) return 'unknown';
+    // Convert enum values like "StatusChange" to "statuschange" or keep simple ones like "Create" -> "create"
+    return actionType.toLowerCase();
+  };
+
+  // Combine and sort by date (most recent first)
+  const recentActivity = [
+    ...auditLogs.map(log => ({
+      id: log.id,
+      type: 'audit' as const,
+      action: log.action, // Already concise (e.g., "create", "update")
+      description: undefined, // Audit logs don't have separate descriptions
+      createdAt: log.createdAt,
+      actor: log.actor,
+      task: log.task,
+    })),
+    ...systemLogs.map(log => ({
+      id: log.id,
+      type: 'system' as const,
+      action: getConciseAction(log.actionType), // Concise action from actionType
+      description: log.description, // Full description
+      actionType: log.actionType,
+      entityType: log.entityType,
+      createdAt: log.createdAt,
+      actor: log.actor,
+      task: log.task || (log.taskTitle ? { id: log.taskId || null, title: log.taskTitle } : null),
+      taskTitle: log.taskTitle,
+    })),
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 20);
 
   return <AdminPageWrapper users={users} teams={teams} stats={stats} recentActivity={recentActivity} />;
 }

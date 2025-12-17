@@ -3,6 +3,11 @@ import { db } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 import crypto from "crypto";
+import {
+  logUserUpdated,
+  logUserDeleted,
+  logPermissionChange,
+} from "@/lib/logging/system-logger";
 
 export const runtime = "nodejs";
 
@@ -78,11 +83,59 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
+    // Track changes for logging
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+    if (updateData.name !== undefined && existingUser.name !== updateData.name) {
+      changes.name = { old: existingUser.name, new: updateData.name };
+    }
+    if (updateData.email !== undefined && existingUser.email !== updateData.email) {
+      changes.email = { old: existingUser.email, new: updateData.email };
+    }
+    if (updateData.role !== undefined && existingUser.role !== updateData.role) {
+      changes.role = { old: existingUser.role, new: updateData.role };
+    }
+    if (updateData.teamId !== undefined && existingUser.teamId !== updateData.teamId) {
+      changes.teamId = { old: existingUser.teamId, new: updateData.teamId };
+    }
+    if (updateData.passwordHash !== undefined) {
+      changes.password = { old: "[REDACTED]", new: "[CHANGED]" };
+    }
+
     const user = await db.user.update({
       where: { id },
       data: updateData,
       include: { team: { select: { id: true, name: true } } },
     });
+
+    // Log specific changes
+    if (updateData.role !== undefined && existingUser.role !== updateData.role) {
+      await logPermissionChange(
+        user.id,
+        user.name,
+        currentUser.id,
+        existingUser.role,
+        user.role
+      );
+    }
+
+    // Log general user update (excluding role change which has its own log)
+    const otherChanges: Record<string, { old: unknown; new: unknown }> = {};
+    if (changes.name) otherChanges.name = changes.name;
+    if (changes.email) otherChanges.email = changes.email;
+    if (changes.teamId) otherChanges.teamId = changes.teamId;
+    if (changes.password) otherChanges.password = changes.password;
+
+    if (Object.keys(otherChanges).length > 0) {
+      await logUserUpdated(
+        user.id,
+        user.name,
+        currentUser.id,
+        otherChanges,
+        {
+          teamName: user.team?.name,
+        }
+      );
+    }
 
     return NextResponse.json({
       id: user.id,
@@ -128,6 +181,19 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         error: `Cannot delete user with ${user._count.tasksCreated} created and ${user._count.tasksAssigned} assigned tasks.`,
       }, { status: 400 });
     }
+
+    // Log user deletion before deleting
+    await logUserDeleted(
+      user.id,
+      user.name,
+      user.email,
+      currentUser.id,
+      {
+        role: user.role,
+        tasksCreated: user._count.tasksCreated,
+        tasksAssigned: user._count.tasksAssigned,
+      }
+    );
 
     await db.user.delete({ where: { id } });
     return NextResponse.json({ success: true });

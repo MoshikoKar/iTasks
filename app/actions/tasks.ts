@@ -3,6 +3,13 @@ import { sendMail } from "@/lib/smtp";
 import { notifyTaskCreated, notifyTaskUpdated } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 import { TaskPriority, TaskStatus, TaskType } from "@prisma/client";
+import {
+  logTaskCreated,
+  logTaskUpdated,
+  logTaskStatusChange,
+  logTaskPriorityChange,
+  logTaskAssigned,
+} from "@/lib/logging/system-logger";
 
 async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Promise<Date | null> {
   try {
@@ -116,6 +123,21 @@ export async function createTask(data: {
     db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true } }),
   ]);
 
+  // Create system log (persists even if task is deleted)
+  await logTaskCreated(
+    task.id,
+    task.title,
+    data.creatorId,
+    {
+      assigneeId: task.assigneeId,
+      assigneeName: assignee?.name,
+      priority: task.priority,
+      status: task.status,
+      branch: task.branch,
+      type: task.type,
+    }
+  );
+
   await notifyTaskCreated(
     {
       taskId: task.id,
@@ -208,11 +230,99 @@ export async function updateTask(
     },
   });
 
-  const [assignee, creator, actorUser] = await Promise.all([
+  const [assignee, creator, actorUser, newAssignee] = await Promise.all([
     db.user.findUnique({ where: { id: updated.assigneeId }, select: { email: true, name: true } }),
     db.user.findUnique({ where: { id: updated.creatorId }, select: { email: true, name: true } }),
     db.user.findUnique({ where: { id: actorId }, select: { email: true, name: true } }),
+    existing.assigneeId !== updated.assigneeId
+      ? db.user.findUnique({ where: { id: updated.assigneeId }, select: { name: true } })
+      : Promise.resolve(null),
   ]);
+
+  // Track changes for system log
+  const changes: Record<string, { old: unknown; new: unknown }> = {};
+  
+  if (data.title !== undefined && existing.title !== updated.title) {
+    changes.title = { old: existing.title, new: updated.title };
+  }
+  if (data.description !== undefined && existing.description !== updated.description) {
+    changes.description = { old: existing.description, new: updated.description };
+  }
+  if (data.status !== undefined && existing.status !== updated.status) {
+    changes.status = { old: existing.status, new: updated.status };
+  }
+  if (data.priority !== undefined && existing.priority !== updated.priority) {
+    changes.priority = { old: existing.priority, new: updated.priority };
+  }
+  if (data.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId) {
+    changes.assigneeId = { old: existing.assigneeId, new: updated.assigneeId };
+  }
+  if (data.dueDate !== undefined && existing.dueDate?.getTime() !== updated.dueDate?.getTime()) {
+    changes.dueDate = { old: existing.dueDate, new: updated.dueDate };
+  }
+  if (data.branch !== undefined && existing.branch !== updated.branch) {
+    changes.branch = { old: existing.branch, new: updated.branch };
+  }
+
+  // Track which specific changes have dedicated logs
+  let hasStatusChange = false;
+  let hasPriorityChange = false;
+  let hasAssigneeChange = false;
+
+  // Create system logs for specific changes
+  if (data.status !== undefined && existing.status !== updated.status) {
+    hasStatusChange = true;
+    await logTaskStatusChange(
+      id,
+      updated.title,
+      actorId,
+      existing.status,
+      updated.status
+    );
+  }
+
+  if (data.priority !== undefined && existing.priority !== updated.priority) {
+    hasPriorityChange = true;
+    await logTaskPriorityChange(
+      id,
+      updated.title,
+      actorId,
+      existing.priority,
+      updated.priority
+    );
+  }
+
+  if (data.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId && newAssignee) {
+    hasAssigneeChange = true;
+    await logTaskAssigned(
+      id,
+      updated.title,
+      actorId,
+      updated.assigneeId,
+      newAssignee.name
+    );
+  }
+
+  // Create general update log only for other changes (exclude status, priority, assignee as they have dedicated logs)
+  const otherChanges: Record<string, { old: unknown; new: unknown }> = {};
+  if (changes.title) otherChanges.title = changes.title;
+  if (changes.description) otherChanges.description = changes.description;
+  if (changes.dueDate) otherChanges.dueDate = changes.dueDate;
+  if (changes.branch) otherChanges.branch = changes.branch;
+  // Exclude status, priority, assigneeId from general update log if they have dedicated logs
+  if (changes.status && !hasStatusChange) otherChanges.status = changes.status;
+  if (changes.priority && !hasPriorityChange) otherChanges.priority = changes.priority;
+  if (changes.assigneeId && !hasAssigneeChange) otherChanges.assigneeId = changes.assigneeId;
+
+  // Create general update log only if there are other changes (not already logged specifically)
+  if (Object.keys(otherChanges).length > 0) {
+    await logTaskUpdated(
+      id,
+      updated.title,
+      actorId,
+      otherChanges
+    );
+  }
 
   await notifyTaskUpdated(
     {

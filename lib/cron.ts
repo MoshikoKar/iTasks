@@ -26,7 +26,7 @@ export function initializeRecurringTaskScheduler() {
     }
   }, {
     scheduled: true,
-    timezone: 'UTC'
+    timezone: 'Asia/Jerusalem'
   });
 
   isSchedulerInitialized = true;

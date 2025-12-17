@@ -43,6 +43,7 @@ interface DashboardStats {
   weeklyVolume: Array<{ date: string; count: number }>;
   priorityDistribution: Array<{ priority: TaskPriority; count: number }>;
   branchDistribution: Array<{ branch: string; count: number }>;
+  userDistribution: Array<{ user: string; count: number }>;
   staleTasks: Array<{
     id: string;
     title: string;
@@ -50,13 +51,6 @@ interface DashboardStats {
     priority: TaskPriority;
     status: TaskStatus;
     assignee: { id: string; name: string } | null;
-  }>;
-  recentActivity: Array<{
-    id: string;
-    action: string;
-    createdAt: Date;
-    actor: { id: string; name: string } | null;
-    task: { id: string; title: string } | null;
   }>;
 }
 
@@ -91,10 +85,7 @@ export default function DashboardPage() {
             ...task,
             updatedAt: new Date(task.updatedAt),
           })),
-          recentActivity: data.recentActivity.map((activity: { id: string; action: string; createdAt: string; actor: { id: string; name: string } | null; task: { id: string; title: string } | null }) => ({
-            ...activity,
-            createdAt: new Date(activity.createdAt),
-          })),
+          userDistribution: data.userDistribution || [],
         };
         setStats(processedData);
         setCountdown(60); // Reset countdown after successful fetch
@@ -210,127 +201,127 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* My Open Tasks Section */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <ListTodo size={20} className="text-blue-600" />
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <ListTodo size={18} className="text-blue-600" />
               My Open Tasks
             </h2>
-            <Link href="/tasks/my" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/tasks/my" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
               View all →
             </Link>
           </div>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             {stats.myOpenTasks.length === 0 ? (
-              <div className="px-4 py-12 text-center">
-                <CheckCircle2 size={48} className="mx-auto text-green-500 mb-3" />
-                <p className="text-slate-600 font-medium mb-4">No open tasks!</p>
+              <div className="px-4 py-8 text-center">
+                <CheckCircle2 size={40} className="mx-auto text-green-500 mb-2" />
+                <p className="text-sm text-slate-600 font-medium mb-3">No open tasks!</p>
                 <Link 
                   href="/tasks?create=1" 
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
                 >
                   Create Your First Task
                 </Link>
               </div>
             ) : (
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-xs">
                 <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       SLA
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Priority
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {stats.myOpenTasks.map((task) => (
-                    <tr key={task.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/tasks/${task.id}`}
-                          className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
-                        >
-                          {task.title}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {formatDateTime(task.slaDeadline)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="priority" value={task.priority as TaskPriority} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  {stats.myOpenTasks.slice(0, 5).map((task) => (
+                      <tr key={task.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-2">
+                          <Link
+                            href={`/tasks/${task.id}`}
+                            className="font-medium text-slate-900 hover:text-blue-600 transition-colors text-xs"
+                          >
+                            {task.title}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 text-xs">
+                          {formatDateTime(task.slaDeadline)}
+                        </td>
+                        <td className="px-4 py-2">
+                          <Badge variant="priority" value={task.priority as TaskPriority} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
             )}
           </div>
         </section>
 
         {/* My Day Section */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <TrendingUp size={20} className="text-blue-600" />
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <TrendingUp size={18} className="text-blue-600" />
               My Day
             </h2>
-            <Link href="/tasks/my" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/tasks/my" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
               View all →
             </Link>
           </div>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             {stats.myDay.length === 0 ? (
-              <div className="px-4 py-12 text-center">
-                <CheckCircle2 size={48} className="mx-auto text-green-500 mb-3" />
-                <p className="text-slate-600 font-medium">All caught up for today!</p>
+              <div className="px-4 py-8 text-center">
+                <CheckCircle2 size={40} className="mx-auto text-green-500 mb-2" />
+                <p className="text-sm text-slate-600 font-medium">All caught up for today!</p>
               </div>
             ) : (
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-xs">
                 <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Due
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                       Priority
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {stats.myDay.map((task) => (
-                    <tr key={task.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/tasks/${task.id}`}
-                          className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
-                        >
-                          {task.title}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {formatDateTime(task.dueDate)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="priority" value={task.priority as TaskPriority} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  {stats.myDay.slice(0, 5).map((task) => (
+                      <tr key={task.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-2">
+                          <Link
+                            href={`/tasks/${task.id}`}
+                            className="font-medium text-slate-900 hover:text-blue-600 transition-colors text-xs"
+                          >
+                            {task.title}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 text-xs">
+                          {formatDateTime(task.dueDate)}
+                        </td>
+                        <td className="px-4 py-2">
+                          <Badge variant="priority" value={task.priority as TaskPriority} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
             )}
           </div>
         </section>
       </div>
 
-      {/* 2x2 Grid - Analytics Widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Analytics Widgets - 3 or 4 columns row based on role */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === 'Technician' || user?.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
         {/* Weekly Ticket Volume */}
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -367,7 +358,7 @@ export default function DashboardPage() {
               <p className="text-sm">No branch data available</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2">
               {stats.branchDistribution.map((item) => (
                 <div
                   key={item.branch}
@@ -386,46 +377,80 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Stale Tasks */}
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <AlertOctagon size={20} className="text-orange-600" />
-              Stale Tasks
-            </h2>
-          </div>
-          <div className="text-xs text-slate-500 mb-3">No updates for more than 7 days</div>
-          {stats.staleTasks.length === 0 ? (
-            <div className="py-8 text-center text-slate-600">
-              <CheckCircle2 size={40} className="mx-auto text-green-500 mb-2" />
-              <p className="text-sm">No stale tasks</p>
+        {/* Tasks per Technician - Only visible for Admin and TeamLead */}
+        {(user?.role === 'Admin' || user?.role === 'TeamLead') && (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                <ListTodo size={20} className="text-blue-600" />
+                Tasks per Technician
+              </h2>
             </div>
-          ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {stats.staleTasks.map((task) => (
-                <Link
-                  key={task.id}
-                  href={`/tasks/${task.id}`}
-                  className="block p-3 rounded-lg border border-slate-200 hover:border-orange-300 hover:bg-orange-50 transition-all"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-slate-900 text-sm truncate">{task.title}</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-slate-500">
-                          Last update: {formatDate(task.updatedAt)}
-                        </span>
-                        <Badge variant="priority" value={task.priority} />
-                      </div>
+            {!stats.userDistribution || stats.userDistribution.length === 0 ? (
+              <div className="py-8 text-center text-slate-600">
+                <ListTodo size={40} className="mx-auto text-slate-300 mb-2" />
+                <p className="text-sm">No task assignments available</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {stats.userDistribution.map((item) => (
+                  <div
+                    key={item.user}
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                      <span className="font-medium text-slate-900 truncate">{item.user}</span>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+
+      {/* Stale Tasks */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+            <AlertOctagon size={20} className="text-orange-600" />
+            Stale Tasks
+          </h2>
+        </div>
+        <div className="text-xs text-slate-500 mb-3">No updates for more than 7 days</div>
+        {stats.staleTasks.length === 0 ? (
+          <div className="py-8 text-center text-slate-600">
+            <CheckCircle2 size={40} className="mx-auto text-green-500 mb-2" />
+            <p className="text-sm">No stale tasks</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {stats.staleTasks.map((task) => (
+              <Link
+                key={task.id}
+                href={`/tasks/${task.id}`}
+                className="block p-3 rounded-lg border border-slate-200 hover:border-orange-300 hover:bg-orange-50 transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-slate-900 text-sm truncate">{task.title}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-slate-500">
+                        Last update: {formatDate(task.updatedAt)}
+                      </span>
+                      <Badge variant="priority" value={task.priority} />
                     </div>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-
-      </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

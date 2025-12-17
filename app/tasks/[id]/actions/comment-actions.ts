@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { Role } from "@prisma/client";
 import { notifyTaskCommented, notifyUserMentioned } from "@/lib/notifications";
+import { logCommentCreated } from "@/lib/logging/system-logger";
 
 /**
  * Add a comment to a task
@@ -46,6 +47,18 @@ export async function addComment(
       }
     },
   });
+
+  // Log comment creation (persists even if task is deleted)
+  await logCommentCreated(
+    comment.id,
+    task.id,
+    task.title,
+    user.id,
+    {
+      contentLength: content.length,
+      mentionsCount: mentionedUserIds.length,
+    }
+  );
 
   const [assignee, creator, mentionedUsers, previousCommentersRaw] = await Promise.all([
     db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true } }),

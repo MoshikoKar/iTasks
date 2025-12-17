@@ -1,5 +1,10 @@
 import { db } from "@/lib/db";
 import { Role } from "@prisma/client";
+import {
+  logTeamCreated,
+  logTeamUpdated,
+  logTeamDeleted,
+} from "@/lib/logging/system-logger";
 
 export async function createTeam(
   data: {
@@ -25,6 +30,16 @@ export async function createTeam(
     },
   });
 
+  // Log team creation
+  await logTeamCreated(
+    team.id,
+    team.name,
+    actorId,
+    {
+      description: team.description,
+    }
+  );
+
   return team;
 }
 
@@ -45,6 +60,15 @@ export async function updateTeam(
     throw new Error("Unauthorized: Only Admins can update teams");
   }
 
+  // Get existing team for change tracking
+  const existingTeam = await db.team.findUnique({
+    where: { id: teamId },
+  });
+
+  if (!existingTeam) {
+    throw new Error("Team not found");
+  }
+
   const team = await db.team.update({
     where: { id: teamId },
     data: {
@@ -52,6 +76,25 @@ export async function updateTeam(
       description: data.description,
     },
   });
+
+  // Track changes for logging
+  const changes: Record<string, { old: unknown; new: unknown }> = {};
+  if (data.name !== undefined && existingTeam.name !== team.name) {
+    changes.name = { old: existingTeam.name, new: team.name };
+  }
+  if (data.description !== undefined && existingTeam.description !== team.description) {
+    changes.description = { old: existingTeam.description || "", new: team.description || "" };
+  }
+
+  // Log team update if there are changes
+  if (Object.keys(changes).length > 0) {
+    await logTeamUpdated(
+      team.id,
+      team.name,
+      actorId,
+      changes
+    );
+  }
 
   return team;
 }
@@ -81,6 +124,17 @@ export async function deleteTeam(teamId: string, actorId: string) {
       `Cannot delete team with ${team._count.members} member(s). Please reassign members first.`
     );
   }
+
+  // Log team deletion before deleting
+  await logTeamDeleted(
+    team.id,
+    team.name,
+    actorId,
+    {
+      description: team.description,
+      memberCount: team._count.members,
+    }
+  );
 
   await db.team.delete({
     where: { id: teamId },

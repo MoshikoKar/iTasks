@@ -7,6 +7,7 @@ import { TaskStatus, TaskPriority } from "@prisma/client";
 import { Filter, Search, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
+import { formatDate } from "@/lib/utils/date";
 
 interface Task {
   id: string;
@@ -178,10 +179,10 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 text-slate-600">
-                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "-"}
+                      {task.dueDate ? formatDate(task.dueDate) : "-"}
                     </td>
                     <td className="px-6 py-4 text-slate-600">
-                      {task.slaDeadline ? new Date(task.slaDeadline).toLocaleDateString() : "-"}
+                      {task.slaDeadline ? formatDate(task.slaDeadline) : "-"}
                     </td>
                     <td className="px-6 py-4 text-slate-600">
                       {task.context?.serverName || task.context?.application || "-"}

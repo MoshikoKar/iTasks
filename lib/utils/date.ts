@@ -6,14 +6,14 @@
 /**
  * Format date and time in a user-friendly format
  * @param date - Date object, string, or null/undefined
- * @returns Formatted date-time string or "Not set" if null
+ * @returns Formatted date-time string (dd/MM/yyyy HH:mm:ss AM/PM) or "Not set" if null
  */
 export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return "Not set";
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "Invalid date";
   
-  return d.toLocaleString("en-US", {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -21,24 +21,44 @@ export function formatDateTime(date: Date | string | null | undefined): string {
     minute: "2-digit",
     second: "2-digit",
     hour12: true,
+    timeZone: "Asia/Jerusalem",
   });
+  
+  const parts = formatter.formatToParts(d);
+  const day = parts.find(p => p.type === "day")?.value;
+  const month = parts.find(p => p.type === "month")?.value;
+  const year = parts.find(p => p.type === "year")?.value;
+  const hour = parts.find(p => p.type === "hour")?.value;
+  const minute = parts.find(p => p.type === "minute")?.value;
+  const second = parts.find(p => p.type === "second")?.value;
+  const dayPeriod = parts.find(p => p.type === "dayPeriod")?.value;
+  
+  return `${day}/${month}/${year} ${hour}:${minute}:${second} ${dayPeriod}`;
 }
 
 /**
  * Format date only (no time)
  * @param date - Date object, string, or null/undefined
- * @returns Formatted date string or "Not set" if null
+ * @returns Formatted date string (dd/MM/yyyy) or "Not set" if null
  */
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return "Not set";
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "Invalid date";
   
-  return d.toLocaleDateString("en-US", {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
+    timeZone: "Asia/Jerusalem",
   });
+  
+  const parts = formatter.formatToParts(d);
+  const day = parts.find(p => p.type === "day")?.value;
+  const month = parts.find(p => p.type === "month")?.value;
+  const year = parts.find(p => p.type === "year")?.value;
+  
+  return `${day}/${month}/${year}`;
 }
 
 /**
@@ -55,6 +75,7 @@ export function formatTime(date: Date | string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: "Asia/Jerusalem",
   });
 }
 
@@ -72,15 +93,33 @@ export function formatDateTimeLocal(date: Date | string | null | undefined): str
 }
 
 /**
- * Format date for display in tables (stable, timezone-agnostic)
+ * Format date for display in tables (stable, timezone-aware)
  * @param date - Date object or string
- * @returns Formatted string (YYYY-MM-DD HH:mm)
+ * @returns Formatted string (dd/MM/yyyy HH:mm) in Jerusalem timezone
  */
 export function formatDateTimeStable(date: Date | string): string {
   const d = new Date(date);
   if (isNaN(d.getTime())) return "Invalid date";
   
-  return d.toISOString().replace('T', ' ').slice(0, 16);
+  // Format in Jerusalem timezone
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Jerusalem",
+  });
+  
+  const parts = formatter.formatToParts(d);
+  const day = parts.find(p => p.type === "day")?.value;
+  const month = parts.find(p => p.type === "month")?.value;
+  const year = parts.find(p => p.type === "year")?.value;
+  const hour = parts.find(p => p.type === "hour")?.value;
+  const minute = parts.find(p => p.type === "minute")?.value;
+  
+  return `${day}/${month}/${year} ${hour}:${minute}`;
 }
 
 /**
