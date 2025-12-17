@@ -20,6 +20,9 @@ const SMTPConfigForm = dynamic(() => import('./smtp-config-form').then(mod => ({
 const SLAConfigForm = dynamic(() => import('./sla-config-form').then(mod => ({ default: mod.SLAConfigForm })), {
   ssr: false,
 });
+const LDAPConfigForm = dynamic(() => import('./ldap-config-form').then(mod => ({ default: mod.LDAPConfigForm })), {
+  ssr: false,
+});
 
 interface Team {
   id: string;
@@ -85,6 +88,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
   // System configuration modals
   const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
   const [isSLAModalOpen, setIsSLAModalOpen] = useState(false);
+  const [isLDAPModalOpen, setIsLDAPModalOpen] = useState(false);
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
@@ -605,6 +609,24 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               Configure
             </Button>
           </div>
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-blue-100 p-2">
+                <Activity size={20} className="text-blue-600" />
+              </div>
+              <div>
+                <div className="font-medium text-slate-900">LDAP / LDAPS Authentication</div>
+                <div className="text-sm text-slate-600">Enterprise authentication integration</div>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              className="text-blue-600"
+              onClick={() => setIsLDAPModalOpen(true)}
+            >
+              Configure
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -771,6 +793,22 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             router.refresh();
           }}
           onCancel={() => setIsSLAModalOpen(false)}
+        />
+      </Modal>
+
+      {/* LDAP Configuration Modal */}
+      <Modal
+        isOpen={isLDAPModalOpen}
+        onClose={() => setIsLDAPModalOpen(false)}
+        title="Configure LDAP Authentication"
+        size="lg"
+      >
+        <LDAPConfigForm
+          onSuccess={() => {
+            setIsLDAPModalOpen(false);
+            router.refresh();
+          }}
+          onCancel={() => setIsLDAPModalOpen(false)}
         />
       </Modal>
     </div>

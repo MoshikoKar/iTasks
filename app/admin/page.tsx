@@ -56,13 +56,11 @@ export default async function AdminPage() {
 
   const auditLogs = await db.auditLog.findMany({
     orderBy: { createdAt: "desc" },
-    take: 20,
     include: { actor: true, task: true },
   });
 
   const systemLogs = await db.systemLog.findMany({
     orderBy: { createdAt: "desc" },
-    take: 20,
     include: { actor: true, task: true },
   });
 
@@ -96,7 +94,7 @@ export default async function AdminPage() {
       task: log.task || (log.taskTitle ? { id: log.taskId || null, title: log.taskTitle } : null),
       taskTitle: log.taskTitle,
     })),
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 20);
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   return <AdminPageWrapper users={users} teams={teams} stats={stats} recentActivity={recentActivity} />;
 }

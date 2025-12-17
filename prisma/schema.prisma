@@ -14,6 +14,11 @@ enum Role {
   Viewer
 }
 
+enum AuthProvider {
+  local
+  ldap
+}
+
 enum TaskStatus {
   Open
   InProgress
@@ -45,6 +50,8 @@ model User {
   email        String    @unique
   role         Role
   passwordHash String
+  authProvider AuthProvider @default(local)
+  isBootstrapAdmin Boolean @default(false)
   teamId       String?
   createdAt    DateTime  @default(now())
   team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -270,6 +277,18 @@ model SystemConfig {
   slaMediumHours   Int? @default(48)   // 2 days
   slaHighHours     Int? @default(24)   // 1 day
   slaCriticalHours Int? @default(4)    // 4 hours
+  
+  // LDAP Configuration
+  ldapEnabled      Boolean @default(false)
+  ldapHost         String?
+  ldapPort         Int?    @default(389)
+  ldapBaseDn       String?
+  ldapBindDn       String?
+  ldapBindPassword String? // Encrypted in production
+  ldapUseTls       Boolean @default(false)
+  ldapUserSearchFilter String? @default("(uid={{username}})")
+  ldapUsernameAttribute String? @default("uid")
+  ldapEnforced     Boolean @default(false) // If true, only LDAP auth (except bootstrap admin)
   
   updatedAt DateTime @updatedAt
   updatedBy String?

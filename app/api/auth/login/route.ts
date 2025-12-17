@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
 import { SESSION_COOKIE } from "@/lib/constants";
+import { authenticateLDAP, getLDAPConfig } from "@/lib/ldap";
+import { AuthProvider, LogActionType, LogEntityType } from "@prisma/client";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
+
+const PBKDF2_ITERATIONS = 310000;
+const PBKDF2_KEYLEN = 32;
+const PBKDF2_DIGEST = "sha256";
+
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEYLEN, PBKDF2_DIGEST).toString("hex");
+  return `${salt}:${hash}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,20 +25,134 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({ where: { email } });
-    if (!user || !verifyPassword(user.passwordHash, password)) {
+    // Get LDAP configuration
+    const ldapConfig = await getLDAPConfig();
+
+    // Step 1: Try local authentication first
+    let user = await db.user.findUnique({ where: { email } });
+    
+    if (user && user.authProvider === AuthProvider.local) {
+      // Verify local password
+      if (verifyPassword(user.passwordHash, password)) {
+        // Log successful login
+        await db.systemLog.create({
+          data: {
+            entityType: LogEntityType.System,
+            actionType: LogActionType.Login,
+            actorId: user.id,
+            description: `User ${user.name} logged in (local auth)`,
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown',
+          },
+        });
+
+        const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+        response.cookies.set(SESSION_COOKIE, user.id, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+        return response;
+      }
+      
+      // Local user but wrong password
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
-    response.cookies.set(SESSION_COOKIE, user.id, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    return response;
+    // Step 2: If LDAP is enabled and user is not a local user, try LDAP
+    if (ldapConfig && ldapConfig.enabled) {
+      // Parse username from email - supports multiple formats:
+      // - username@domain.com
+      // - domain\username
+      // - username
+      const { parseUsernameInput } = await import('@/lib/ldap');
+      const parsed = parseUsernameInput(email);
+      const username = parsed.username;
+      
+      console.log('Attempting LDAP authentication:', {
+        input: email,
+        parsedUsername: username,
+        parsedDomain: parsed.domain,
+      });
+      const ldapResult = await authenticateLDAP(username, password);
+      
+      if (!ldapResult.success) {
+        console.error('LDAP authentication failed:', {
+          username,
+          email,
+          error: ldapResult.error,
+          ldapEnabled: ldapConfig.enabled,
+          ldapHost: ldapConfig.host,
+          ldapPort: ldapConfig.port,
+          ldapBaseDn: ldapConfig.baseDn,
+          ldapBindDn: ldapConfig.bindDn ? '***configured***' : 'NOT SET',
+        });
+      }
+      
+      if (ldapResult.success && ldapResult.user) {
+        // Check if user exists in database
+        if (user && user.authProvider === AuthProvider.ldap) {
+          // Update existing LDAP user
+          user = await db.user.update({
+            where: { id: user.id },
+            data: {
+              name: ldapResult.user.name,
+            },
+          });
+        } else if (!user) {
+          // Create new LDAP user on first login
+          // Default role is Viewer, admin needs to promote
+          const randomPassword = crypto.randomBytes(32).toString('hex');
+          user = await db.user.create({
+            data: {
+              email: ldapResult.user.email,
+              name: ldapResult.user.name,
+              role: 'Viewer',
+              authProvider: AuthProvider.ldap,
+              passwordHash: hashPassword(randomPassword), // Not used for LDAP users
+            },
+          });
+
+          // Log user creation
+          await db.systemLog.create({
+            data: {
+              entityType: LogEntityType.User,
+              actionType: LogActionType.Create,
+              actorId: user.id,
+              entityId: user.id,
+              description: `LDAP user ${user.name} auto-created on first login`,
+            },
+          });
+        }
+
+        // Log successful login
+        await db.systemLog.create({
+          data: {
+            entityType: LogEntityType.System,
+            actionType: LogActionType.Login,
+            actorId: user.id,
+            description: `User ${user.name} logged in (LDAP auth)`,
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown',
+          },
+        });
+
+        const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+        response.cookies.set(SESSION_COOKIE, user.id, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+        return response;
+      }
+    }
+
+    // If we reach here, authentication failed
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   } catch (error) {
     console.error("Error during login:", error);
     return NextResponse.json({ error: "Failed to login" }, { status: 500 });

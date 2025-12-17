@@ -115,14 +115,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check if this is the first user in the system
+    const userCount = await db.user.count();
+    const isFirstUser = userCount === 0;
+
     // Create user
     const user = await db.user.create({
       data: {
         name: body.name,
         email: body.email,
-        role: body.role as Role,
+        role: isFirstUser ? Role.Admin : (body.role as Role), // First user is always Admin
         passwordHash: hashPassword(body.password),
         teamId: body.teamId || null,
+        authProvider: 'local',
+        isBootstrapAdmin: isFirstUser, // Mark first user as bootstrap admin
       },
       include: {
         team: {

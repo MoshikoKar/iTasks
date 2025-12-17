@@ -42,6 +42,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Protect bootstrap admin from permission changes
+    if (existingUser.isBootstrapAdmin && body.role !== undefined && body.role !== Role.Admin) {
+      return NextResponse.json(
+        { error: "Bootstrap admin cannot have permissions lowered below Admin" },
+        { status: 403 }
+      );
+    }
+
     const updateData: any = {};
 
     if (currentUser.role === Role.Admin) {
@@ -174,6 +182,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Protect bootstrap admin from deletion
+    if (user.isBootstrapAdmin) {
+      return NextResponse.json(
+        { error: "Bootstrap admin cannot be deleted" },
+        { status: 403 }
+      );
     }
 
     if (user._count.tasksCreated > 0 || user._count.tasksAssigned > 0) {
