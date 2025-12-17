@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './button';
 import { Mail, AlertCircle } from 'lucide-react';
+import { Checkbox } from './checkbox';
 
 interface SMTPConfig {
   smtpHost: string | null;
@@ -32,6 +33,64 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   });
   const [showPassword, setShowPassword] = useState(false);
 
+  // Controlled state for dynamic form fields
+  const [smtpHost, setSmtpHost] = useState('localhost');
+  const [smtpPort, setSmtpPort] = useState(25);
+  const [smtpSecure, setSmtpSecure] = useState(false);
+  const [smtpFrom, setSmtpFrom] = useState('no-reply@local');
+  const [smtpUser, setSmtpUser] = useState('');
+  const [smtpPassword, setSmtpPassword] = useState('');
+
+  // Auto-update port when secure connection is toggled
+  useEffect(() => {
+    if (smtpSecure) {
+      // If switching to secure and port is still plain SMTP port, change to secure SMTP
+      if (smtpPort === 25) {
+        setSmtpPort(587); // SMTP with STARTTLS (most common)
+      }
+    } else {
+      // If switching from secure and port is secure SMTP port, change to plain
+      if (smtpPort === 587 || smtpPort === 465) {
+        setSmtpPort(25);
+      }
+    }
+  }, [smtpSecure]);
+
+  // Smart hostname detection for SMTP URLs
+  const handleHostChange = (value: string) => {
+    // Check if host contains smtps:// protocol (secure SMTP)
+    if (value.toLowerCase().startsWith('smtps://')) {
+      setSmtpSecure(true);
+      // Extract hostname without protocol
+      const cleanHost = value.replace(/^smtps:\/\//i, '');
+      return cleanHost;
+    }
+    // Check if host contains smtp:// protocol (plain SMTP)
+    else if (value.toLowerCase().startsWith('smtp://')) {
+      setSmtpSecure(false);
+      // Extract hostname without protocol
+      const cleanHost = value.replace(/^smtp:\/\//i, '');
+      return cleanHost;
+    }
+    return value;
+  };
+
+  // Auto-suggest from email based on username/domain patterns
+  useEffect(() => {
+    if (smtpUser && !smtpFrom.includes('@') && smtpFrom === 'no-reply@local') {
+      // If user entered a username that looks like an email
+      if (smtpUser.includes('@')) {
+        const domain = smtpUser.split('@')[1];
+        setSmtpFrom(`noreply@${domain}`);
+      }
+      // If user entered just a username, try to create a reasonable from address
+      else if (smtpUser.length > 0 && smtpHost !== 'localhost') {
+        const domain = smtpHost.includes('.') ? smtpHost.split('.').slice(-2).join('.') : smtpHost;
+        setSmtpFrom(`noreply@${domain}`);
+      }
+    }
+  }, [smtpUser, smtpHost, smtpFrom]);
+
   useEffect(() => {
     fetch('/api/system-config')
       .then((res) => res.json())
@@ -45,6 +104,14 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
           smtpUser: data.smtpUser || null,
           smtpPassword: null,
         });
+
+        // Set controlled state variables
+        setSmtpHost(data.smtpHost || 'localhost');
+        setSmtpPort(data.smtpPort ?? 25);
+        setSmtpFrom(data.smtpFrom || 'no-reply@local');
+        setSmtpSecure(data.smtpSecure ?? false);
+        setSmtpUser(data.smtpUser || '');
+        setSmtpPassword('');
       })
       .catch((err) => {
         setError(err.message || 'Failed to load configuration');
@@ -59,14 +126,13 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
     setIsLoading(true);
     setError('');
 
-    const formData = new FormData(e.currentTarget);
     const data = {
-      smtpHost: formData.get('smtpHost') as string,
-      smtpPort: parseInt(formData.get('smtpPort') as string, 10),
-      smtpFrom: formData.get('smtpFrom') as string,
-      smtpSecure: formData.get('smtpSecure') === 'true',
-      smtpUser: formData.get('smtpUser') as string || null,
-      smtpPassword: formData.get('smtpPassword') as string || null,
+      smtpHost: smtpHost,
+      smtpPort: smtpPort,
+      smtpFrom: smtpFrom,
+      smtpSecure: smtpSecure,
+      smtpUser: smtpUser || null,
+      smtpPassword: smtpPassword || null,
     };
 
     try {
@@ -116,9 +182,10 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             id="smtpHost"
             name="smtpHost"
             required
-            defaultValue={config.smtpHost || ''}
+            value={smtpHost}
+            onChange={(e) => setSmtpHost(handleHostChange(e.target.value))}
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            placeholder="localhost"
+            placeholder="localhost or smtp://mail.example.com"
           />
         </div>
 
@@ -133,9 +200,15 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             required
             min="1"
             max="65535"
-            defaultValue={config.smtpPort ?? 25}
+            value={smtpPort}
+            onChange={(e) => setSmtpPort(parseInt(e.target.value, 10) || 25)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            {smtpSecure
+              ? '587 (SMTP with STARTTLS) or 465 (SMTPS recommended)'
+              : '25 (SMTP) or 587 (SMTP with STARTTLS)'}
+          </p>
         </div>
 
         <div>
@@ -147,23 +220,25 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             id="smtpFrom"
             name="smtpFrom"
             required
-            defaultValue={config.smtpFrom || ''}
+            value={smtpFrom}
+            onChange={(e) => setSmtpFrom(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             placeholder="no-reply@local"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="smtpSecure"
-            name="smtpSecure"
-            value="true"
-            defaultChecked={config.smtpSecure}
-            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-          />
-          <label htmlFor="smtpSecure" className="text-sm font-medium text-slate-700">
-            Use secure connection (TLS/SSL)
+          <label htmlFor="smtpSecure" className="flex items-center gap-1.5 cursor-pointer">
+            <Checkbox
+              id="smtpSecure"
+              name="smtpSecure"
+              value="true"
+              checked={smtpSecure}
+              onChange={(e) => setSmtpSecure(e.target.checked)}
+            />
+            <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              Use secure connection (TLS/SSL)
+            </span>
           </label>
         </div>
 
@@ -175,7 +250,8 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             type="text"
             id="smtpUser"
             name="smtpUser"
-            defaultValue={config.smtpUser || ''}
+            value={smtpUser}
+            onChange={(e) => setSmtpUser(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             placeholder="Leave empty for no authentication"
           />
@@ -183,15 +259,18 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
 
         <div>
           <label htmlFor="smtpPassword" className="block text-sm font-medium text-slate-700 mb-1">
-            SMTP Password {config.smtpUser ? <span className="text-red-500">*</span> : '(optional)'}
+            SMTP Password {smtpUser ? <span className="text-red-500">*</span> : '(optional)'}
           </label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
               id="smtpPassword"
               name="smtpPassword"
+              required={!!smtpUser}
+              value={smtpPassword}
+              onChange={(e) => setSmtpPassword(e.target.value)}
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-              placeholder={config.smtpUser ? 'Enter password' : 'Leave empty to keep current password'}
+              placeholder={smtpUser ? 'Enter password' : 'Leave empty to keep current password'}
             />
             <button
               type="button"
@@ -202,7 +281,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
             </button>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            {config.smtpUser
+            {smtpUser
               ? 'Password is required when username is set'
               : 'Leave empty to keep current password unchanged'}
           </p>

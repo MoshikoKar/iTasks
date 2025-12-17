@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './button';
 import { Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Checkbox } from './checkbox';
 
 interface LDAPConfig {
   ldapEnabled: boolean;
@@ -46,6 +47,61 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
   const [discoveredBindDn, setDiscoveredBindDn] = useState('');
   const [discoveredBaseDn, setDiscoveredBaseDn] = useState('');
 
+  // Controlled state for dynamic form fields
+  const [ldapHost, setLdapHost] = useState('');
+  const [ldapPort, setLdapPort] = useState(389);
+  const [ldapUseTls, setLdapUseTls] = useState(false);
+
+  // Auto-update port when TLS is toggled
+  useEffect(() => {
+    if (ldapUseTls) {
+      // If switching to TLS and port is still default LDAP port, change to LDAPS
+      if (ldapPort === 389) {
+        setLdapPort(636);
+      }
+    } else {
+      // If switching from TLS and port is LDAPS port, change to LDAP
+      if (ldapPort === 636) {
+        setLdapPort(389);
+      }
+    }
+  }, [ldapUseTls]);
+
+  // Smart hostname detection for LDAPS URLs
+  const handleHostChange = (value: string) => {
+    // Check if host contains ldaps:// protocol
+    if (value.toLowerCase().startsWith('ldaps://')) {
+      setLdapUseTls(true);
+      // Extract hostname without protocol
+      const cleanHost = value.replace(/^ldaps:\/\//i, '');
+      return cleanHost;
+    }
+    // Check if host contains ldap:// protocol
+    else if (value.toLowerCase().startsWith('ldap://')) {
+      setLdapUseTls(false);
+      // Extract hostname without protocol
+      const cleanHost = value.replace(/^ldap:\/\//i, '');
+      return cleanHost;
+    }
+    return value;
+  };
+
+  // Auto-suggest LDAP settings based on domain patterns
+  useEffect(() => {
+    if (ldapDomain && config.ldapUserSearchFilter === '(uid={{username}})' && config.ldapUsernameAttribute === 'uid') {
+      // If domain looks like Active Directory (contains dots and common AD TLDs)
+      const isLikelyAD = /\.(com|org|net|local|internal)$/i.test(ldapDomain) || ldapDomain.split('.').length > 2;
+      if (isLikelyAD) {
+        // Suggest Active Directory defaults
+        setConfig(prev => ({
+          ...prev,
+          ldapUserSearchFilter: '(sAMAccountName={{username}})',
+          ldapUsernameAttribute: 'sAMAccountName'
+        }));
+      }
+    }
+  }, [ldapDomain, config.ldapUserSearchFilter, config.ldapUsernameAttribute]);
+
   useEffect(() => {
     fetch('/api/ldap/config')
       .then((res) => res.json())
@@ -62,6 +118,11 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           ldapUsernameAttribute: data.ldapUsernameAttribute || 'uid',
           ldapEnforced: data.ldapEnforced || false,
         });
+
+        // Set controlled state variables
+        setLdapHost(data.ldapHost || '');
+        setLdapPort(data.ldapPort ?? 389);
+        setLdapUseTls(data.ldapUseTls ?? false);
 
         // Set discovered values from existing config
         if (data.ldapBindDn) {
@@ -100,7 +161,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             if (data.ldapBaseDn) {
               const domainParts = data.ldapBaseDn.match(/dc=([^,]+)/g);
               if (domainParts) {
-                const domain = domainParts.map(p => p.replace('dc=', '')).join('.');
+                const domain = domainParts.map((p: string) => p.replace('dc=', '')).join('.');
                 setLdapDomain(domain);
               }
             }
@@ -125,10 +186,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     if (!form) return;
 
     const formData = new FormData(form);
-    const ldapHost = formData.get('ldapHost') as string;
-    const ldapPort = parseInt(formData.get('ldapPort') as string, 10);
     const ldapBindPassword = formData.get('ldapBindPassword') as string;
-    const ldapUseTls = formData.get('ldapUseTls') === 'true';
 
     if (useAutoDiscovery) {
       const usernameInput = formData.get('ldapUsername') as string;
@@ -298,12 +356,12 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     
     const data = {
       ldapEnabled: formData.get('ldapEnabled') === 'true',
-      ldapHost: formData.get('ldapHost') as string,
-      ldapPort: parseInt(formData.get('ldapPort') as string, 10),
+      ldapHost: ldapHost,
+      ldapPort: ldapPort,
       ldapBaseDn: baseDn,
       ldapBindDn: bindDn,
       ldapBindPassword: formData.get('ldapBindPassword') as string || null,
-      ldapUseTls: formData.get('ldapUseTls') === 'true',
+      ldapUseTls: ldapUseTls,
       ldapUserSearchFilter: formData.get('ldapUserSearchFilter') as string,
       ldapUsernameAttribute: formData.get('ldapUsernameAttribute') as string,
       ldapEnforced: formData.get('ldapEnforced') === 'true',
@@ -365,36 +423,37 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
       <div className="space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-          <input
-            type="checkbox"
-            id="ldapEnabled"
-            name="ldapEnabled"
-            value="true"
-            defaultChecked={config.ldapEnabled}
-            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-          />
-          <label htmlFor="ldapEnabled" className="text-sm font-semibold text-slate-900">
-            Enable LDAP Authentication
+          <label htmlFor="ldapEnabled" className="flex items-center gap-1.5 cursor-pointer">
+            <Checkbox
+              id="ldapEnabled"
+              name="ldapEnabled"
+              value="true"
+              defaultChecked={config.ldapEnabled}
+            />
+            <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
+              Enable LDAP Authentication
+            </span>
           </label>
         </div>
 
-        <div>
-          <label htmlFor="ldapHost" className="block text-sm font-medium text-slate-700 mb-1">
-            LDAP Host <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="ldapHost"
-            name="ldapHost"
-            required
-            defaultValue={config.ldapHost}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            placeholder="ldap.example.com"
-          />
-          <p className="mt-1 text-xs text-slate-500">Hostname or IP address of the LDAP server</p>
-        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="ldapHost" className="block text-sm font-medium text-slate-700 mb-1">
+              LDAP Host <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="ldapHost"
+              name="ldapHost"
+              required
+              value={ldapHost}
+              onChange={(e) => setLdapHost(handleHostChange(e.target.value))}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              placeholder="ldap.example.com or ldaps://ldap.example.com"
+            />
+            <p className="mt-1 text-xs text-slate-500">Hostname or IP address of the LDAP server</p>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="ldapPort" className="block text-sm font-medium text-slate-700 mb-1">
               Port <span className="text-red-500">*</span>
@@ -406,98 +465,156 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               required
               min="1"
               max="65535"
-              defaultValue={config.ldapPort}
+              value={ldapPort}
+              onChange={(e) => setLdapPort(parseInt(e.target.value, 10) || 389)}
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
-            <p className="mt-1 text-xs text-slate-500">389 (LDAP) or 636 (LDAPS)</p>
+            <p className="mt-1 text-xs text-slate-500">
+              {ldapUseTls ? '636 (LDAPS recommended)' : '389 (LDAP) or 636 (LDAPS)'}
+            </p>
           </div>
 
-          <div className="flex items-center pt-6">
-            <input
-              type="checkbox"
-              id="ldapUseTls"
-              name="ldapUseTls"
-              value="true"
-              defaultChecked={config.ldapUseTls}
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="ldapUseTls" className="ml-2 text-sm font-medium text-slate-700">
-              Use TLS/LDAPS
-            </label>
+          <div className="flex flex-col">
+            <div className="h-5 mb-1" />
+            <div className="h-[42px] flex items-center">
+              <label htmlFor="ldapUseTls" className="inline-flex items-center gap-1.5 cursor-pointer">
+                <Checkbox
+                  id="ldapUseTls"
+                  name="ldapUseTls"
+                  value="true"
+                  checked={ldapUseTls}
+                  onChange={(e) => setLdapUseTls(e.target.checked)}
+                />
+                <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                  Use TLS/LDAPS
+                </span>
+              </label>
+            </div>
+            <div className="h-5" />
           </div>
         </div>
 
         <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-          <input
-            type="checkbox"
-            id="useAutoDiscovery"
-            checked={useAutoDiscovery}
-            onChange={(e) => setUseAutoDiscovery(e.target.checked)}
-            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-          />
-          <label htmlFor="useAutoDiscovery" className="text-sm font-semibold text-slate-900">
-            Auto-Discover Bind DN and Base DN
+          <label htmlFor="useAutoDiscovery" className="flex items-center gap-1.5 cursor-pointer">
+            <Checkbox
+              id="useAutoDiscovery"
+              checked={useAutoDiscovery}
+              onChange={(e) => setUseAutoDiscovery(e.target.checked)}
+            />
+            <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
+              Auto-Discover Bind DN and Base DN
+            </span>
           </label>
         </div>
 
         {useAutoDiscovery ? (
           <>
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+            <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg mb-4">
               <p className="text-xs font-medium text-blue-900 mb-1">Supported Formats:</p>
               <p className="text-xs text-blue-800">
                 • Single field: <code className="bg-blue-100 px-1 rounded">domain\username</code> or <code className="bg-blue-100 px-1 rounded">username@domain</code><br/>
                 • Or separate: <code className="bg-blue-100 px-1 rounded">username</code> + <code className="bg-blue-100 px-1 rounded">domain</code>
               </p>
             </div>
-            <div>
-              <label htmlFor="ldapUsername" className="block text-sm font-medium text-slate-700 mb-1">
-                Service Account <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="ldapUsername"
-                name="ldapUsername"
-                required={useAutoDiscovery}
-                value={
-                  ldapUsername.includes('\\') || ldapUsername.includes('@')
-                    ? ldapUsername
-                    : ldapDomain && ldapUsername
-                    ? `${ldapDomain}\\${ldapUsername}`
-                    : ldapUsername
-                }
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // If user enters domain\username or username@domain, parse it
-                  if (value.includes('\\') || value.includes('@')) {
-                    const parts = value.includes('\\') 
-                      ? value.split('\\') 
-                      : value.split('@');
-                    if (parts.length === 2) {
-                      if (value.includes('\\')) {
-                        // domain\username format
-                        setLdapDomain(parts[0]);
-                        setLdapUsername(value); // Store full format
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="ldapUsername" className="flex items-center whitespace-nowrap text-sm font-medium text-slate-700 mb-1 h-5">
+                  Service Account <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="ldapUsername"
+                  name="ldapUsername"
+                  required={useAutoDiscovery}
+                  value={
+                    ldapUsername.includes('\\') || ldapUsername.includes('@')
+                      ? ldapUsername
+                      : ldapDomain && ldapUsername
+                      ? `${ldapDomain}\\${ldapUsername}`
+                      : ldapUsername
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // If user enters domain\username or username@domain, parse it
+                    if (value.includes('\\') || value.includes('@')) {
+                      const parts = value.includes('\\')
+                        ? value.split('\\')
+                        : value.split('@');
+                      if (parts.length === 2) {
+                        if (value.includes('\\')) {
+                          // domain\username format
+                          setLdapDomain(parts[0]);
+                          setLdapUsername(value); // Store full format
+                        } else {
+                          // username@domain format
+                          setLdapUsername(value); // Store full format
+                          setLdapDomain(parts[1]);
+                        }
                       } else {
-                        // username@domain format
-                        setLdapUsername(value); // Store full format
-                        setLdapDomain(parts[1]);
+                        setLdapUsername(value);
+                        setLdapDomain('');
                       }
                     } else {
+                      // Just username, keep domain if it exists
                       setLdapUsername(value);
-                      setLdapDomain('');
                     }
-                  } else {
-                    // Just username, keep domain if it exists
-                    setLdapUsername(value);
-                  }
-                }}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                placeholder="mindcti.com\\symantec or symantec@mindcti.com"
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                Enter service account in format: <code className="bg-slate-100 px-1 rounded">domain\username</code> or <code className="bg-slate-100 px-1 rounded">username@domain</code>
-              </p>
+                  }}
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  placeholder="mindcti.com\\symantec or symantec@mindcti.com"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Enter service account in format: <code className="bg-slate-100 px-1 rounded">domain\username</code> or <code className="bg-slate-100 px-1 rounded">username@domain</code>
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="ldapBindPassword" className="flex items-center whitespace-nowrap text-sm font-medium text-slate-700 mb-1 h-5">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="ldapBindPassword"
+                    name="ldapBindPassword"
+                    required
+                    value={ldapPassword}
+                    onChange={(e) => setLdapPassword(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    placeholder="Service account password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  Service account password for binding to LDAP (encrypted at rest)
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="ldapBaseDn" className="flex items-center justify-between whitespace-nowrap text-sm font-medium text-slate-700 mb-1 h-5">
+                  <span>Base DN</span>
+                  <span className="text-xs font-normal text-slate-400 whitespace-nowrap">(optional, auto-generated)</span>
+                </label>
+                <input
+                  type="text"
+                  id="ldapBaseDn"
+                  name="ldapBaseDn"
+                  value={discoveredBaseDn || config.ldapBaseDn}
+                  onChange={(e) => setDiscoveredBaseDn(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  placeholder="dc=company,dc=com (auto-generated)"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  {discoveredBaseDn ? 'Auto-discovered from domain' : 'Will be auto-generated from domain if empty'}
+                </p>
+              </div>
             </div>
+
             {!ldapUsername.includes('\\') && !ldapUsername.includes('@') && (
               <div>
                 <label htmlFor="ldapDomain" className="block text-sm font-medium text-slate-700 mb-1">
@@ -516,23 +633,6 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                 <p className="mt-1 text-xs text-slate-500">Active Directory domain (only needed if username doesn't include domain)</p>
               </div>
             )}
-            <div>
-              <label htmlFor="ldapBaseDn" className="block text-sm font-medium text-slate-700 mb-1">
-                Base DN <span className="text-slate-400">(optional, auto-generated from domain)</span>
-              </label>
-              <input
-                type="text"
-                id="ldapBaseDn"
-                name="ldapBaseDn"
-                value={discoveredBaseDn || config.ldapBaseDn}
-                onChange={(e) => setDiscoveredBaseDn(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                placeholder="dc=company,dc=com (auto-generated)"
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                {discoveredBaseDn ? 'Auto-discovered from domain' : 'Will be auto-generated from domain if empty'}
-              </p>
-            </div>
             {/* Hidden inputs to persist discovered values in form */}
             {discoveredBindDn && (
               <input type="hidden" name="ldapBindDn" value={discoveredBindDn} />
@@ -542,17 +642,17 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             )}
             
             {(discoveredBindDn || discoveredBaseDn) && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg space-y-1.5">
                 {discoveredBindDn && (
                   <div>
-                    <p className="text-xs font-medium text-blue-900 mb-1">Auto-Discovered Bind DN:</p>
-                    <p className="text-sm text-blue-800 font-mono break-all">{discoveredBindDn}</p>
+                    <span className="text-xs font-medium text-blue-900">Auto-Discovered Bind DN: </span>
+                    <span className="text-xs text-blue-800 font-mono break-all">{discoveredBindDn}</span>
                   </div>
                 )}
                 {discoveredBaseDn && (
                   <div>
-                    <p className="text-xs font-medium text-blue-900 mb-1">Auto-Discovered Base DN:</p>
-                    <p className="text-sm text-blue-800 font-mono break-all">{discoveredBaseDn}</p>
+                    <span className="text-xs font-medium text-blue-900">Auto-Discovered Base DN: </span>
+                    <span className="text-xs text-blue-800 font-mono break-all">{discoveredBaseDn}</span>
                   </div>
                 )}
               </div>
@@ -594,35 +694,35 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           </>
         )}
 
-        <div>
-          <label htmlFor="ldapBindPassword" className="block text-sm font-medium text-slate-700 mb-1">
-            Password <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="ldapBindPassword"
-              name="ldapBindPassword"
-              required
-              value={ldapPassword}
-              onChange={(e) => setLdapPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-              placeholder={useAutoDiscovery ? "Service account password" : "Enter password (leave empty to keep current)"}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
-            >
-              {showPassword ? 'Hide' : 'Show'}
-            </button>
+        {!useAutoDiscovery && (
+          <div>
+            <label htmlFor="ldapBindPassword" className="block text-sm font-medium text-slate-700 mb-1">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="ldapBindPassword"
+                name="ldapBindPassword"
+                required
+                value={ldapPassword}
+                onChange={(e) => setLdapPassword(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                placeholder="Enter password (leave empty to keep current)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Password for the bind DN (encrypted at rest, leave empty to keep current)
+            </p>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
-            {useAutoDiscovery 
-              ? "Service account password for binding to LDAP (encrypted at rest)"
-              : "Password for the bind DN (encrypted at rest, leave empty to keep current)"}
-          </p>
-        </div>
+        )}
 
         <div>
           <label htmlFor="ldapUserSearchFilter" className="block text-sm font-medium text-slate-700 mb-1">
@@ -664,19 +764,19 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           </p>
         </div>
 
-        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <Shield className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+        <div className="flex items-start gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+          <Shield className="text-amber-600 flex-shrink-0 mt-0.5" size={16} />
           <div className="flex-1">
-            <input
-              type="checkbox"
-              id="ldapEnforced"
-              name="ldapEnforced"
-              value="true"
-              defaultChecked={config.ldapEnforced}
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 mr-2"
-            />
-            <label htmlFor="ldapEnforced" className="text-sm font-medium text-slate-900">
-              Enforce LDAP authentication
+            <label htmlFor="ldapEnforced" className="inline-flex items-center gap-1.5 cursor-pointer">
+              <Checkbox
+                id="ldapEnforced"
+                name="ldapEnforced"
+                value="true"
+                defaultChecked={config.ldapEnforced}
+              />
+              <span className="text-sm font-medium text-slate-900 whitespace-nowrap">
+                Enforce LDAP authentication
+              </span>
             </label>
             <p className="mt-1 text-xs text-slate-600">
               When enabled, only LDAP authentication is allowed (except for the bootstrap admin). Local users cannot log in.
