@@ -27,8 +27,8 @@ export const createTaskSchema = z.object({
   branch: z.string().optional(),
   dueDate: z.coerce.date().optional().nullable(),
   slaDeadline: z.coerce.date().optional().nullable(),
-  assigneeId: z.string().uuid('Invalid assignee ID'),
-  creatorId: z.string().uuid('Invalid creator ID'),
+  assigneeId: z.string().uuid('Invalid assignee ID').optional(),
+  creatorId: z.string().uuid('Invalid creator ID'), // Required for validation, but set from authenticated user
   tags: z.array(z.string()).optional(),
   context: taskContextSchema,
 });

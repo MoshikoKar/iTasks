@@ -4,6 +4,7 @@ import { Role } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 import crypto from "crypto";
 import { logUserCreated } from "@/lib/logging/system-logger";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    logger.error("Error fetching users", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to fetch users" },
       { status: 500 }
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating user:", error);
+    logger.error("Error creating user", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create user" },
       { status: 500 }

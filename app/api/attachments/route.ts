@@ -5,6 +5,30 @@ import { existsSync } from "fs";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { logAttachmentUploaded } from "@/lib/logging/system-logger";
+import { logger } from "@/lib/logger";
+import path from "path";
+
+// SECURITY: File upload constraints
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = [
+  // Images
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  // Documents
+  'application/pdf',
+  'text/plain',
+  'text/csv',
+  // Office documents
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+  'application/msword', // .doc
+  'application/vnd.ms-excel', // .xls
+  'application/vnd.ms-powerpoint', // .ppt
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +41,22 @@ export async function POST(request: NextRequest) {
     if (!taskId || !file) {
       return NextResponse.json(
         { error: "Task ID and file are required" },
+        { status: 400 }
+      );
+    }
+
+    // SECURITY: Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File size exceeds maximum allowed size of ${MAX_FILE_SIZE / (1024 * 1024)}MB` },
+        { status: 400 }
+      );
+    }
+
+    // SECURITY: Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: `File type "${file.type}" is not allowed. Allowed types: PDF, images, text files, and Office documents.` },
         { status: 400 }
       );
     }
@@ -40,11 +80,38 @@ export async function POST(request: NextRequest) {
       await mkdir(uploadsDir, { recursive: true });
     }
 
-    // Generate unique filename
+    // SECURITY: Generate unique filename with improved sanitization
     const timestamp = Date.now();
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    
+    // Get basename to prevent path traversal
+    const baseName = path.basename(file.name);
+    
+    // Remove path traversal sequences and dangerous characters
+    let sanitizedFileName = baseName
+      .replace(/\.\./g, '') // Remove path traversal
+      .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace non-alphanumeric (except dots and hyphens) with underscore
+      .replace(/^\.+|\.+$/g, '') // Remove leading/trailing dots
+      .substring(0, 255); // Limit length to prevent filesystem issues
+    
+    // Ensure filename is not empty after sanitization
+    if (!sanitizedFileName || sanitizedFileName.trim() === '') {
+      sanitizedFileName = 'uploaded_file';
+    }
+    
     const fileName = `${timestamp}_${sanitizedFileName}`;
     const filePath = join(uploadsDir, fileName);
+    
+    // SECURITY: Additional check - ensure resolved path is within uploads directory
+    const resolvedPath = path.resolve(filePath);
+    const resolvedUploadsDir = path.resolve(uploadsDir);
+    if (!resolvedPath.startsWith(resolvedUploadsDir)) {
+      logger.error("Path traversal attempt detected", { fileName, resolvedPath, resolvedUploadsDir });
+      return NextResponse.json(
+        { error: "Invalid filename" },
+        { status: 400 }
+      );
+    }
+    
     const relativePath = `/uploads/${taskId}/${fileName}`;
 
     // Save file
@@ -81,7 +148,7 @@ export async function POST(request: NextRequest) {
       createdAt: attachment.createdAt,
     });
   } catch (error) {
-    console.error("Error uploading file:", error);
+    logger.error("Error uploading file", error);
     return NextResponse.json(
       { error: "Failed to upload file" },
       { status: 500 }
@@ -117,7 +184,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(attachments);
   } catch (error) {
-    console.error("Error fetching attachments:", error);
+    logger.error("Error fetching attachments", error);
     return NextResponse.json(
       { error: "Failed to fetch attachments" },
       { status: 500 }

@@ -4,6 +4,7 @@ import { join } from "path";
 import { existsSync } from "fs";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function DELETE(
   request: NextRequest,
@@ -60,7 +61,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting attachment:", error);
+    logger.error("Error deleting attachment", error);
     return NextResponse.json(
       { error: "Failed to delete attachment" },
       { status: 500 }

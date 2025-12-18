@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { createTeam, getTeams } from "@/app/actions/teams";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -10,7 +11,7 @@ export async function GET() {
     const teams = await getTeams(user.id);
     return NextResponse.json(teams);
   } catch (error: any) {
-    console.error("Error fetching teams:", error);
+    logger.error("Error fetching teams", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch teams" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(team, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating team:", error);
+    logger.error("Error creating team", error);
     return NextResponse.json(
       { error: error.message || "Failed to create team" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }

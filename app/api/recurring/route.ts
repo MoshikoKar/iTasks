@@ -4,6 +4,8 @@ import { TaskPriority, Role } from "@prisma/client";
 import parser from "cron-parser";
 import { requireAuth } from "@/lib/auth";
 import { logRecurringTaskCreated } from "@/lib/logging/system-logger";
+import { createRecurringTaskSchema } from "@/lib/validation/recurringTaskSchema";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -11,6 +13,28 @@ export async function POST(request: NextRequest) {
   try {
     const currentUser = await requireAuth();
     const body = await request.json();
+
+    // SECURITY: Validate input with Zod schema
+    const validationResult = createRecurringTaskSchema.safeParse({
+      name: body.name,
+      description: body.templateDescription || body.description || "",
+      cron: body.cron,
+      priority: body.templatePriority || body.priority,
+      type: body.type,
+      branch: body.templateBranch || body.branch,
+      assigneeId: body.templateAssigneeId || body.assigneeId,
+      tags: body.tags,
+      enabled: body.enabled !== false,
+    });
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: `Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validationResult.data;
 
     // Fetch current user with teamId
     const currentUserWithTeam = await db.user.findUnique({
@@ -26,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Regular users can only assign to themselves
     // Admin/TeamLead can assign to users below them
     if (currentUserWithTeam.role === Role.Technician || currentUserWithTeam.role === Role.Viewer) {
-      if (body.templateAssigneeId !== currentUserWithTeam.id) {
+      if (validatedData.assigneeId !== currentUserWithTeam.id) {
         return NextResponse.json(
           { error: "You can only assign recurring tasks to yourself" },
           { status: 403 }
@@ -34,9 +58,9 @@ export async function POST(request: NextRequest) {
       }
     } else if (currentUserWithTeam.role === Role.TeamLead) {
       // TeamLead can assign to themselves or users in their team (but not admin)
-      if (body.templateAssigneeId !== currentUserWithTeam.id) {
+      if (validatedData.assigneeId !== currentUserWithTeam.id) {
         const assignee = await db.user.findUnique({
-          where: { id: body.templateAssigneeId },
+          where: { id: validatedData.assigneeId },
           select: { role: true, teamId: true },
         });
         if (!assignee) {
@@ -60,18 +84,18 @@ export async function POST(request: NextRequest) {
 
     const config = await db.recurringTaskConfig.create({
       data: {
-        name: body.name,
-        cron: body.cron,
-        templateTitle: body.templateTitle,
-        templateDescription: body.templateDescription || null,
-        templatePriority: body.templatePriority as TaskPriority,
-        templateAssigneeId: body.templateAssigneeId,
+        name: validatedData.name,
+        cron: validatedData.cron,
+        templateTitle: body.templateTitle || validatedData.name, // Use name as title if not provided
+        templateDescription: validatedData.description || null,
+        templatePriority: validatedData.priority,
+        templateAssigneeId: validatedData.assigneeId,
         creatorId: currentUserWithTeam.id,
-        templateBranch: body.templateBranch || null,
+        templateBranch: validatedData.branch || null,
         templateServerName: body.templateServerName || null,
         templateApplication: body.templateApplication || null,
         templateIpAddress: body.templateIpAddress || null,
-        nextGenerationAt: computeNextGeneration(body.cron),
+        nextGenerationAt: computeNextGeneration(validatedData.cron),
       },
     });
 
@@ -89,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(config, { status: 201 });
   } catch (error) {
-    console.error("Error creating recurring task config:", error);
+    logger.error("Error creating recurring task config", error);
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -108,7 +132,7 @@ function computeNextGeneration(cron: string): Date {
     });
     return interval.next().toDate();
   } catch (error) {
-    console.error(`Invalid cron expression "${cron}", falling back to 24h offset:`, error);
+    logger.error(`Invalid cron expression "${cron}", falling back to 24h offset`, error);
     return new Date(Date.now() + 24 * 60 * 60 * 1000);
   }
 }

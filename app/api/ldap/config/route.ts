@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { Role, LogActionType, LogEntityType } from '@prisma/client';
 import { encryptSecret } from '@/lib/ldap';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -38,7 +39,7 @@ export async function GET() {
       ldapEnforced: config?.ldapEnforced || false,
     });
   } catch (error) {
-    console.error('Error fetching LDAP config:', error);
+    logger.error('Error fetching LDAP config', error);
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error updating LDAP config:', error);
+    logger.error('Error updating LDAP config', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update LDAP configuration' },
       { status: 500 }

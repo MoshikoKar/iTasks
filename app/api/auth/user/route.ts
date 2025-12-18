@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,7 @@ export async function GET() {
     }
     return NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (error) {
-    console.error("Error fetching current user:", error);
+    logger.error("Error fetching current user", error);
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }

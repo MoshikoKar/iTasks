@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDashboardStats } from "@/app/actions/dashboard";
 import { getCurrentUser } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
+    logger.error("Error fetching dashboard stats", error);
     return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 });
   }
 }

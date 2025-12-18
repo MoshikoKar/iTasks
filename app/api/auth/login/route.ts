@@ -5,6 +5,7 @@ import { SESSION_COOKIE } from "@/lib/constants";
 import { authenticateLDAP, getLDAPConfig } from "@/lib/ldap";
 import { AuthProvider, LogActionType, LogEntityType } from "@prisma/client";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       const parsed = parseUsernameInput(email);
       const username = parsed.username;
       
-      console.log('Attempting LDAP authentication:', {
+      logger.info('Attempting LDAP authentication', {
         input: email,
         parsedUsername: username,
         parsedDomain: parsed.domain,
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       const ldapResult = await authenticateLDAP(username, password);
       
       if (!ldapResult.success) {
-        console.error('LDAP authentication failed:', {
+        logger.error('LDAP authentication failed', {
           username,
           email,
           error: ldapResult.error,
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
     // If we reach here, authentication failed
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   } catch (error) {
-    console.error("Error during login:", error);
+    logger.error("Error during login", error);
     return NextResponse.json({ error: "Failed to login" }, { status: 500 });
   }
 }

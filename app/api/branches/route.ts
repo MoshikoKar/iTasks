@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -29,10 +30,10 @@ export async function GET() {
 
     return NextResponse.json(branches);
   } catch (error) {
-    console.error("Error fetching branches:", error);
+    logger.error("Error fetching branches", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to fetch branches" },
-      { status: error.message?.includes("Unauthorized") ? 401 : 500 }
+      { status: error instanceof Error && error.message?.includes("Unauthorized") ? 401 : 500 }
     );
   }
 }

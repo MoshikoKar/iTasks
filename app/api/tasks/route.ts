@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { createTask } from "@/app/actions/tasks";
 import { requireAuth } from "@/lib/auth";
 import { Role } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -66,10 +67,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(tasks);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    logger.error("Error fetching tasks", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to fetch tasks" },
-      { status: error.message?.includes("Unauthorized") ? 401 : 500 }
+      { status: error instanceof Error && error.message?.includes("Unauthorized") ? 401 : 500 }
     );
   }
 }
@@ -132,10 +133,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const task = await createTask(body);
+    // SECURITY: Remove creatorId from body - it will be set from authenticated user in createTask
+    const { creatorId, ...taskData } = body;
+    const task = await createTask({
+      ...taskData,
+      // creatorId is now derived from authenticated user in createTask
+    });
     return NextResponse.json(task, { status: 201 });
   } catch (error) {
-    console.error("Error creating task:", error);
+    logger.error("Error creating task", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create task" },
       { status: 500 }

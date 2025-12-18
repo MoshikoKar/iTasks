@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { Role } from "@prisma/client";
 import { notifyTaskCommented, notifyUserMentioned } from "@/lib/notifications";
 import { logCommentCreated } from "@/lib/logging/system-logger";
+import { commentSchema } from "@/lib/validation/taskSchema";
 
 /**
  * Add a comment to a task
@@ -16,10 +17,24 @@ export async function addComment(
   mentionedUserIds: string[]
 ) {
   const user = await requireAuth();
-  if (!content.trim()) return;
+  
+  // Validate input with Zod schema
+  const validationResult = commentSchema.safeParse({
+    taskId,
+    content,
+    mentionedUserIds: mentionedUserIds || [],
+  });
+
+  if (!validationResult.success) {
+    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+  }
+
+  const validatedData = validationResult.data;
+  
+  if (!validatedData.content.trim()) return;
 
   const task = await db.task.findUnique({
-    where: { id: taskId },
+    where: { id: validatedData.taskId },
     select: {
       id: true,
       title: true,
@@ -41,9 +56,9 @@ export async function addComment(
     data: {
       taskId: task.id,
       userId: user.id,
-      content,
+      content: validatedData.content,
       mentions: {
-        create: mentionedUserIds.map(userId => ({ userId }))
+        create: validatedData.mentionedUserIds.map(userId => ({ userId }))
       }
     },
   });
@@ -55,8 +70,8 @@ export async function addComment(
     task.title,
     user.id,
     {
-      contentLength: content.length,
-      mentionsCount: mentionedUserIds.length,
+      contentLength: validatedData.content.length,
+      mentionsCount: validatedData.mentionedUserIds.length,
     }
   );
 
@@ -64,7 +79,7 @@ export async function addComment(
     db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true } }),
     db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true } }),
     db.user.findMany({
-      where: { id: { in: mentionedUserIds } },
+      where: { id: { in: validatedData.mentionedUserIds } },
       select: { email: true, name: true }
     }),
     db.comment.groupBy({
@@ -90,7 +105,7 @@ export async function addComment(
           priority: task.priority,
           assigneeName: assignee?.name || "Unknown",
           creatorName: creator?.name || "Unknown",
-          commentContent: content,
+          commentContent: validatedData.content,
           commentAuthor: user.name,
           dueDate: task.dueDate,
           slaDeadline: task.slaDeadline,
@@ -111,10 +126,10 @@ export async function addComment(
         description: task.description,
         status: task.status,
         priority: task.priority,
-        assigneeName: assignee?.name || "Unknown",
-        creatorName: creator?.name || "Unknown",
-        commentContent: content,
-        commentAuthor: user.name,
+          assigneeName: assignee?.name || "Unknown",
+          creatorName: creator?.name || "Unknown",
+          commentContent: validatedData.content,
+          commentAuthor: user.name,
         dueDate: task.dueDate,
         slaDeadline: task.slaDeadline,
       },

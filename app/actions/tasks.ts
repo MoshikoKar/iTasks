@@ -10,6 +10,9 @@ import {
   logTaskPriorityChange,
   logTaskAssigned,
 } from "@/lib/logging/system-logger";
+import { requireAuth } from "@/lib/auth";
+import { createTaskSchema, updateTaskSchema } from "@/lib/validation/taskSchema";
+import { logger } from "@/lib/logger";
 
 async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Promise<Date | null> {
   try {
@@ -41,7 +44,7 @@ async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Pr
     deadline.setHours(deadline.getHours() + hours);
     return deadline;
   } catch (error) {
-    console.error("Error calculating SLA deadline:", error);
+    logger.error("Error calculating SLA deadline", error);
     return null;
   }
 }
@@ -55,7 +58,6 @@ export async function createTask(data: {
   branch?: string;
   type?: TaskType;
   tags?: string[];
-  creatorId: string;
   assigneeId?: string;
   context?: {
     serverName?: string;
@@ -68,41 +70,57 @@ export async function createTask(data: {
     version?: string;
   };
 }) {
-  const assigneeId = data.assigneeId || data.creatorId;
-  const priority = data.priority || TaskPriority.Medium;
+  // SECURITY: Get authenticated user - never trust client-provided creatorId
+  const user = await requireAuth();
+  const creatorId = user.id;
+
+  // Validate input with Zod schema
+  const validationResult = createTaskSchema.safeParse({
+    ...data,
+    creatorId, // Add authenticated creatorId for validation
+    assigneeId: data.assigneeId || creatorId,
+  });
+
+  if (!validationResult.success) {
+    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+  }
+
+  const validatedData = validationResult.data;
+  const assigneeId = validatedData.assigneeId || creatorId;
+  const priority = validatedData.priority || TaskPriority.Medium;
   const createdAt = new Date();
   
   // Calculate SLA deadline if not provided
   let slaDeadline: Date | null = null;
-  if (data.slaDeadline) {
-    slaDeadline = new Date(data.slaDeadline);
+  if (validatedData.slaDeadline) {
+    slaDeadline = new Date(validatedData.slaDeadline);
   } else {
     slaDeadline = await calculateSLADeadline(priority, createdAt);
   }
 
   const task = await db.task.create({
     data: {
-      title: data.title,
-      description: data.description,
-      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      title: validatedData.title,
+      description: validatedData.description,
+      dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
       slaDeadline,
-      priority,
-      branch: data.branch || null,
-      type: data.type || TaskType.Standard,
-      tags: data.tags || [],
-      creatorId: data.creatorId,
+      priority: validatedData.priority,
+      branch: validatedData.branch || null,
+      type: validatedData.type || TaskType.Standard,
+      tags: validatedData.tags || [],
+      creatorId, // ✅ Always use authenticated user's ID
       assigneeId,
-      context: data.context
+      context: validatedData.context
         ? {
             create: {
-              serverName: data.context.serverName,
-              application: data.context.application,
-              workstationId: data.context.workstationId,
-              adUser: data.context.adUser,
-              environment: data.context.environment,
-              ipAddress: data.context.ipAddress,
-              manufacturer: data.context.manufacturer,
-              version: data.context.version,
+              serverName: validatedData.context.serverName,
+              application: validatedData.context.application,
+              workstationId: validatedData.context.workstationId,
+              adUser: validatedData.context.adUser,
+              environment: validatedData.context.environment,
+              ipAddress: validatedData.context.ipAddress,
+              manufacturer: validatedData.context.manufacturer,
+              version: validatedData.context.version,
             },
           }
         : undefined,
@@ -112,7 +130,7 @@ export async function createTask(data: {
   await db.auditLog.create({
     data: {
       taskId: task.id,
-      actorId: data.creatorId,
+      actorId: creatorId, // ✅ Use authenticated user's ID
       action: "create",
       newValue: task,
     },
@@ -127,7 +145,7 @@ export async function createTask(data: {
   await logTaskCreated(
     task.id,
     task.title,
-    data.creatorId,
+    creatorId, // ✅ Use authenticated user's ID
     {
       assigneeId: task.assigneeId,
       assigneeName: assignee?.name,
@@ -174,6 +192,11 @@ export async function updateTask(
   }>,
   actorId: string
 ) {
+  // Validate input with Zod schema
+  const validationResult = updateTaskSchema.safeParse(data);
+  if (!validationResult.success) {
+    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+  }
   const existing = await db.task.findUnique({
     where: { id },
     include: { creator: true, assignee: true }
@@ -202,16 +225,16 @@ export async function updateTask(
   const updated = await db.task.update({
     where: { id },
     data: {
-      title: data.title ?? existing.title,
-      description: data.description ?? existing.description,
-      dueDate: data.dueDate === undefined ? existing.dueDate : data.dueDate ? new Date(data.dueDate) : null,
+      title: validatedData.title ?? existing.title,
+      description: validatedData.description ?? existing.description,
+      dueDate: validatedData.dueDate === undefined ? existing.dueDate : validatedData.dueDate ? new Date(validatedData.dueDate) : null,
       slaDeadline:
-        data.slaDeadline === undefined ? existing.slaDeadline : data.slaDeadline ? new Date(data.slaDeadline) : null,
-      status: data.status ?? existing.status,
-      priority: data.priority ?? existing.priority,
-      branch: data.branch === undefined ? existing.branch : data.branch,
-      assigneeId: data.assigneeId ?? existing.assigneeId,
-      tags: data.tags ?? existing.tags,
+        validatedData.slaDeadline === undefined ? existing.slaDeadline : validatedData.slaDeadline ? new Date(validatedData.slaDeadline) : null,
+      status: validatedData.status ?? existing.status,
+      priority: validatedData.priority ?? existing.priority,
+      branch: validatedData.branch === undefined ? existing.branch : validatedData.branch,
+      assigneeId: validatedData.assigneeId ?? existing.assigneeId,
+      tags: validatedData.tags ?? existing.tags,
     },
   });
 
@@ -265,25 +288,25 @@ export async function updateTask(
   // Track changes for system log
   const changes: Record<string, { old: unknown; new: unknown }> = {};
   
-  if (data.title !== undefined && existing.title !== updated.title) {
+  if (validatedData.title !== undefined && existing.title !== updated.title) {
     changes.title = { old: existing.title, new: updated.title };
   }
-  if (data.description !== undefined && existing.description !== updated.description) {
+  if (validatedData.description !== undefined && existing.description !== updated.description) {
     changes.description = { old: existing.description, new: updated.description };
   }
-  if (data.status !== undefined && existing.status !== updated.status) {
+  if (validatedData.status !== undefined && existing.status !== updated.status) {
     changes.status = { old: existing.status, new: updated.status };
   }
-  if (data.priority !== undefined && existing.priority !== updated.priority) {
+  if (validatedData.priority !== undefined && existing.priority !== updated.priority) {
     changes.priority = { old: existing.priority, new: updated.priority };
   }
-  if (data.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId) {
+  if (validatedData.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId) {
     changes.assigneeId = { old: existing.assigneeId, new: updated.assigneeId };
   }
-  if (data.dueDate !== undefined && existing.dueDate?.getTime() !== updated.dueDate?.getTime()) {
+  if (validatedData.dueDate !== undefined && existing.dueDate?.getTime() !== updated.dueDate?.getTime()) {
     changes.dueDate = { old: existing.dueDate, new: updated.dueDate };
   }
-  if (data.branch !== undefined && existing.branch !== updated.branch) {
+  if (validatedData.branch !== undefined && existing.branch !== updated.branch) {
     changes.branch = { old: existing.branch, new: updated.branch };
   }
 
@@ -293,7 +316,7 @@ export async function updateTask(
   let hasAssigneeChange = false;
 
   // Create system logs for specific changes
-  if (data.status !== undefined && existing.status !== updated.status) {
+  if (validatedData.status !== undefined && existing.status !== updated.status) {
     hasStatusChange = true;
     await logTaskStatusChange(
       id,
@@ -304,7 +327,7 @@ export async function updateTask(
     );
   }
 
-  if (data.priority !== undefined && existing.priority !== updated.priority) {
+  if (validatedData.priority !== undefined && existing.priority !== updated.priority) {
     hasPriorityChange = true;
     await logTaskPriorityChange(
       id,
@@ -315,7 +338,7 @@ export async function updateTask(
     );
   }
 
-  if (data.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId && newAssignee) {
+  if (validatedData.assigneeId !== undefined && existing.assigneeId !== updated.assigneeId && newAssignee) {
     hasAssigneeChange = true;
     await logTaskAssigned(
       id,

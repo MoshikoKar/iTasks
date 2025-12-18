@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { sendMail } from "@/lib/smtp";
 import { createSystemLog } from "@/lib/logging/system-logger";
 import { LogEntityType, LogActionType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -143,7 +144,7 @@ This is an automated notification from iTasks.
         html: emailHtml,
       });
     } catch (emailError) {
-      console.error("Failed to send contact email:", emailError);
+      logger.error("Failed to send contact email", emailError);
       return NextResponse.json(
         { error: "Failed to send email. Please try again later." },
         { status: 500 }
@@ -165,7 +166,7 @@ This is an automated notification from iTasks.
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error processing contact form:", error);
+    logger.error("Error processing contact form", error);
     return NextResponse.json(
       { error: "Failed to process contact form submission" },
       { status: 500 }

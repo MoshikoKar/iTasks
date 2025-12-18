@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { Role } from '@prisma/client';
 import { testLDAPConnection, testLDAPConnectionWithAutoDiscovery } from '@/lib/ldap';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: result.error });
     }
   } catch (error) {
-    console.error('Error testing LDAP connection:', error);
+    logger.error('Error testing LDAP connection', error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Test failed' },
       { status: 500 }

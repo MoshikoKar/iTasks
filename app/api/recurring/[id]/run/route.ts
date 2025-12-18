@@ -5,6 +5,7 @@ import { sendMail } from "@/lib/smtp";
 import parser from "cron-parser";
 import { requireAuth } from "@/lib/auth";
 import { logRecurringTaskGenerated } from "@/lib/logging/system-logger";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -128,7 +129,7 @@ export async function POST(
           creatorName: creator?.name || "System",
         }),
       }).catch((err) => {
-        console.error(`Failed to send recurring task notification email to ${assignee.email}:`, err);
+        logger.error(`Failed to send recurring task notification email to ${assignee.email}`, err);
       });
     }
 
@@ -142,7 +143,7 @@ export async function POST(
       nextGenerationAt: next,
     });
   } catch (error) {
-    console.error("Error running recurring task:", error);
+    logger.error("Error running recurring task", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to run recurring task" },
       { status: 500 }
@@ -158,7 +159,7 @@ function computeNext(cron: string, from: Date): Date {
     });
     return interval.next().toDate();
   } catch (error) {
-    console.error(`Invalid cron expression "${cron}", falling back to 24h offset:`, error);
+    logger.error(`Invalid cron expression "${cron}", falling back to 24h offset`, error);
     return new Date(from.getTime() + 24 * 60 * 60 * 1000);
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { updateTeam, deleteTeam, getTeamMembers } from "@/app/actions/teams";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(team);
   } catch (error: any) {
-    console.error("Error fetching team:", error);
+    logger.error("Error fetching team", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch team" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -33,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const team = await updateTeam(id, data, user.id);
     return NextResponse.json(team);
   } catch (error: any) {
-    console.error("Error updating team:", error);
+    logger.error("Error updating team", error);
     return NextResponse.json(
       { error: error.message || "Failed to update team" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }
@@ -48,7 +49,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await deleteTeam(id, user.id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting team:", error);
+    logger.error("Error deleting team", error);
     return NextResponse.json(
       { error: error.message || "Failed to delete team" },
       { status: error.message?.includes("Unauthorized") ? 403 : 500 }

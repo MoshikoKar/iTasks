@@ -4,6 +4,7 @@ import { requireRole, getCurrentUser } from "@/lib/auth";
 import { Role, LogEntityType, LogActionType } from "@prisma/client";
 import { clearSMTPCache } from "@/lib/smtp";
 import { createSystemLog } from "@/lib/logging/system-logger";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -23,9 +24,16 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json(config);
+    // SECURITY: Redact sensitive fields before returning
+    const safeConfig = {
+      ...config,
+      smtpPassword: config.smtpPassword ? '[REDACTED]' : null,
+      ldapBindPassword: config.ldapBindPassword ? '[REDACTED]' : null,
+    };
+
+    return NextResponse.json(safeConfig);
   } catch (error) {
-    console.error("Error fetching system config:", error);
+    logger.error("Error fetching system config", error);
     return NextResponse.json(
       { error: "Failed to fetch system configuration" },
       { status: 500 }
@@ -100,19 +108,39 @@ export async function PATCH(request: NextRequest) {
       }
 
       if (Object.keys(changes).length > 0) {
+        // SECURITY: Redact sensitive fields in log metadata
+        const safeChanges: Record<string, { old: unknown; new: unknown }> = {};
+        for (const [key, value] of Object.entries(changes)) {
+          if (key === 'smtpPassword' || key === 'ldapBindPassword') {
+            safeChanges[key] = {
+              old: value.old ? '[REDACTED]' : null,
+              new: value.new ? '[REDACTED]' : null,
+            };
+          } else {
+            safeChanges[key] = value;
+          }
+        }
+        
         await createSystemLog({
           entityType: LogEntityType.System,
           actionType: LogActionType.Update,
           actorId: user.id,
           description: `System configuration updated by ${user.name}`,
-          metadata: { changes },
+          metadata: { changes: safeChanges },
         });
       }
     }
 
-    return NextResponse.json(config);
+    // SECURITY: Redact sensitive fields before returning
+    const safeConfig = {
+      ...config,
+      smtpPassword: config.smtpPassword ? '[REDACTED]' : null,
+      ldapBindPassword: config.ldapBindPassword ? '[REDACTED]' : null,
+    };
+
+    return NextResponse.json(safeConfig);
   } catch (error) {
-    console.error("Error updating system config:", error);
+    logger.error("Error updating system config", error);
     return NextResponse.json(
       { error: "Failed to update system configuration" },
       { status: 500 }
