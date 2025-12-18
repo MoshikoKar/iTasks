@@ -290,6 +290,9 @@ model SystemConfig {
   ldapUsernameAttribute String? @default("uid")
   ldapEnforced     Boolean @default(false) // If true, only LDAP auth (except bootstrap admin)
   
+  // Variable Configuration
+  supportEmail     String?
+  
   updatedAt DateTime @updatedAt
   updatedBy String?
 }

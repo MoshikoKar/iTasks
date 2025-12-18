@@ -16,6 +16,7 @@ import {
   LogOut,
   Users,
   FileText,
+  MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -25,6 +26,7 @@ const items = [
   { href: "/sla", label: "SLA & Exceptions", icon: Shield, roles: [Role.Admin, Role.TeamLead] },
   { href: "/recurring", label: "Recurring Tasks", icon: Repeat, roles: [Role.Admin, Role.TeamLead] },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: [Role.Admin, Role.TeamLead] },
+  { href: "/contact", label: "Contact Support", icon: MessageSquare, roles: [Role.Admin, Role.TeamLead, Role.Technician, Role.Viewer] },
   { href: "/admin", label: "Admin", icon: Settings, roles: [Role.Admin] },
 ];
 

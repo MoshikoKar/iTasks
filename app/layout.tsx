@@ -7,6 +7,8 @@ import type { Metadata } from "next";
 import { ClientWrapper } from "@/components/ClientWrapper";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Footer } from "@/components/footer";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +19,23 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
+  
+  // Fetch support email from system config
+  let supportEmail: string | null = null;
+  try {
+    const config = await db.systemConfig.findUnique({
+      where: { id: "system" },
+      select: { supportEmail: true },
+    });
+    supportEmail = config?.supportEmail || null;
+  } catch (error) {
+    console.error("Failed to fetch support email:", error);
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-neutral-900 dark:text-neutral-100" suppressHydrationWarning>
+      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-neutral-900 dark:text-neutral-100 flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="theme">
           <a 
             href="#main-content" 
@@ -31,14 +45,22 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           </a>
           <ClientWrapper>
             {user ? (
-              <div className="flex h-screen w-full overflow-hidden">
-                <Sidebar userRole={user.role} userName={user.name} />
-                <main id="main-content" className="flex flex-1 flex-col overflow-y-auto bg-white dark:bg-neutral-900 p-6">
-                  {children}
-                </main>
+              <div className="flex h-screen w-full overflow-hidden flex-col">
+                <div className="flex flex-1 overflow-hidden">
+                  <Sidebar userRole={user.role} userName={user.name} />
+                  <main id="main-content" className="flex flex-1 flex-col overflow-y-auto bg-white dark:bg-neutral-900">
+                    <div className="flex-1 p-6">
+                      {children}
+                    </div>
+                    <Footer supportEmail={supportEmail} />
+                  </main>
+                </div>
               </div>
             ) : (
-              <main id="main-content" className="p-6">{children}</main>
+              <div className="flex flex-col min-h-screen">
+                <main id="main-content" className="flex-1 p-6">{children}</main>
+                <Footer supportEmail={supportEmail} />
+              </div>
             )}
           </ClientWrapper>
           <Toaster position="top-right" richColors />

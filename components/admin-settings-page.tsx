@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Mail, Activity } from 'lucide-react';
+import { Settings, Mail, Activity, Sliders } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
@@ -18,12 +18,16 @@ const SLAConfigForm = dynamic(() => import('./sla-config-form').then(mod => ({ d
 const LDAPConfigForm = dynamic(() => import('./ldap-config-form').then(mod => ({ default: mod.LDAPConfigForm })), {
   ssr: false,
 });
+const VariableConfigForm = dynamic(() => import('./variable-config-form').then(mod => ({ default: mod.VariableConfigForm })), {
+  ssr: false,
+});
 
 export function AdminSettingsPage() {
   const router = useRouter();
   const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
   const [isSLAModalOpen, setIsSLAModalOpen] = useState(false);
   const [isLDAPModalOpen, setIsLDAPModalOpen] = useState(false);
+  const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -90,6 +94,24 @@ export function AdminSettingsPage() {
               Configure
             </Button>
           </div>
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
+                <Sliders size={20} className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <div className="font-medium text-slate-900 dark:text-neutral-100">Variable Configuration</div>
+                <div className="text-sm text-slate-600 dark:text-neutral-400">Application-wide variables (support email, etc.)</div>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              className="text-blue-600 dark:text-blue-400"
+              onClick={() => setIsVariableModalOpen(true)}
+            >
+              Configure
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -138,6 +160,22 @@ export function AdminSettingsPage() {
             router.refresh();
           }}
           onCancel={() => setIsLDAPModalOpen(false)}
+        />
+      </Modal>
+
+      {/* Variable Configuration Modal */}
+      <Modal
+        isOpen={isVariableModalOpen}
+        onClose={() => setIsVariableModalOpen(false)}
+        title="Configure Variables"
+        size="md"
+      >
+        <VariableConfigForm
+          onSuccess={() => {
+            setIsVariableModalOpen(false);
+            router.refresh();
+          }}
+          onCancel={() => setIsVariableModalOpen(false)}
         />
       </Modal>
     </div>
