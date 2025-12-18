@@ -438,7 +438,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label htmlFor="ldapHost" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="ldapHost" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               LDAP Host <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
@@ -448,14 +448,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               required
               value={ldapHost}
               onChange={(e) => setLdapHost(handleHostChange(e.target.value))}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
               placeholder="ldap.example.com or ldaps://ldap.example.com"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">Hostname or IP address of the LDAP server</p>
           </div>
 
           <div>
-            <label htmlFor="ldapPort" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="ldapPort" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Port <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
@@ -467,7 +467,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               max="65535"
               value={ldapPort}
               onChange={(e) => setLdapPort(parseInt(e.target.value, 10) || 389)}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
               {ldapUseTls ? '636 (LDAPS recommended)' : '389 (LDAP) or 636 (LDAPS)'}
@@ -494,14 +494,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-neutral-700">
           <label htmlFor="useAutoDiscovery" className="flex items-center gap-1.5 cursor-pointer">
             <Checkbox
               id="useAutoDiscovery"
               checked={useAutoDiscovery}
               onChange={(e) => setUseAutoDiscovery(e.target.checked)}
             />
-            <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">
+            <span className="text-sm font-semibold text-slate-900 dark:text-neutral-100 whitespace-nowrap">
               Auto-Discover Bind DN and Base DN
             </span>
           </label>
@@ -518,7 +518,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label htmlFor="ldapUsername" className="flex items-center whitespace-nowrap text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
+                <label htmlFor="ldapUsername" className="flex items-center whitespace-nowrap text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
                   Service Account <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
@@ -559,7 +559,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                       setLdapUsername(value);
                     }
                   }}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                   placeholder="Domain\username or email"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
@@ -568,7 +568,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               </div>
 
               <div>
-                <label htmlFor="ldapBindPassword" className="flex items-center whitespace-nowrap text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
+                <label htmlFor="ldapBindPassword" className="flex items-center whitespace-nowrap text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
                   Password <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <div className="relative">
@@ -579,7 +579,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                     required
                     value={ldapPassword}
                     onChange={(e) => setLdapPassword(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                    className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                     placeholder="Service account password"
                   />
                   <button
@@ -596,7 +596,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               </div>
 
               <div>
-                <label htmlFor="ldapBaseDn" className="flex items-center justify-between whitespace-nowrap text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
+                <label htmlFor="ldapBaseDn" className="flex items-center justify-between whitespace-nowrap text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1 h-5">
                   <span>Base DN</span>
                   <span className="text-xs font-normal text-slate-400 dark:text-neutral-500 whitespace-nowrap">(optional, auto-generated)</span>
                 </label>
@@ -606,7 +606,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                   name="ldapBaseDn"
                   value={discoveredBaseDn || config.ldapBaseDn}
                   onChange={(e) => setDiscoveredBaseDn(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                   placeholder="dc=company,dc=com (auto-generated)"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
@@ -617,7 +617,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
             {!ldapUsername.includes('\\') && !ldapUsername.includes('@') && (
               <div>
-                <label htmlFor="ldapDomain" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                <label htmlFor="ldapDomain" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                   Domain <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
@@ -627,7 +627,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                   required={useAutoDiscovery && !ldapUsername.includes('\\') && !ldapUsername.includes('@')}
                   value={ldapDomain}
                   onChange={(e) => setLdapDomain(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                   placeholder="example.com"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">Active Directory domain (only needed if username doesn't include domain)</p>
@@ -661,7 +661,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         ) : (
           <>
             <div>
-              <label htmlFor="ldapBaseDn" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="ldapBaseDn" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Base DN <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
@@ -670,14 +670,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                 name="ldapBaseDn"
                 required={!useAutoDiscovery}
                 defaultValue={config.ldapBaseDn}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="dc=example,dc=com"
               />
               <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">Base Distinguished Name for user searches</p>
             </div>
 
             <div>
-              <label htmlFor="ldapBindDn" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="ldapBindDn" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Bind DN <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <input
@@ -686,7 +686,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                 name="ldapBindDn"
                 required={!useAutoDiscovery}
                 defaultValue={config.ldapBindDn}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="cn=admin,dc=example,dc=com"
               />
               <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">Service account DN for binding to LDAP</p>
@@ -696,7 +696,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
         {!useAutoDiscovery && (
           <div>
-            <label htmlFor="ldapBindPassword" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="ldapBindPassword" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Password <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <div className="relative">
@@ -707,7 +707,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                 required
                 value={ldapPassword}
                 onChange={(e) => setLdapPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="Enter password (leave empty to keep current)"
               />
               <button
@@ -725,7 +725,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         )}
 
         <div>
-          <label htmlFor="ldapUserSearchFilter" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="ldapUserSearchFilter" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             User Search Filter
           </label>
           <input
@@ -733,7 +733,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             id="ldapUserSearchFilter"
             name="ldapUserSearchFilter"
             defaultValue={config.ldapUserSearchFilter}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="(sAMAccountName={{username}})"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
@@ -745,7 +745,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         </div>
 
         <div>
-          <label htmlFor="ldapUsernameAttribute" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="ldapUsernameAttribute" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             Username Attribute
           </label>
           <input
@@ -753,7 +753,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             id="ldapUsernameAttribute"
             name="ldapUsernameAttribute"
             defaultValue={config.ldapUsernameAttribute}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="sAMAccountName"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">

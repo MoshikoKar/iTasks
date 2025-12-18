@@ -50,6 +50,8 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         environment: formData.get('environment') as string || undefined,
         workstationId: formData.get('workstationId') as string || undefined,
         adUser: formData.get('adUser') as string || undefined,
+        manufacturer: formData.get('manufacturer') as string || undefined,
+        version: formData.get('version') as string || undefined,
       },
     };
 
@@ -123,7 +125,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             id="title"
             name="title"
             required
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             placeholder="Enter task title"
           />
         </div>
@@ -138,7 +140,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             name="description"
             required
             rows={4}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all resize-none"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all resize-none"
             placeholder="Describe the task in detail"
           />
         </div>
@@ -146,14 +148,14 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         {/* Priority, Branch, and Assignee Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="priority" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Priority
             </label>
             <select
               id="priority"
               name="priority"
               defaultValue="Medium"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -163,7 +165,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           </div>
 
           <div>
-            <label htmlFor="branch" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="branch" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Branch / Location
             </label>
             <input
@@ -172,7 +174,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
               name="branch"
               list="branch-suggestions"
               autoComplete="off"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
               placeholder="e.g., Main Office, Branch A"
             />
             <datalist id="branch-suggestions">
@@ -183,14 +185,14 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           </div>
 
           <div>
-            <label htmlFor="assigneeId" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="assigneeId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Assign To
             </label>
             <select
               id="assigneeId"
               name="assigneeId"
               defaultValue={currentUserId}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             >
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
@@ -204,26 +206,26 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         {/* Due Date and SLA Deadline Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="dueDate" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               Due Date
             </label>
             <input
               type="datetime-local"
               id="dueDate"
               name="dueDate"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             />
           </div>
 
           <div>
-            <label htmlFor="slaDeadline" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="slaDeadline" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
               SLA Deadline
             </label>
             <input
               type="datetime-local"
               id="slaDeadline"
               name="slaDeadline"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
             />
           </div>
         </div>
@@ -279,54 +281,54 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         {/* IT Context Section */}
         <div className="pt-4 border-t border-slate-200 dark:border-neutral-700">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 mb-3">IT Asset Context (Optional)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <div>
-              <label htmlFor="serverName" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="serverName" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Server Name
               </label>
               <input
                 type="text"
                 id="serverName"
                 name="serverName"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="e.g., SRV-WEB-01"
               />
             </div>
 
             <div>
-              <label htmlFor="application" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="application" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Application
               </label>
               <input
                 type="text"
                 id="application"
                 name="application"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="e.g., Exchange Server"
               />
             </div>
 
             <div>
-              <label htmlFor="ipAddress" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="ipAddress" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 IP Address
               </label>
               <input
                 type="text"
                 id="ipAddress"
                 name="ipAddress"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="e.g., 192.168.1.100"
               />
             </div>
 
             <div>
-              <label htmlFor="environment" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="environment" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Environment
               </label>
               <select
                 id="environment"
                 name="environment"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
               >
                 <option value="">Select...</option>
                 <option value="Production">Production</option>
@@ -337,28 +339,54 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             </div>
 
             <div>
-              <label htmlFor="workstationId" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="workstationId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 Workstation ID
               </label>
               <input
                 type="text"
                 id="workstationId"
                 name="workstationId"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="e.g., WS-USER-123"
               />
             </div>
 
             <div>
-              <label htmlFor="adUser" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="adUser" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
                 AD User
               </label>
               <input
                 type="text"
                 id="adUser"
                 name="adUser"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
                 placeholder="e.g., john.doe"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="manufacturer" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                Manufacturer
+              </label>
+              <input
+                type="text"
+                id="manufacturer"
+                name="manufacturer"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                placeholder="e.g., Dell, HP, Microsoft"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="version" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                Version
+              </label>
+              <input
+                type="text"
+                id="version"
+                name="version"
+                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                placeholder="e.g., 1.0.0, Windows 10"
               />
             </div>
           </div>

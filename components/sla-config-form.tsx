@@ -126,7 +126,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="slaCriticalHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="slaCriticalHours" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             Critical Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
@@ -136,7 +136,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaCriticalHours ?? 4}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaCriticalHours ?? 4)} - Tasks with Critical priority must be resolved within this time
@@ -144,7 +144,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
         </div>
 
         <div>
-          <label htmlFor="slaHighHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="slaHighHours" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             High Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
@@ -154,7 +154,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaHighHours ?? 24}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaHighHours ?? 24)} - Tasks with High priority must be resolved within this time
@@ -162,7 +162,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
         </div>
 
         <div>
-          <label htmlFor="slaMediumHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="slaMediumHours" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             Medium Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
@@ -172,7 +172,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaMediumHours ?? 48}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaMediumHours ?? 48)} - Tasks with Medium priority must be resolved within this time
@@ -180,7 +180,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
         </div>
 
         <div>
-          <label htmlFor="slaLowHours" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="slaLowHours" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
             Low Priority (hours) <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
@@ -190,7 +190,7 @@ export function SLAConfigForm({ onSuccess, onCancel }: SLAConfigFormProps) {
             required
             min="1"
             defaultValue={config.slaLowHours ?? 120}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
             Default: {formatHours(config.slaLowHours ?? 120)} - Tasks with Low priority must be resolved within this time

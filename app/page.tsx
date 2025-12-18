@@ -15,6 +15,7 @@ import {
   AlertOctagon,
 } from "lucide-react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { BarChart } from "@/components/BarChart";
 import { DonutChart } from "@/components/DonutChart";
 import { Badge } from "@/components/ui/badge";
@@ -56,9 +57,15 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const { resolvedTheme } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(60);
+  
+  const isDark = resolvedTheme === "dark";
+  const cardShadow = isDark 
+    ? "rgba(255, 255, 255, 0.15) 0px 50px 100px -20px, rgba(255, 255, 255, 0.2) 0px 30px 60px -30px, rgba(255, 255, 255, 0.25) 0px -2px 6px 0px inset"
+    : "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset";
 
   const fetchStats = useCallback(async () => {
     if (!user?.id) return;
@@ -210,7 +217,7 @@ export default function DashboardPage() {
               View all →
             </Link>
           </div>
-          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800" style={{ boxShadow: cardShadow }}>
             {stats.myOpenTasks.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <CheckCircle2 size={40} className="mx-auto text-green-500 dark:text-green-400 mb-2" />
@@ -274,7 +281,7 @@ export default function DashboardPage() {
               View all →
             </Link>
           </div>
-          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800" style={{ boxShadow: cardShadow }}>
             {stats.myDay.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <CheckCircle2 size={40} className="mx-auto text-green-500 dark:text-green-400 mb-2" />
@@ -324,7 +331,7 @@ export default function DashboardPage() {
       {/* Analytics Widgets - 3 or 4 columns row based on role */}
       <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === 'Technician' || user?.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
         {/* Weekly Ticket Volume */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6" style={{ boxShadow: cardShadow }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
               <BarChart3 size={20} className="text-blue-600 dark:text-blue-400" />
@@ -335,7 +342,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Tasks by Priority */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6" style={{ boxShadow: cardShadow }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
               <PieChart size={20} className="text-blue-600 dark:text-blue-400" />
@@ -348,7 +355,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Tasks by Branch */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6" style={{ boxShadow: cardShadow }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
               <TrendingUp size={20} className="text-blue-600 dark:text-blue-400" />
@@ -382,7 +389,7 @@ export default function DashboardPage() {
 
         {/* Tasks per Technician - Only visible for Admin and TeamLead */}
         {(user?.role === 'Admin' || user?.role === 'TeamLead') && (
-          <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+          <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6" style={{ boxShadow: cardShadow }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
                 <ListTodo size={20} className="text-blue-600 dark:text-blue-400" />
@@ -417,7 +424,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stale Tasks */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6" style={{ boxShadow: cardShadow }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
             <AlertOctagon size={20} className="text-orange-600 dark:text-orange-400" />
@@ -473,6 +480,11 @@ function StatCard({
   highlight?: boolean;
   href?: string;
 }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const cardShadow = isDark 
+    ? "rgba(255, 255, 255, 0.15) 0px 50px 100px -20px, rgba(255, 255, 255, 0.2) 0px 30px 60px -30px, rgba(255, 255, 255, 0.25) 0px -2px 6px 0px inset"
+    : "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset";
   const colorClasses = {
     blue: "from-blue-500 to-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20",
     red: "from-red-500 to-red-600 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20",
@@ -483,9 +495,10 @@ function StatCard({
   const cardContent = (
     <motion.div
       className={`group relative overflow-hidden rounded-xl border ${
-        highlight ? "border-red-300 dark:border-red-600 shadow-lg shadow-red-100 dark:shadow-red-900/20" : "border-slate-200 dark:border-neutral-700"
+        highlight ? "border-red-300 dark:border-red-600" : "border-slate-200 dark:border-neutral-700"
       } bg-white dark:bg-neutral-800 p-6 ${href ? "cursor-pointer" : ""}`}
-      whileHover={{ y: -4, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
+      style={{ boxShadow: cardShadow }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
       <div className="flex items-start justify-between">
