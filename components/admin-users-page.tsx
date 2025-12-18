@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
+import { ErrorAlert } from './ui/error-alert';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -57,6 +58,7 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isTeamDeleting, setIsTeamDeleting] = useState(false);
+  const [teamError, setTeamError] = useState<string>('');
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
@@ -117,15 +119,16 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || 'Failed to save team');
+        setTeamError(error.error || 'Failed to save team');
         return;
       }
 
       setIsTeamModalOpen(false);
       setSelectedTeam(null);
+      setTeamError('');
       router.refresh();
     } catch (error) {
-      alert('An error occurred while saving the team');
+      setTeamError('An error occurred while saving the team');
     }
   };
 
@@ -140,13 +143,16 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || 'Failed to delete team');
+        setTeamError(error.error || 'Failed to delete team');
+        setIsTeamDeleting(false);
         return;
       }
 
+      setTeamError('');
       router.refresh();
     } catch (error) {
-      alert('An error occurred while deleting the team');
+      setTeamError('An error occurred while deleting the team');
+      setIsTeamDeleting(false);
     } finally {
       setIsTeamDeleting(false);
     }
@@ -174,31 +180,31 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Users & Teams</h1>
+      <h1 className="text-3xl font-bold text-foreground">Users & Teams</h1>
 
       {/* User Statistics and Teams Management - Side by Side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Statistics */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <UserPlus size={20} className="text-blue-600 dark:text-blue-400" />
+        <section className="card-base p-6">
+          <h2 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
+            <UserPlus size={20} className="text-primary" />
             User Statistics
           </h2>
           <div className="grid gap-4 sm:grid-cols-4">
             {sortedStats.map((stat) => (
-              <div key={stat.role} className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm font-medium text-slate-600 dark:text-neutral-400">{stat.role}</div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{stat._count}</div>
+              <div key={stat.role} className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-muted-foreground">{stat.role}</div>
+                <div className="text-3xl font-bold text-foreground mt-1">{stat._count}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Teams Management */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+        <section className="card-base p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Building2 size={20} className="text-primary" />
             Teams / Departments
           </h2>
           <Button
@@ -206,6 +212,7 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
             onClick={() => {
               setSelectedTeam(null);
               setIsTeamModalOpen(true);
+              setTeamError('');
             }}
             className="gap-2"
             style={{ padding: '10px 20px' }}
@@ -214,22 +221,27 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
             Create Team
           </Button>
         </div>
+        {teamError && (
+          <div className="mb-4">
+            <ErrorAlert message={teamError} onDismiss={() => setTeamError('')} />
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {teams.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-slate-500 dark:text-neutral-400">
+            <div className="col-span-full text-center py-8 text-muted-foreground">
               No teams created yet. Create your first team to organize users.
             </div>
           ) : (
             teams.map((team) => (
               <div
                 key={team.id}
-                className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 dark:text-neutral-100 truncate">{team.name}</h3>
+                    <h3 className="font-semibold text-foreground truncate">{team.name}</h3>
                     {team.description && (
-                      <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                         {team.description}
                       </p>
                     )}
@@ -239,21 +251,24 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
                       onClick={() => {
                         setSelectedTeam(team);
                         setIsTeamModalOpen(true);
+                        setTeamError('');
                       }}
-                      className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                      className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+                      aria-label={`Edit team ${team.name}`}
                     >
-                      <Edit2 size={14} />
+                      <Edit2 size={14} aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => handleDeleteTeam(team)}
                       disabled={isTeamDeleting}
-                      className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50"
+                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50"
+                      aria-label={`Delete team ${team.name}`}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 dark:text-neutral-400 flex items-center gap-1 mt-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
                   <UserPlus size={12} />
                   {team._count.members} member{team._count.members !== 1 ? 's' : ''}
                 </div>
@@ -265,9 +280,9 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
       </div>
 
       {/* Users Table */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <section className="card-base p-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Users</h2>
+          <h2 className="text-lg font-semibold text-foreground">Users</h2>
           <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
@@ -275,53 +290,53 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-700 dark:to-neutral-800">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Role</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Team</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Tasks Assigned</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Tasks Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-200">Actions</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Name</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Email</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Role</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Team</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Tasks Assigned</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Tasks Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-t border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">{user.name}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user.email}</td>
+                <tr key={user.id} className="border-t border-border hover:bg-muted/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-foreground">{user.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">
                     <RoleBadge role={user.role} />
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {user.team ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary border border-primary/20">
                         <Building2 size={12} />
                         {user.team.name}
                       </span>
                     ) : (
-                      <span className="text-slate-400 dark:text-neutral-500">-</span>
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user._count.tasksAssigned}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">{user._count.tasksCreated}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-300">
+                  <td className="px-4 py-3 text-muted-foreground">{user._count.tasksAssigned}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user._count.tasksCreated}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {formatDateTimeStable(user.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-primary hover:text-primary/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Edit2 size={14} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-destructive hover:text-destructive/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Trash2 size={14} />
                         Delete
@@ -385,12 +400,9 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
       >
         <div className="space-y-4">
           {deleteError && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">
-              <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-              <span className="text-sm text-red-800">{deleteError}</span>
-            </div>
+            <ErrorAlert message={deleteError} onDismiss={() => setDeleteError('')} />
           )}
-          <p className="text-slate-700">
+          <p className="text-foreground">
             Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
@@ -417,14 +429,18 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
         onClose={() => {
           setIsTeamModalOpen(false);
           setSelectedTeam(null);
+          setTeamError('');
         }}
         title={selectedTeam ? 'Edit Team' : 'Create Team'}
         size="md"
       >
         <form onSubmit={handleSaveTeam} className="space-y-4">
+          {teamError && (
+            <ErrorAlert message={teamError} onDismiss={() => setTeamError('')} />
+          )}
           <div>
-            <label htmlFor="team-name" className="block text-sm font-medium text-slate-700 mb-1">
-              Team Name <span className="text-red-500">*</span>
+            <label htmlFor="team-name" className="block text-sm font-medium text-foreground mb-1">
+              Team Name <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
@@ -432,13 +448,13 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
               name="name"
               required
               defaultValue={selectedTeam?.name}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="input-base"
               placeholder="e.g., IT Support, Field Technicians"
             />
           </div>
 
           <div>
-            <label htmlFor="team-description" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="team-description" className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -446,12 +462,12 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
               name="description"
               rows={3}
               defaultValue={selectedTeam?.description || ''}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="input-base"
               placeholder="Brief description of this team's responsibilities"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button
               type="button"
               variant="secondary"
@@ -474,10 +490,10 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
 
 function RoleBadge({ role }: { role: Role }) {
   const colors: Record<Role, string> = {
-    Admin: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
-    TeamLead: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
-    Technician: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800',
-    Viewer: 'bg-slate-100 dark:bg-neutral-700 text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-neutral-600',
+    Admin: 'bg-primary/10 text-primary border border-primary/20',
+    TeamLead: 'bg-primary/10 text-primary border border-primary/20',
+    Technician: 'bg-success/10 text-success border border-success/20',
+    Viewer: 'bg-muted text-muted-foreground border border-border',
   };
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[role]}`}>

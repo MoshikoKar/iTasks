@@ -35,6 +35,8 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations
+clear-database.ps1
+db.details
 
 # uploads
 /public/uploads

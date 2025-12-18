@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Role } from '@prisma/client';
 import { Button } from './button';
 import { AlertCircle } from 'lucide-react';
+import { ErrorAlert } from './ui/error-alert';
 
 interface Team {
   id: string;
@@ -101,17 +102,14 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 flex items-start gap-3">
-          <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
-          <span className="text-sm text-red-800 dark:text-red-300">{error}</span>
-        </div>
+        <ErrorAlert message={error} onDismiss={() => setError('')} />
       )}
 
       {/* Full Name + Email */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Full Name (Display Name) <span className="text-red-500 dark:text-red-400">*</span>
+          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
+            Full Name (Display Name) <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
@@ -119,14 +117,14 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             name="name"
             required
             defaultValue={user?.name}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
             placeholder="John Doe"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Email <span className="text-red-500 dark:text-red-400">*</span>
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+            Email <span className="text-destructive">*</span>
           </label>
           <input
             type="email"
@@ -134,7 +132,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             name="email"
             required
             defaultValue={user?.email}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
             placeholder="john.doe@company.com"
           />
         </div>
@@ -143,15 +141,15 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
       {/* Role + Team / Department */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="role" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Role <span className="text-red-500 dark:text-red-400">*</span>
+          <label htmlFor="role" className="block text-xs font-medium text-foreground mb-1">
+            Role <span className="text-destructive">*</span>
           </label>
           <select
             id="role"
             name="role"
             required
             defaultValue={user?.role || 'Technician'}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
           >
             <option value="Admin">Admin</option>
             <option value="TeamLead">Team Lead</option>
@@ -161,14 +159,14 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
         </div>
 
         <div>
-          <label htmlFor="teamId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+          <label htmlFor="teamId" className="block text-xs font-medium text-foreground mb-1">
             Team / Department
           </label>
           <select
             id="teamId"
             name="teamId"
             defaultValue={user?.teamId || ''}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
           >
             <option value="">No Team</option>
             {teams.map((team) => (
@@ -177,7 +175,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
               </option>
             ))}
           </select>
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">
+          <p className="mt-1.5 text-xs text-muted-foreground">
             Assign user to a team for RBAC filtering
           </p>
         </div>
@@ -186,9 +184,9 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
       {/* Password + Confirm Password */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="password" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Password {!user && <span className="text-red-500 dark:text-red-400">*</span>}
-            {user && <span className="text-slate-500 dark:text-neutral-400 text-xs">(leave blank to keep current)</span>}
+          <label htmlFor="password" className="block text-xs font-medium text-foreground mb-1">
+            Password {!user && <span className="text-destructive">*</span>}
+            {user && <span className="text-muted-foreground text-xs">(leave blank to keep current)</span>}
           </label>
           <input
             type="password"
@@ -197,19 +195,19 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             required={!user}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
             placeholder={user ? "Leave blank to keep current password" : "Enter password"}
             minLength={6}
           />
           {!user && (
-            <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">Minimum 6 characters</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">Minimum 6 characters</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Confirm Password {!user && <span className="text-red-500 dark:text-red-400">*</span>}
-            {user && <span className="text-slate-500 dark:text-neutral-400 text-xs">(leave blank to keep current)</span>}
+          <label htmlFor="confirmPassword" className="block text-xs font-medium text-foreground mb-1">
+            Confirm Password {!user && <span className="text-destructive">*</span>}
+            {user && <span className="text-muted-foreground text-xs">(leave blank to keep current)</span>}
           </label>
           <input
             type="password"
@@ -218,17 +216,17 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             required={!user}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
             placeholder={user ? "Leave blank to keep current password" : "Confirm password"}
             minLength={6}
           />
           {password && confirmPassword && password !== confirmPassword && (
-            <p className="mt-1.5 text-xs text-red-500 dark:text-red-400">Passwords do not match</p>
+            <p className="mt-1.5 text-xs text-destructive">Passwords do not match</p>
           )}
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-neutral-700">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
         <Button type="submit" variant="primary" isLoading={isLoading}>
           {user ? 'Update User' : 'Create User'}
         </Button>

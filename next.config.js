@@ -22,6 +22,9 @@ const nextConfig = {
     webpackBuildWorker: true,
   },
 
+  // Turbopack configuration (empty to allow webpack config)
+  turbopack: {},
+
   // Aggressive webpack optimizations for FAST development
   webpack: (config, { dev, isServer }) => {
     if (dev) {

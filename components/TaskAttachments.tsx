@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Paperclip, Download, X } from 'lucide-react';
 import { Role } from '@prisma/client';
 import { formatDateTime } from '@/lib/utils/date';
+import { ErrorAlert } from './ui/error-alert';
+import { Button } from './button';
 
 interface Attachment {
   id: string;
@@ -21,6 +23,7 @@ interface TaskAttachmentsProps {
 
 export function TaskAttachments({ taskId, attachments: initialAttachments, currentUser }: TaskAttachmentsProps) {
   const [attachments, setAttachments] = useState<Attachment[]>(initialAttachments);
+  const [error, setError] = useState<string>('');
 
   const fetchAttachments = async () => {
     try {
@@ -46,11 +49,11 @@ export function TaskAttachments({ taskId, attachments: initialAttachments, curre
     <div className="flex flex-col h-full min-h-0">
       {/* Header - Fixed Height */}
       <div className="flex items-center justify-between mb-2 shrink-0">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-          <Paperclip size={16} className="text-slate-600 dark:text-neutral-400" />
+        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Paperclip size={16} className="text-muted-foreground" />
           Attachments
           {attachments.length > 0 && (
-            <span className="text-xs font-normal text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-700 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-normal text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
               {attachments.length}
             </span>
           )}
@@ -58,10 +61,16 @@ export function TaskAttachments({ taskId, attachments: initialAttachments, curre
         <AttachmentUploader taskId={taskId} onUploadSuccess={handleUploadSuccess} />
       </div>
 
+      {error && (
+        <div className="mb-2">
+          <ErrorAlert message={error} onDismiss={() => setError('')} />
+        </div>
+      )}
+
       {/* Scrollable Content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {attachments.length === 0 ? (
-          <div className="text-center py-4 text-xs text-slate-400 dark:text-neutral-500">
+          <div className="text-center py-4 text-xs text-muted-foreground">
             No attachments
           </div>
         ) : (
@@ -72,6 +81,7 @@ export function TaskAttachments({ taskId, attachments: initialAttachments, curre
                 attachment={attachment} 
                 currentUser={currentUser}
                 onDeleteSuccess={handleDeleteSuccess}
+                onError={(err) => setError(err)}
               />
             ))}
           </div>
@@ -85,10 +95,12 @@ function AttachmentItem({
   attachment,
   currentUser,
   onDeleteSuccess,
+  onError,
 }: {
   attachment: Attachment;
   currentUser: { id: string; role: Role };
   onDeleteSuccess: () => void;
+  onError: (error: string) => void;
 }) {
   const fileName = attachment.filePath.split('/').pop() || 'file';
   const canDelete = currentUser.role === Role.Admin || attachment.user?.id === currentUser.id;
@@ -104,28 +116,28 @@ function AttachmentItem({
       if (response.ok) {
         onDeleteSuccess();
       } else {
-        alert('Failed to delete attachment');
+        onError('Failed to delete attachment');
       }
     } catch (error) {
       console.error('Error deleting attachment:', error);
-      alert('Failed to delete attachment');
+      onError('Failed to delete attachment');
     }
   };
 
   return (
-    <div className="flex items-center gap-2 p-1.5 rounded-md border border-slate-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-all group shrink-0">
-      <Paperclip size={12} className="text-slate-400 dark:text-neutral-500 shrink-0 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+    <div className="flex items-center gap-2 p-1.5 rounded-md border border-border hover:border-primary/50 hover:bg-muted/50 transition-all group shrink-0">
+      <Paperclip size={12} className="text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
       <div className="flex-1 min-w-0">
         <a
           href={attachment.filePath}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-medium text-slate-900 dark:text-neutral-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate block whitespace-nowrap"
+          className="text-xs font-medium text-foreground hover:text-primary transition-colors truncate block whitespace-nowrap"
           title={fileName}
         >
           {fileName}
         </a>
-        <div className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5 truncate whitespace-nowrap">
+        <div className="text-[10px] text-muted-foreground mt-0.5 truncate whitespace-nowrap">
           {attachment.user?.name || 'Unknown'} • {formatDateTime(typeof attachment.createdAt === 'string' ? new Date(attachment.createdAt) : attachment.createdAt)}
         </div>
       </div>
@@ -133,18 +145,20 @@ function AttachmentItem({
         <a
           href={attachment.filePath}
           download
-          className="p-1 text-slate-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+          className="p-1 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
           title="Download"
+          aria-label="Download attachment"
         >
-          <Download size={12} />
+          <Download size={12} aria-hidden="true" />
         </a>
         {canDelete && (
           <button
             onClick={handleDelete}
-            className="p-1 text-slate-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
             title="Delete"
+            aria-label="Delete attachment"
           >
-            <X size={12} />
+            <X size={12} aria-hidden="true" />
           </button>
         )}
       </div>
@@ -154,6 +168,7 @@ function AttachmentItem({
 
 function AttachmentUploader({ taskId, onUploadSuccess }: { taskId: string; onUploadSuccess: () => void }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,9 +197,10 @@ function AttachmentUploader({ taskId, onUploadSuccess }: { taskId: string; onUpl
 
       await Promise.all(uploadPromises);
       onUploadSuccess();
+      setError('');
     } catch (error) {
       console.error('Error uploading files:', error);
-      alert(error instanceof Error ? error.message : 'Failed to upload files');
+      setError(error instanceof Error ? error.message : 'Failed to upload files');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -203,16 +219,22 @@ function AttachmentUploader({ taskId, onUploadSuccess }: { taskId: string; onUpl
         disabled={isUploading}
         multiple
       />
-      <button
+      <Button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className="neu-button inline-flex items-center justify-center gap-1.5 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ fontSize: '12px', padding: '6px 12px' }}
+        size="sm"
+        className="gap-1.5"
+        isLoading={isUploading}
       >
         <Paperclip size={14} />
         {isUploading ? 'Uploading...' : 'Add'}
-      </button>
+      </Button>
+      {error && (
+        <div className="mt-2">
+          <ErrorAlert message={error} onDismiss={() => setError('')} />
+        </div>
+      )}
     </div>
   );
 }

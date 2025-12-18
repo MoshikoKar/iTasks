@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, User as UserIcon } from "lucide-react";
+import { Button } from "./button";
+import { ErrorAlert } from "./ui/error-alert";
 
 const MAX_LENGTH = 5000;
 
@@ -25,6 +27,7 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
   const [mentionedUsers, setMentionedUsers] = useState<Map<string, User>>(new Map());
   const [cursorPosition, setCursorPosition] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mentionDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -132,9 +135,10 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
       }
       setContent("");
       setMentionedUsers(new Map());
+      setError("");
     } catch (error) {
       console.error("Failed to post comment:", error);
-      alert("Failed to post comment. Please try again.");
+      setError("Failed to post comment. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -142,6 +146,11 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="mb-6">
+      {error && (
+        <div className="mb-4">
+          <ErrorAlert message={error} onDismiss={() => setError('')} />
+        </div>
+      )}
       <div className="relative">
         <textarea
           ref={textareaRef}
@@ -213,15 +222,16 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
         </div>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={loading || !content.trim() || content.length > MAX_LENGTH}
-        className="neu-button mt-3 inline-flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ fontSize: '14px', padding: '10px 30px' }}
+        size="md"
+        className="mt-3 gap-2"
+        isLoading={loading}
       >
         <MessageSquare size={16} />
         {loading ? "Posting..." : "Post Comment"}
-      </button>
+      </Button>
     </form>
   );
 }

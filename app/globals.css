@@ -224,3 +224,28 @@ button[data-nextjs-toast],
   box-shadow: rgba(255, 255, 255, 0.15) 0px 50px 100px -20px, rgba(255, 255, 255, 0.2) 0px 30px 60px -30px, rgba(255, 255, 255, 0.25) 0px -2px 6px 0px inset !important;
 }
 
+@layer utilities {
+  .input-base {
+    @apply w-full rounded-lg border px-3 py-2 text-sm transition-all;
+    border-color: hsl(var(--color-input));
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
+  }
+  
+  .input-base::placeholder {
+    color: hsl(var(--color-muted-foreground));
+  }
+  
+  .input-base:focus {
+    outline: none;
+    border-color: hsl(var(--color-ring));
+    box-shadow: 0 0 0 2px hsl(var(--color-ring) / 0.2);
+  }
+  
+  .card-base {
+    @apply rounded-xl border shadow-sm;
+    border-color: hsl(var(--color-border));
+    background-color: hsl(var(--color-card));
+  }
+}
+

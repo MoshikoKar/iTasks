@@ -8,6 +8,7 @@ import { Button } from './button';
 import { Pagination } from './pagination';
 import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
+import { ErrorAlert } from './ui/error-alert';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -85,6 +86,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isTeamDeleting, setIsTeamDeleting] = useState(false);
+  const [teamError, setTeamError] = useState<string>('');
 
   // System configuration modals
   const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
@@ -150,15 +152,16 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || 'Failed to save team');
+        setTeamError(error.error || 'Failed to save team');
         return;
       }
 
       setIsTeamModalOpen(false);
       setSelectedTeam(null);
+      setTeamError('');
       router.refresh();
     } catch (error) {
-      alert('An error occurred while saving the team');
+      setTeamError('An error occurred while saving the team');
     }
   };
 
@@ -166,6 +169,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
     if (!confirm(`Are you sure you want to delete team "${team.name}"?`)) return;
 
     setIsTeamDeleting(true);
+    setTeamError('');
     try {
       const response = await fetch(`/api/teams/${team.id}`, {
         method: 'DELETE',
@@ -173,13 +177,16 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || 'Failed to delete team');
+        setTeamError(error.error || 'Failed to delete team');
+        setIsTeamDeleting(false);
         return;
       }
 
+      setTeamError('');
       router.refresh();
     } catch (error) {
-      alert('An error occurred while deleting the team');
+      setTeamError('An error occurred while deleting the team');
+      setIsTeamDeleting(false);
     } finally {
       setIsTeamDeleting(false);
     }
@@ -262,31 +269,31 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Admin Settings</h1>
+      <h1 className="text-3xl font-bold text-foreground">Admin Settings</h1>
 
       {/* User Statistics and Teams Management - Side by Side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* User Statistics */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <UserPlus size={20} className="text-blue-600 dark:text-blue-400" />
+        <section className="card-base p-6">
+          <h2 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
+            <UserPlus size={20} className="text-primary" />
             User Statistics
           </h2>
           <div className="grid gap-4 sm:grid-cols-4">
             {sortedStats.map((stat) => (
-              <div key={stat.role} className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-700/50 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm font-medium text-slate-600 dark:text-neutral-400">{stat.role}</div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-neutral-100 mt-1">{stat._count}</div>
+              <div key={stat.role} className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-muted-foreground">{stat.role}</div>
+                <div className="text-3xl font-bold text-foreground mt-1">{stat._count}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Teams Management */}
-        <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+        <section className="card-base p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Building2 size={20} className="text-primary" />
             Teams / Departments
           </h2>
           <Button
@@ -294,6 +301,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             onClick={() => {
               setSelectedTeam(null);
               setIsTeamModalOpen(true);
+              setTeamError('');
             }}
             className="gap-2"
             style={{ padding: '10px 20px' }}
@@ -302,22 +310,27 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             Create Team
           </Button>
         </div>
+        {teamError && (
+          <div className="mb-4">
+            <ErrorAlert message={teamError} onDismiss={() => setTeamError('')} />
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {teams.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-slate-500 dark:text-neutral-400">
+            <div className="col-span-full text-center py-8 text-muted-foreground">
               No teams created yet. Create your first team to organize users.
             </div>
           ) : (
             teams.map((team) => (
               <div
                 key={team.id}
-                className="rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-700/50 p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 dark:text-neutral-100 truncate">{team.name}</h3>
+                    <h3 className="font-semibold text-foreground truncate">{team.name}</h3>
                     {team.description && (
-                      <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                         {team.description}
                       </p>
                     )}
@@ -327,21 +340,24 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                       onClick={() => {
                         setSelectedTeam(team);
                         setIsTeamModalOpen(true);
+                        setTeamError('');
                       }}
-                      className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                      className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+                      aria-label={`Edit team ${team.name}`}
                     >
-                      <Edit2 size={14} />
+                      <Edit2 size={14} aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => handleDeleteTeam(team)}
                       disabled={isTeamDeleting}
-                      className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50"
+                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50"
+                      aria-label={`Delete team ${team.name}`}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} aria-hidden="true" />
                     </button>
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 dark:text-neutral-400 flex items-center gap-1 mt-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
                   <UserPlus size={12} />
                   {team._count.members} member{team._count.members !== 1 ? 's' : ''}
                 </div>
@@ -353,9 +369,9 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
       </div>
 
       {/* Users Table */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <section className="card-base p-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Users</h2>
+          <h2 className="text-lg font-semibold text-foreground">Users</h2>
           <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
@@ -363,53 +379,53 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-700 dark:to-neutral-700/50">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Name</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Role</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Team</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Tasks Assigned</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Tasks Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700 dark:text-neutral-300">Actions</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Name</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Email</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Role</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Team</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Tasks Assigned</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Tasks Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Created</th>
+                <th className="px-4 py-3 text-left font-semibold text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-t border-slate-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">{user.name}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user.email}</td>
+                <tr key={user.id} className="border-t border-border hover:bg-muted/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-foreground">{user.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">
                     <RoleBadge role={user.role} />
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {user.team ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary border border-primary/20">
                         <Building2 size={12} />
                         {user.team.name}
                       </span>
                     ) : (
-                      <span className="text-slate-400 dark:text-neutral-500">-</span>
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user._count.tasksAssigned}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user._count.tasksCreated}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">
+                  <td className="px-4 py-3 text-muted-foreground">{user._count.tasksAssigned}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user._count.tasksCreated}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {formatDateTimeStable(user.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-primary hover:text-primary/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Edit2 size={14} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-destructive hover:text-destructive/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
                         <Trash2 size={14} />
                         Delete
@@ -424,10 +440,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
       </section>
 
       {/* Recent Activity Section */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <section className="card-base p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Activity size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Activity size={20} className="text-primary" />
             Recent Activity
           </h2>
           <div className="flex items-center gap-3">
@@ -438,7 +454,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                 setActivityPage(1);
               }}
               placeholder="Search by task, user, action..."
-              className="h-9 w-56 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-3 text-sm text-slate-800 dark:text-neutral-200 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9 w-56"
             />
             <select
               value={activityActionFilter}
@@ -446,7 +462,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                 setActivityActionFilter(e.target.value);
                 setActivityPage(1);
               }}
-              className="h-9 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-2 text-sm text-slate-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9"
             >
               <option value="all">All actions</option>
               {uniqueActions.map((action) => (
@@ -458,7 +474,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             <select
               value={activityPageSize}
               onChange={(e) => handleActivityPageSizeChange(Number(e.target.value))}
-              className="h-9 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-2 text-sm text-slate-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9"
             >
               <option value={10}>10 / page</option>
               <option value={20}>20 / page</option>
@@ -468,15 +484,15 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
         </div>
 
         {filteredActivity.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-700/50 p-8 text-center text-sm text-slate-500 dark:text-neutral-400">
+          <div className="rounded-lg border border-dashed border-border bg-muted/50 p-8 text-center text-sm text-muted-foreground">
             No activity found for the current filters.
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="min-w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-neutral-700/50">
-                  <tr className="text-left text-slate-600 dark:text-neutral-400">
+                <thead className="bg-muted">
+                  <tr className="text-left text-foreground">
                     <th className="px-3 py-2 font-semibold w-[25%]">Task</th>
                     <th className="px-3 py-2 font-semibold w-[15%]">User</th>
                     <th className="px-3 py-2 font-semibold w-[15%]">Action</th>
@@ -484,35 +500,35 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                     <th className="px-3 py-2 font-semibold w-[15%]">When</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-neutral-700">
+                <tbody className="divide-y divide-border">
                   {paginatedActivity.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50">
+                    <tr key={log.id} className="hover:bg-muted/50">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="rounded-full bg-blue-50 dark:bg-blue-900/30 p-1.5">
-                            <Activity size={14} className="text-blue-600 dark:text-blue-400" />
+                          <div className="rounded-full bg-primary/10 p-1.5">
+                            <Activity size={14} className="text-primary" />
                           </div>
-                          <span className="line-clamp-1 text-slate-900 dark:text-neutral-100">
+                          <span className="line-clamp-1 text-foreground">
                             {log.task?.title || log.taskTitle || 'Task'}
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-slate-700 dark:text-neutral-300">
+                      <td className="px-3 py-2 text-foreground">
                         {log.actor?.name || 'User'}
                       </td>
                       <td className="px-3 py-2">
-                        <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-300">
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-slate-600 dark:text-neutral-400 text-xs">
+                      <td className="px-3 py-2 text-muted-foreground text-xs">
                         {log.description ? (
                           <span className="line-clamp-2">{log.description}</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-neutral-500 italic">No description</span>
+                          <span className="text-muted-foreground/70 italic">No description</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-slate-600 dark:text-neutral-400">
+                      <td className="px-3 py-2 text-muted-foreground">
                         {formatDateTimeStable(log.createdAt)}
                       </td>
                     </tr>
@@ -521,7 +537,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               </table>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-neutral-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div>
                 Showing{' '}
                 <span className="font-semibold">
@@ -548,61 +564,61 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
       </section>
 
       {/* System Configuration */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
-        <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-          <Settings size={20} className="text-blue-600 dark:text-blue-400" />
+      <section className="card-base p-6">
+        <h2 className="mb-6 text-lg font-semibold text-foreground flex items-center gap-2">
+          <Settings size={20} className="text-primary" />
           System Configuration
         </h2>
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-700/50 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Mail size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Mail size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">SMTP Server</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Local LAN, Port 25</div>
+                <div className="font-medium text-foreground">SMTP Server</div>
+                <div className="text-sm text-muted-foreground">Local LAN, Port 25</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsSMTPModalOpen(true)}
             >
               Configure
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-700/50 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Settings size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Settings size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">SLA Defaults</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Configure default SLA deadlines</div>
+                <div className="font-medium text-foreground">SLA Defaults</div>
+                <div className="text-sm text-muted-foreground">Configure default SLA deadlines</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsSLAModalOpen(true)}
             >
               Configure
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-700/50 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Activity size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Activity size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">LDAP / LDAPS Authentication</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Enterprise authentication integration</div>
+                <div className="font-medium text-foreground">LDAP / LDAPS Authentication</div>
+                <div className="text-sm text-muted-foreground">Enterprise authentication integration</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsLDAPModalOpen(true)}
             >
               Configure
@@ -661,12 +677,9 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
       >
         <div className="space-y-4">
           {deleteError && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 flex items-start gap-3">
-              <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
-              <span className="text-sm text-red-800 dark:text-red-300">{deleteError}</span>
-            </div>
+            <ErrorAlert message={deleteError} onDismiss={() => setDeleteError('')} />
           )}
-          <p className="text-slate-700 dark:text-neutral-300">
+          <p className="text-foreground">
             Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
@@ -693,14 +706,18 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
         onClose={() => {
           setIsTeamModalOpen(false);
           setSelectedTeam(null);
+          setTeamError('');
         }}
         title={selectedTeam ? 'Edit Team' : 'Create Team'}
         size="md"
       >
         <form onSubmit={handleSaveTeam} className="space-y-4">
+          {teamError && (
+            <ErrorAlert message={teamError} onDismiss={() => setTeamError('')} />
+          )}
           <div>
-            <label htmlFor="team-name" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-              Team Name <span className="text-red-500 dark:text-red-400">*</span>
+            <label htmlFor="team-name" className="block text-sm font-medium text-foreground mb-1">
+              Team Name <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
@@ -708,13 +725,13 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               name="name"
               required
               defaultValue={selectedTeam?.name}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
               placeholder="e.g., IT Support, Field Technicians"
             />
           </div>
 
           <div>
-            <label htmlFor="team-description" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="team-description" className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -722,12 +739,12 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               name="description"
               rows={3}
               defaultValue={selectedTeam?.description || ''}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2.5 text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
               placeholder="Brief description of this team's responsibilities"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-neutral-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button
               type="button"
               variant="secondary"
@@ -798,10 +815,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
 
 function RoleBadge({ role }: { role: Role }) {
   const colors: Record<Role, string> = {
-    Admin: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
-    TeamLead: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
-    Technician: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800',
-    Viewer: 'bg-slate-100 dark:bg-neutral-700 text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-neutral-600',
+    Admin: 'bg-primary/10 text-primary border border-primary/20',
+    TeamLead: 'bg-primary/10 text-primary border border-primary/20',
+    Technician: 'bg-success/10 text-success border border-success/20',
+    Viewer: 'bg-muted text-muted-foreground border border-border',
   };
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[role]}`}>

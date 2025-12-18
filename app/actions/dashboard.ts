@@ -167,27 +167,24 @@ export async function getDashboardStats(userId: string) {
     return { priority, count: found?._count.priority || 0 };
   });
 
-  // Tasks by Branch Distribution with RBAC
-  const allBranches = await db.task.findMany({
+  // Tasks by Branch Distribution with RBAC - Optimized with groupBy
+  const branchDistributionRaw = await db.task.groupBy({
+    by: ['branch'],
     where: {
       ...taskFilter,
       branch: { not: null },
       status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
     },
-    select: { branch: true },
+    _count: { branch: true },
   });
 
-  const branchCounts = allBranches.reduce((acc, task) => {
-    if (task.branch) {
-      acc[task.branch] = (acc[task.branch] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
-
-  const branchDistribution = Object.entries(branchCounts).map(([branch, count]) => ({
-    branch,
-    count,
-  })).sort((a, b) => b.count - a.count);
+  const branchDistribution = branchDistributionRaw
+    .filter((item) => item.branch !== null)
+    .map((item) => ({
+      branch: item.branch!,
+      count: item._count.branch,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   // Tasks per User/Technician Distribution with RBAC
   const tasksPerUser = await db.task.groupBy({

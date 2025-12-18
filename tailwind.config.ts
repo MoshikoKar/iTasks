@@ -10,6 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        background: 'hsl(var(--color-background))',
+        foreground: 'hsl(var(--color-foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--color-card))',
+          foreground: 'hsl(var(--color-card-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--color-popover))',
+          foreground: 'hsl(var(--color-popover-foreground))',
+        },
         primary: {
           50: 'hsl(var(--color-primary-50))',
           100: 'hsl(var(--color-primary-100))',
@@ -28,13 +38,24 @@ const config: Config = {
           DEFAULT: 'hsl(var(--color-secondary))',
           foreground: 'hsl(var(--color-secondary-foreground))',
         },
-        success: 'hsl(var(--color-success))',
-        warning: 'hsl(var(--color-warning))',
-        error: 'hsl(var(--color-destructive))',
+        muted: {
+          DEFAULT: 'hsl(var(--color-muted))',
+          foreground: 'hsl(var(--color-muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--color-accent))',
+          foreground: 'hsl(var(--color-accent-foreground))',
+        },
         destructive: {
           DEFAULT: 'hsl(var(--color-destructive))',
           foreground: 'hsl(var(--color-destructive-foreground))',
         },
+        border: 'hsl(var(--color-border))',
+        input: 'hsl(var(--color-input))',
+        ring: 'hsl(var(--color-ring))',
+        success: 'hsl(var(--color-success))',
+        warning: 'hsl(var(--color-warning))',
+        error: 'hsl(var(--color-destructive))',
       },
       borderRadius: {
         'xs': '0.25rem',

@@ -84,13 +84,13 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Activity Logs</h1>
+      <h1 className="text-3xl font-bold text-foreground">Activity Logs</h1>
 
       {/* Recent Activity Section */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <section className="card-base p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Activity size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Activity size={20} className="text-primary" />
             Recent Activity
           </h2>
           <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
                 setActivityPage(1);
               }}
               placeholder="Search by task, user, action..."
-              className="h-9 w-56 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-3 text-sm text-slate-800 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9 w-56"
             />
             <select
               value={activityActionFilter}
@@ -109,7 +109,7 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
                 setActivityActionFilter(e.target.value);
                 setActivityPage(1);
               }}
-              className="h-9 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-2 text-sm text-slate-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9"
             >
               <option value="all">All actions</option>
               {uniqueActions.map((action) => (
@@ -121,7 +121,7 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
             <select
               value={activityPageSize}
               onChange={(e) => handleActivityPageSizeChange(Number(e.target.value))}
-              className="h-9 rounded-md border border-slate-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700 px-2 text-sm text-slate-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              className="input-base h-9"
             >
               <option value={10}>10 / page</option>
               <option value={20}>20 / page</option>
@@ -131,15 +131,15 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
         </div>
 
         {filteredActivity.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-700/50 p-8 text-center text-sm text-slate-500 dark:text-neutral-400">
+          <div className="rounded-lg border border-dashed border-border bg-muted/50 p-8 text-center text-sm text-muted-foreground">
             No activity found for the current filters.
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="min-w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-neutral-700">
-                  <tr className="text-left text-slate-600 dark:text-neutral-300">
+                <thead className="bg-muted">
+                  <tr className="text-left text-foreground">
                     <th className="px-3 py-2 font-semibold w-[25%]">Task</th>
                     <th className="px-3 py-2 font-semibold w-[15%]">User</th>
                     <th className="px-3 py-2 font-semibold w-[15%]">Action</th>
@@ -147,35 +147,35 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
                     <th className="px-3 py-2 font-semibold w-[15%]">When</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-neutral-700">
+                <tbody className="divide-y divide-border">
                   {paginatedActivity.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50">
+                    <tr key={log.id} className="hover:bg-muted/50">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="rounded-full bg-blue-50 dark:bg-blue-900/30 p-1.5">
-                            <Activity size={14} className="text-blue-600 dark:text-blue-400" />
+                          <div className="rounded-full bg-primary/10 p-1.5">
+                            <Activity size={14} className="text-primary" />
                           </div>
-                          <span className="line-clamp-1 text-slate-900 dark:text-neutral-100">
+                          <span className="line-clamp-1 text-foreground">
                             {log.task?.title || log.taskTitle || 'Task'}
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-slate-700 dark:text-neutral-300">
+                      <td className="px-3 py-2 text-foreground">
                         {log.actor?.name || 'User'}
                       </td>
                       <td className="px-3 py-2">
-                        <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-300">
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-slate-600 dark:text-neutral-300 text-xs">
+                      <td className="px-3 py-2 text-muted-foreground text-xs">
                         {log.description ? (
                           <span className="line-clamp-2">{log.description}</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-neutral-500 italic">No description</span>
+                          <span className="text-muted-foreground/70 italic">No description</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-slate-600 dark:text-neutral-300">
+                      <td className="px-3 py-2 text-muted-foreground">
                         {formatDateTimeStable(log.createdAt)}
                       </td>
                     </tr>
@@ -184,7 +184,7 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
               </table>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-neutral-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div>
                 Showing{' '}
                 <span className="font-semibold">

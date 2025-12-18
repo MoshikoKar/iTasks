@@ -65,6 +65,8 @@ model User {
   auditLogs    AuditLog[]
   systemLogs   SystemLog[]
   mentions     Mention[] @relation("UserMentions")
+
+  @@index([teamId])
 }
 
 model Task {
@@ -148,6 +150,8 @@ model RecurringTaskConfig {
   tasks           Task[]
   templateAssignee User      @relation("TemplateAssignee", fields: [templateAssigneeId], references: [id])
   creator         User?      @relation("RecurringTaskCreator", fields: [creatorId], references: [id])
+
+  @@index([nextGenerationAt])
 }
 
 model Incident {
@@ -172,6 +176,7 @@ model Comment {
   @@index([taskId])
   @@index([userId])
   @@index([createdAt])
+  @@index([taskId, createdAt])
 }
 
 model Mention {
@@ -208,6 +213,7 @@ model AuditLog {
   @@index([taskId])
   @@index([actorId])
   @@index([createdAt])
+  @@index([taskId, createdAt])
 }
 
 enum LogEntityType {

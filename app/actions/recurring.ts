@@ -21,97 +21,131 @@ export async function generateRecurringTasks() {
     },
   });
 
+  if (configs.length === 0) {
+    return;
+  }
+
+  // Batch fetch all unique user IDs before the loop
+  const uniqueUserIds = new Set<string>();
+  configs.forEach((config) => {
+    uniqueUserIds.add(config.templateAssigneeId);
+    if (config.creatorId) {
+      uniqueUserIds.add(config.creatorId);
+    }
+  });
+
+  // Single query to fetch all users
+  const users = await db.user.findMany({
+    where: {
+      id: { in: Array.from(uniqueUserIds) },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  });
+
+  // Create a map for O(1) lookup
+  const userMap = new Map(users.map((user) => [user.id, user]));
+
+  // Process all configs and collect email promises
+  const emailPromises: Promise<void>[] = [];
+
   for (const config of configs) {
     try {
-      const task = await db.task.create({
-        data: {
-          title: config.templateTitle,
-          description: config.templateDescription || "",
-          priority: config.templatePriority,
-          branch: config.templateBranch || null,
-          type: TaskType.Recurring_Instance,
-          creatorId: config.templateAssigneeId,
-          assigneeId: config.templateAssigneeId,
-          recurringConfigId: config.id,
-          tags: [],
-          status: TaskStatus.Open,
-          context: (config.templateServerName || config.templateApplication || config.templateIpAddress)
-            ? {
-                create: {
-                  serverName: config.templateServerName || null,
-                  application: config.templateApplication || null,
-                  ipAddress: config.templateIpAddress || null,
-                },
-              }
-            : undefined,
-        },
-      });
+      const assignee = userMap.get(config.templateAssigneeId);
+      const creator = config.creatorId ? userMap.get(config.creatorId) : null;
 
-      await db.auditLog.create({
-        data: {
-          taskId: task.id,
-          actorId: config.templateAssigneeId,
-          action: "recurring_generate",
-          newValue: task,
-        },
+      // Use transaction for atomic operations
+      const result = await db.$transaction(async (tx) => {
+        const task = await tx.task.create({
+          data: {
+            title: config.templateTitle,
+            description: config.templateDescription || "",
+            priority: config.templatePriority,
+            branch: config.templateBranch || null,
+            type: TaskType.Recurring_Instance,
+            creatorId: config.templateAssigneeId,
+            assigneeId: config.templateAssigneeId,
+            recurringConfigId: config.id,
+            tags: [],
+            status: TaskStatus.Open,
+            context: (config.templateServerName || config.templateApplication || config.templateIpAddress)
+              ? {
+                  create: {
+                    serverName: config.templateServerName || null,
+                    application: config.templateApplication || null,
+                    ipAddress: config.templateIpAddress || null,
+                  },
+                }
+              : undefined,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            taskId: task.id,
+            actorId: config.templateAssigneeId,
+            action: "recurring_generate",
+            newValue: task,
+          },
+        });
+
+        const next = computeNext(config.cron, now);
+        await tx.recurringTaskConfig.update({
+          where: { id: config.id },
+          data: {
+            lastGeneratedAt: now,
+            nextGenerationAt: next,
+          },
+        });
+
+        return { task, config };
       });
 
       // Log recurring task generation (persists even if task is deleted)
       await logRecurringTaskGenerated(
-        config.id,
-        config.name,
-        task.id,
-        task.title,
-        config.templateAssigneeId,
+        result.config.id,
+        result.config.name,
+        result.task.id,
+        result.task.title,
+        result.config.templateAssigneeId,
         false, // automatic generation
         {
-          cron: config.cron,
-          priority: task.priority,
+          cron: result.config.cron,
+          priority: result.task.priority,
         }
       );
 
-      const next = computeNext(config.cron, now);
-      await db.recurringTaskConfig.update({
-        where: { id: config.id },
-        data: {
-          lastGeneratedAt: now,
-          nextGenerationAt: next,
-        },
-      });
-
-      const [assignee, creator] = await Promise.all([
-        db.user.findUnique({ 
-          where: { id: task.assigneeId }, 
-          select: { name: true, email: true } 
-        }),
-        db.user.findUnique({ 
-          where: { id: task.creatorId }, 
-          select: { name: true, email: true } 
-        }),
-      ]);
-
+      // Queue email sending (non-blocking, after transaction commits)
       if (assignee?.email) {
-        await sendMail({
-          to: assignee.email,
-          subject: `Recurring Task Due: ${task.title}`,
-          text: `A recurring task has been generated and assigned to you.\n\nTask: ${task.title}\n\nDescription: ${task.description || "No description"}\n\nStatus: ${task.status}\nPriority: ${task.priority}\n\nPlease review and complete this task.`,
-          html: generateRecurringTaskEmailHTML({
-            taskId: task.id,
-            title: task.title,
-            description: task.description || "",
-            status: task.status,
-            priority: task.priority,
-            assigneeName: assignee.name || "Unknown",
-            creatorName: creator?.name || "System",
-          }),
-        }).catch((err) => {
-          console.error(`Failed to send recurring task notification email to ${assignee.email}:`, err);
-        });
+        emailPromises.push(
+          sendMail({
+            to: assignee.email,
+            subject: `Recurring Task Due: ${result.task.title}`,
+            text: `A recurring task has been generated and assigned to you.\n\nTask: ${result.task.title}\n\nDescription: ${result.task.description || "No description"}\n\nStatus: ${result.task.status}\nPriority: ${result.task.priority}\n\nPlease review and complete this task.`,
+            html: generateRecurringTaskEmailHTML({
+              taskId: result.task.id,
+              title: result.task.title,
+              description: result.task.description || "",
+              status: result.task.status,
+              priority: result.task.priority,
+              assigneeName: assignee.name || "Unknown",
+              creatorName: creator?.name || "System",
+            }),
+          }).catch((err) => {
+            console.error(`Failed to send recurring task notification email to ${assignee.email}:`, err);
+          })
+        );
       }
     } catch (error) {
       console.error(`Error generating recurring task for config ${config.id}:`, error);
     }
   }
+
+  // Send all emails in parallel (non-blocking)
+  await Promise.allSettled(emailPromises);
 }
 
 function computeNext(cron: string, from: Date): Date {

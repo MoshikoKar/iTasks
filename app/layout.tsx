@@ -9,6 +9,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { db } from "@/lib/db";
+import { unstable_cache } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -17,16 +18,28 @@ export const metadata: Metadata = {
   description: 'IT Task Management System',
 };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const user = await getCurrentUser();
-  
-  // Fetch support email from system config
-  let supportEmail: string | null = null;
-  try {
-    const config = await db.systemConfig.findUnique({
+// Cache system config with 5 minute TTL (300 seconds)
+const getCachedSystemConfig = unstable_cache(
+  async () => {
+    return await db.systemConfig.findUnique({
       where: { id: "system" },
       select: { supportEmail: true },
     });
+  },
+  ['system-config'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['system-config'],
+  }
+);
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const user = await getCurrentUser();
+  
+  // Fetch support email from system config (cached)
+  let supportEmail: string | null = null;
+  try {
+    const config = await getCachedSystemConfig();
     supportEmail = config?.supportEmail || null;
   } catch (error) {
     console.error("Failed to fetch support email:", error);

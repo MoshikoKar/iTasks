@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from './button';
 import { TaskPriority, User } from '@prisma/client';
 import { Paperclip, X } from 'lucide-react';
+import { ErrorAlert } from './ui/error-alert';
 
 interface CreateTaskFormProps {
   currentUserId: string;
@@ -109,38 +110,36 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-800 dark:text-red-300">
-          {error}
-        </div>
+        <ErrorAlert message={error} onDismiss={() => setError('')} />
       )}
 
       <div className="space-y-4">
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Task Title <span className="text-red-500 dark:text-red-400">*</span>
+          <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
+            Task Title <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
             id="title"
             name="title"
             required
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+            className="input-base"
             placeholder="Enter task title"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-            Description <span className="text-red-500 dark:text-red-400">*</span>
+          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
+            Description <span className="text-destructive">*</span>
           </label>
           <textarea
             id="description"
             name="description"
             required
             rows={4}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all resize-none"
+            className="input-base resize-none"
             placeholder="Describe the task in detail"
           />
         </div>
@@ -148,14 +147,14 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         {/* Priority, Branch, and Assignee Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <div>
-            <label htmlFor="priority" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="priority" className="block text-xs font-medium text-foreground mb-1">
               Priority
             </label>
             <select
               id="priority"
               name="priority"
               defaultValue="Medium"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -165,7 +164,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           </div>
 
           <div>
-            <label htmlFor="branch" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="branch" className="block text-xs font-medium text-foreground mb-1">
               Branch / Location
             </label>
             <input
@@ -174,7 +173,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
               name="branch"
               list="branch-suggestions"
               autoComplete="off"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
               placeholder="e.g., Main Office, Branch A"
             />
             <datalist id="branch-suggestions">
@@ -185,14 +184,14 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           </div>
 
           <div>
-            <label htmlFor="assigneeId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="assigneeId" className="block text-xs font-medium text-foreground mb-1">
               Assign To
             </label>
             <select
               id="assigneeId"
               name="assigneeId"
               defaultValue={currentUserId}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
@@ -206,33 +205,33 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         {/* Due Date and SLA Deadline Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="dueDate" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="dueDate" className="block text-xs font-medium text-foreground mb-1">
               Due Date
             </label>
             <input
               type="datetime-local"
               id="dueDate"
               name="dueDate"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             />
           </div>
 
           <div>
-            <label htmlFor="slaDeadline" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+            <label htmlFor="slaDeadline" className="block text-xs font-medium text-foreground mb-1">
               SLA Deadline
             </label>
             <input
               type="datetime-local"
               id="slaDeadline"
               name="slaDeadline"
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             />
           </div>
         </div>
 
         {/* File Attachments */}
-        <div className="pt-4 border-t border-slate-200 dark:border-neutral-700">
-          <label htmlFor="files" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
+        <div className="pt-4 border-t border-border">
+          <label htmlFor="files" className="block text-sm font-medium text-foreground mb-2">
             Attachments (Optional)
           </label>
           <div className="space-y-2">
@@ -244,33 +243,34 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
               onChange={handleFileSelect}
               className="hidden"
             />
-            <button
+            <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
-              style={{ fontSize: '14px', padding: '8px 20px' }}
+              size="sm"
+              className="gap-2"
             >
               <Paperclip size={16} />
               Add Files
-            </button>
+            </Button>
             {selectedFiles.length > 0 && (
               <div className="space-y-1 mt-2">
                 {selectedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg border border-slate-200 dark:border-neutral-700"
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border"
                   >
-                    <span className="text-sm text-slate-700 dark:text-neutral-300 truncate flex-1">
+                    <span className="text-sm text-foreground truncate flex-1">
                       {file.name} ({(file.size / 1024).toFixed(1)} KB)
                     </span>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="neu-button ml-2 inline-flex items-center justify-center"
-                      style={{ fontSize: '12px', padding: '4px 8px', minWidth: 'auto' }}
+                      size="sm"
+                      variant="ghost"
+                      className="ml-2"
                     >
                       <X size={14} />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -279,56 +279,56 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         </div>
 
         {/* IT Context Section */}
-        <div className="pt-4 border-t border-slate-200 dark:border-neutral-700">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 mb-3">IT Asset Context (Optional)</h3>
+        <div className="pt-4 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground mb-3">IT Asset Context (Optional)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <div>
-              <label htmlFor="serverName" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="serverName" className="block text-xs font-medium text-foreground mb-1">
                 Server Name
               </label>
               <input
                 type="text"
                 id="serverName"
                 name="serverName"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., SRV-WEB-01"
               />
             </div>
 
             <div>
-              <label htmlFor="application" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="application" className="block text-xs font-medium text-foreground mb-1">
                 Application
               </label>
               <input
                 type="text"
                 id="application"
                 name="application"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., Exchange Server"
               />
             </div>
 
             <div>
-              <label htmlFor="ipAddress" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="ipAddress" className="block text-xs font-medium text-foreground mb-1">
                 IP Address
               </label>
               <input
                 type="text"
                 id="ipAddress"
                 name="ipAddress"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., 192.168.1.100"
               />
             </div>
 
             <div>
-              <label htmlFor="environment" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="environment" className="block text-xs font-medium text-foreground mb-1">
                 Environment
               </label>
               <select
                 id="environment"
                 name="environment"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
               >
                 <option value="">Select...</option>
                 <option value="Production">Production</option>
@@ -339,53 +339,53 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             </div>
 
             <div>
-              <label htmlFor="workstationId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="workstationId" className="block text-xs font-medium text-foreground mb-1">
                 Workstation ID
               </label>
               <input
                 type="text"
                 id="workstationId"
                 name="workstationId"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., WS-USER-123"
               />
             </div>
 
             <div>
-              <label htmlFor="adUser" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="adUser" className="block text-xs font-medium text-foreground mb-1">
                 AD User
               </label>
               <input
                 type="text"
                 id="adUser"
                 name="adUser"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., john.doe"
               />
             </div>
 
             <div>
-              <label htmlFor="manufacturer" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="manufacturer" className="block text-xs font-medium text-foreground mb-1">
                 Manufacturer
               </label>
               <input
                 type="text"
                 id="manufacturer"
                 name="manufacturer"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., Dell, HP, Microsoft"
               />
             </div>
 
             <div>
-              <label htmlFor="version" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="version" className="block text-xs font-medium text-foreground mb-1">
                 Version
               </label>
               <input
                 type="text"
                 id="version"
                 name="version"
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., 1.0.0, Windows 10"
               />
             </div>
@@ -394,7 +394,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-neutral-700">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
         <Button type="submit" variant="primary" isLoading={isLoading}>
           Create Task
         </Button>

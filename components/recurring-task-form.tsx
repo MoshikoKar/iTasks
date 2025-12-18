@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from './button';
 import { TaskPriority, User, Role } from '@prisma/client';
 import { Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
+import { ErrorAlert } from './ui/error-alert';
 
 interface RecurringTaskFormProps {
   users: Pick<User, 'id' | 'name'>[];
@@ -145,16 +146,13 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 flex items-start gap-3">
-          <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
-          <span className="text-sm text-red-800 dark:text-red-300">{error}</span>
-        </div>
+        <ErrorAlert message={error} onDismiss={() => setError('')} />
       )}
 
       {/* Task Title */}
       <div>
-        <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-2">
-          Task Title <span className="text-red-500 dark:text-red-400">*</span>
+        <label htmlFor="taskTitle" className="block text-sm font-medium text-foreground mb-2">
+          Task Title <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
@@ -162,18 +160,18 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
           name="taskTitle"
           required
           defaultValue={config?.templateTitle || config?.name}
-          className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+          className="input-base"
           placeholder="e.g., Weekly Server Backup Verification"
         />
-        <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">This title will be used for the recurring task configuration and each generated task</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">This title will be used for the recurring task configuration and each generated task</p>
       </div>
 
-      <div className="border-t border-slate-200 dark:border-neutral-700 pt-6">
-        <h3 className="text-base font-semibold text-slate-900 dark:text-neutral-100 mb-4">Task Details</h3>
+      <div className="border-t border-border pt-6">
+        <h3 className="text-base font-semibold text-foreground mb-4">Task Details</h3>
 
         {/* Task Description */}
         <div className="mb-4">
-          <label htmlFor="templateDescription" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="templateDescription" className="block text-xs font-medium text-foreground mb-2">
             Task Description
           </label>
           <textarea
@@ -181,7 +179,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
             name="templateDescription"
             rows={4}
             defaultValue={config?.templateDescription || ''}
-            className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all resize-none"
+            className="input-base resize-none"
             placeholder="Describe what needs to be done for each occurrence..."
           />
         </div>
@@ -190,14 +188,14 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Schedule */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              <Calendar className="inline mr-1" size={14} />
-              Schedule <span className="text-red-500 dark:text-red-400">*</span>
+            <label className="block text-xs font-medium text-foreground mb-2">
+              <Calendar className="inline mr-1" size={14} aria-hidden="true" />
+              Schedule <span className="text-destructive">*</span>
             </label>
             <select
               value={cronPreset}
               onChange={(e) => setCronPreset(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               {cronPresets.map((preset) => (
                 <option key={preset.value} value={preset.value}>
@@ -211,29 +209,29 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
                   type="text"
                   value={customCron}
                   onChange={(e) => setCustomCron(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all font-mono text-sm"
+                  className="input-base font-mono text-sm"
                   placeholder="0 9 * * *"
                 />
-                <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">
+                <p className="mt-1.5 text-xs text-muted-foreground">
                   Enter cron expression (minute hour day month weekday)
                 </p>
               </div>
             )}
-            <div className="mt-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3">
-              <p className="text-xs text-blue-800 dark:text-blue-300">
+            <div className="mt-2 rounded-lg bg-primary/10 border border-primary/20 p-3">
+              <p className="text-xs text-primary">
                 <strong>Current schedule:</strong> {cronPreset === 'custom' ? customCron || 'Not set' : cronPreset}
               </p>
             </div>
           </div>
           <div>
-            <label htmlFor="templatePriority" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
+            <label htmlFor="templatePriority" className="block text-xs font-medium text-foreground mb-2">
               Priority
             </label>
             <select
               id="templatePriority"
               name="templatePriority"
               defaultValue={config?.templatePriority || 'Medium'}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -243,14 +241,14 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
           </div>
 
           <div>
-            <label htmlFor="templateBranch" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
+            <label htmlFor="templateBranch" className="block text-xs font-medium text-foreground mb-2">
               Branch / Location
             </label>
             <select
               id="templateBranch"
               value={branchSelection}
               onChange={(e) => setBranchSelection(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               <option value="">Select a branch...</option>
               {branches.map((branch) => (
@@ -266,7 +264,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
                   type="text"
                   value={customBranch}
                   onChange={(e) => setCustomBranch(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                   placeholder="Enter custom branch name..."
                 />
               </div>
@@ -274,16 +272,16 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
           </div>
 
           <div>
-            <label htmlFor="templateAssigneeId" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-2">
-              <UserIcon className="inline mr-1" size={16} />
-              Default Assignee <span className="text-red-500 dark:text-red-400">*</span>
+            <label htmlFor="templateAssigneeId" className="block text-xs font-medium text-foreground mb-2">
+              <UserIcon className="inline mr-1" size={16} aria-hidden="true" />
+              Default Assignee <span className="text-destructive">*</span>
             </label>
             <select
               id="templateAssigneeId"
               name="templateAssigneeId"
               required
               defaultValue={config?.templateAssigneeId || currentUser.id}
-              className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+              className="input-base"
             >
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
@@ -292,7 +290,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
               ))}
             </select>
             {(currentUser.role === Role.Technician || currentUser.role === Role.Viewer) && (
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-neutral-400">
+              <p className="mt-1.5 text-xs text-muted-foreground">
                 You can only assign recurring tasks to yourself
               </p>
             )}
@@ -300,11 +298,11 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
         </div>
 
         {/* IT Context Section */}
-        <div className="pt-4 border-t border-slate-200 dark:border-neutral-700 mt-4">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100 mb-3">IT Asset Context (Optional)</h3>
+        <div className="pt-4 border-t border-border mt-4">
+          <h3 className="text-sm font-semibold text-foreground mb-3">IT Asset Context (Optional)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="templateServerName" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="templateServerName" className="block text-xs font-medium text-foreground mb-1">
                 Server Name
               </label>
               <input
@@ -312,13 +310,13 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
                 id="templateServerName"
                 name="templateServerName"
                 defaultValue={config?.templateServerName || ''}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., SRV-WEB-01"
               />
             </div>
 
             <div>
-              <label htmlFor="templateApplication" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="templateApplication" className="block text-xs font-medium text-foreground mb-1">
                 Application
               </label>
               <input
@@ -326,13 +324,13 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
                 id="templateApplication"
                 name="templateApplication"
                 defaultValue={config?.templateApplication || ''}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., Exchange Server"
               />
             </div>
 
             <div>
-              <label htmlFor="templateIpAddress" className="block text-xs font-medium text-slate-700 dark:text-neutral-300 mb-1">
+              <label htmlFor="templateIpAddress" className="block text-xs font-medium text-foreground mb-1">
                 IP Address
               </label>
               <input
@@ -340,7 +338,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
                 id="templateIpAddress"
                 name="templateIpAddress"
                 defaultValue={config?.templateIpAddress || ''}
-                className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                className="input-base"
                 placeholder="e.g., 192.168.1.100"
               />
             </div>
@@ -349,7 +347,7 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-neutral-700">
+      <div className="flex justify-end gap-3 pt-6 border-t border-border">
         <Button type="submit" variant="primary" isLoading={isLoading}>
           {config ? 'Update Recurring Task' : 'Create Recurring Task'}
         </Button>

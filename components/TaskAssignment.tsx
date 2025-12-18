@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { UserSearch } from "./UserSearch";
 import { User as UserIcon, UserPlus } from "lucide-react";
+import { ErrorAlert } from "./ui/error-alert";
+import { Button } from "./button";
 
 interface User {
   id: string;
@@ -31,15 +33,17 @@ export function TaskAssignment({
   const [isChangingAssignee, setIsChangingAssignee] = useState(false);
   const [changingTechnicianId, setChangingTechnicianId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleAssign = async (user: User) => {
     setLoading(true);
+    setError('');
     try {
       await onAssign(taskId, user.id);
       setIsChangingAssignee(false);
     } catch (error) {
       console.error("Failed to assign task:", error);
-      alert("Failed to assign task. Please try again.");
+      setError("Failed to assign task. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -47,11 +51,12 @@ export function TaskAssignment({
 
   const handleAddTechnician = async (user: User) => {
     setLoading(true);
+    setError('');
     try {
       await onAddTechnician(taskId, user.id);
     } catch (error) {
       console.error("Failed to add technician:", error);
-      alert("Failed to add technician. Please try again.");
+      setError("Failed to add technician. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -59,47 +64,56 @@ export function TaskAssignment({
 
   const handleRemoveTechnician = async (technicianId: string) => {
     setChangingTechnicianId(technicianId);
+    setError('');
     try {
       await onRemoveTechnician(taskId, technicianId);
     } catch (error) {
       console.error("Failed to remove technician:", error);
-      alert("Failed to remove technician. Please try again.");
+      setError("Failed to remove technician. Please try again.");
     } finally {
       setChangingTechnicianId(null);
     }
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
-        <UserPlus size={20} className="text-blue-600 dark:text-blue-400" />
+    <div className="card-base p-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <UserPlus size={20} className="text-primary" />
         Assign Task
       </h2>
+
+      {error && (
+        <div className="mb-4">
+          <ErrorAlert message={error} onDismiss={() => setError('')} />
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Main Assignee */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-2">
-                <UserIcon size={18} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-full bg-primary/10 p-2">
+                <UserIcon size={18} className="text-primary" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wide">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Main Assignee
                 </div>
-                <div className="font-semibold text-slate-900 dark:text-neutral-100">
+                <div className="font-semibold text-foreground">
                   {currentAssignee?.name || "Unassigned"}
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsChangingAssignee(true)}
-              className="neu-button inline-flex items-center justify-center text-sm font-medium"
-              style={{ fontSize: '14px', padding: '8px 20px' }}
+            <Button
+              onClick={() => {
+                setIsChangingAssignee(true);
+                setError('');
+              }}
+              size="sm"
             >
               Change
-            </button>
+            </Button>
           </div>
 
           {isChangingAssignee && (
@@ -110,29 +124,32 @@ export function TaskAssignment({
                 excludeUserIds={currentAssignee ? [currentAssignee.id] : []}
               />
               <div className="flex gap-2">
-                <button
-                  onClick={() => setIsChangingAssignee(false)}
+                <Button
+                  onClick={() => {
+                    setIsChangingAssignee(false);
+                    setError('');
+                  }}
                   disabled={loading}
-                  className="neu-button inline-flex items-center justify-center text-sm font-medium disabled:opacity-50"
-                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                  size="sm"
+                  variant="secondary"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
               {loading && (
-                <div className="text-sm text-slate-500 dark:text-neutral-400">Updating main assignee...</div>
+                <div className="text-sm text-muted-foreground">Updating main assignee...</div>
               )}
             </div>
           )}
         </div>
 
         {/* Technicians */}
-        <div className="border-t border-slate-200 dark:border-neutral-700 pt-4">
+        <div className="border-t border-border pt-4">
           <div className="mb-3">
-            <div className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Technicians (Viewers / Secondary Contributors)
             </div>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Add additional technicians who should follow or help with this task.
             </p>
           </div>
@@ -140,23 +157,24 @@ export function TaskAssignment({
           {technicians.length > 0 ? (
             <div className="flex flex-wrap gap-2 mb-3">
               {technicians.map((tech) => (
-                <button
+                <Button
                   key={tech.id}
                   type="button"
                   onClick={() => handleRemoveTechnician(tech.id)}
                   disabled={changingTechnicianId === tech.id}
-                  className="neu-button inline-flex items-center gap-2 text-xs font-medium disabled:opacity-60"
-                  style={{ fontSize: '12px', padding: '4px 12px' }}
+                  size="sm"
+                  variant="ghost"
+                  className="gap-2"
                 >
                   <span>{tech.name}</span>
-                  <span className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-neutral-500">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
                     Remove
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           ) : (
-            <div className="mb-3 text-xs text-slate-500 dark:text-neutral-400">
+            <div className="mb-3 text-xs text-muted-foreground">
               No technicians added yet.
             </div>
           )}
@@ -171,7 +189,7 @@ export function TaskAssignment({
           />
 
           {loading && !isChangingAssignee && (
-            <div className="mt-2 text-sm text-slate-500 dark:text-neutral-400">Updating technicians...</div>
+            <div className="mt-2 text-sm text-muted-foreground">Updating technicians...</div>
           )}
         </div>
       </div>

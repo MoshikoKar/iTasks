@@ -230,14 +230,37 @@ export async function updateTask(
     },
   });
 
-  const [assignee, creator, actorUser, newAssignee] = await Promise.all([
-    db.user.findUnique({ where: { id: updated.assigneeId }, select: { email: true, name: true } }),
-    db.user.findUnique({ where: { id: updated.creatorId }, select: { email: true, name: true } }),
-    db.user.findUnique({ where: { id: actorId }, select: { email: true, name: true } }),
-    existing.assigneeId !== updated.assigneeId
-      ? db.user.findUnique({ where: { id: updated.assigneeId }, select: { name: true } })
-      : Promise.resolve(null),
-  ]);
+  // Collect all unique user IDs to fetch in a single query
+  const userIdsToFetch = new Set<string>();
+  userIdsToFetch.add(updated.assigneeId);
+  userIdsToFetch.add(updated.creatorId);
+  userIdsToFetch.add(actorId);
+  if (existing.assigneeId !== updated.assigneeId) {
+    userIdsToFetch.add(updated.assigneeId);
+  }
+
+  // Single batched query for all users
+  const users = await db.user.findMany({
+    where: {
+      id: { in: Array.from(userIdsToFetch) },
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+    },
+  });
+
+  // Create a map for O(1) lookup
+  const userMap = new Map(users.map((user) => [user.id, user]));
+
+  // Extract users from map
+  const assignee = userMap.get(updated.assigneeId);
+  const creator = userMap.get(updated.creatorId);
+  const actorUser = userMap.get(actorId);
+  const newAssignee = existing.assigneeId !== updated.assigneeId
+    ? userMap.get(updated.assigneeId)
+    : null;
 
   // Track changes for system log
   const changes: Record<string, { old: unknown; new: unknown }> = {};

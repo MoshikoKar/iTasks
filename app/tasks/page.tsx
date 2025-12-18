@@ -46,16 +46,26 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
   }
 }
 
-export default async function TasksPage() {
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
     redirect("/login");
   }
 
   try {
+    const resolvedSearchParams = await searchParams;
+    const pageParam = resolvedSearchParams?.page ? parseInt(resolvedSearchParams.page as string, 10) : 1;
+    const page = pageParam > 0 ? pageParam : 1; // Ensure page is at least 1
+    const pageSize = 50;
+    const skip = (page - 1) * pageSize;
+
     const taskFilter = buildTaskFilter(currentUser);
 
-    const [tasks, users] = await Promise.all([
+    const [tasks, totalCount, users] = await Promise.all([
       db.task.findMany({
         where: taskFilter,
         include: {
@@ -63,6 +73,11 @@ export default async function TasksPage() {
           context: { select: { serverName: true, application: true } },
         },
         orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      db.task.count({
+        where: taskFilter,
       }),
       // Filter users based on permission level - no one can assign to users above their level
       currentUser.role === Role.Admin
@@ -89,6 +104,8 @@ export default async function TasksPage() {
           }),
     ]);
 
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     return (
       <Suspense fallback={<div className="space-y-4"><h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1><div className="text-slate-600 dark:text-neutral-400">Loading...</div></div>}>
         <TasksPageWrapper
@@ -96,6 +113,9 @@ export default async function TasksPage() {
           currentUser={{ id: currentUser.id, name: currentUser.name }}
           users={users}
           showFilters={true}
+          currentPage={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
         />
       </Suspense>
     );

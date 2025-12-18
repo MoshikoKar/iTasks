@@ -31,82 +31,82 @@ export function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">System Settings</h1>
+      <h1 className="text-3xl font-bold text-foreground">System Settings</h1>
 
       {/* System Configuration */}
-      <section className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
-        <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-          <Settings size={20} className="text-blue-600 dark:text-blue-400" />
+      <section className="card-base p-6">
+        <h2 className="mb-6 text-lg font-semibold text-foreground flex items-center gap-2">
+          <Settings size={20} className="text-primary" />
           System Configuration
         </h2>
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Mail size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Mail size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">SMTP Server</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Local LAN, Port 25</div>
+                <div className="font-medium text-foreground">SMTP Server</div>
+                <div className="text-sm text-muted-foreground">Local LAN, Port 25</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsSMTPModalOpen(true)}
             >
               Configure
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Settings size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Settings size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">SLA Defaults</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Configure default SLA deadlines</div>
+                <div className="font-medium text-foreground">SLA Defaults</div>
+                <div className="text-sm text-muted-foreground">Configure default SLA deadlines</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsSLAModalOpen(true)}
             >
               Configure
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Activity size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Activity size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">LDAP / LDAPS Authentication</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Enterprise authentication integration</div>
+                <div className="font-medium text-foreground">LDAP / LDAPS Authentication</div>
+                <div className="text-sm text-muted-foreground">Enterprise authentication integration</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsLDAPModalOpen(true)}
             >
               Configure
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-neutral-700 bg-gradient-to-r from-white to-slate-50 dark:from-neutral-800 dark:to-neutral-900 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                <Sliders size={20} className="text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Sliders size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-slate-900 dark:text-neutral-100">Variable Configuration</div>
-                <div className="text-sm text-slate-600 dark:text-neutral-400">Application-wide variables (support email, etc.)</div>
+                <div className="font-medium text-foreground">Variable Configuration</div>
+                <div className="text-sm text-muted-foreground">Application-wide variables (support email, etc.)</div>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="text-blue-600 dark:text-blue-400"
+              className="text-primary"
               onClick={() => setIsVariableModalOpen(true)}
             >
               Configure

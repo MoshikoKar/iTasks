@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Building2, Plus, Edit2, Trash2, X } from "lucide-react";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { Button } from "@/components/button";
 
 interface Team {
   id: string;
@@ -29,6 +31,7 @@ export default function TeamsManagementPage() {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -66,13 +69,14 @@ export default function TeamsManagementPage() {
 
       if (res.ok) {
         setShowTeamModal(false);
+        setError('');
         fetchData();
       } else {
-        const error = await res.json();
-        alert(error.error || "Failed to create team");
+        const errorData = await res.json();
+        setError(errorData.error || "Failed to create team");
       }
     } catch (error) {
-      alert("Failed to create team");
+      setError("Failed to create team");
     }
   };
 
@@ -95,13 +99,14 @@ export default function TeamsManagementPage() {
       if (res.ok) {
         setShowTeamModal(false);
         setEditingTeam(null);
+        setError('');
         fetchData();
       } else {
-        const error = await res.json();
-        alert(error.error || "Failed to update team");
+        const errorData = await res.json();
+        setError(errorData.error || "Failed to update team");
       }
     } catch (error) {
-      alert("Failed to update team");
+      setError("Failed to update team");
     }
   };
 
@@ -112,13 +117,14 @@ export default function TeamsManagementPage() {
       const res = await fetch(`/api/teams/${teamId}`, { method: "DELETE" });
 
       if (res.ok) {
+        setError('');
         fetchData();
       } else {
-        const error = await res.json();
-        alert(error.error || "Failed to delete team");
+        const errorData = await res.json();
+        setError(errorData.error || "Failed to delete team");
       }
     } catch (error) {
-      alert("Failed to delete team");
+      setError("Failed to delete team");
     }
   };
 
@@ -143,20 +149,21 @@ export default function TeamsManagementPage() {
       if (res.ok) {
         setShowUserModal(false);
         setEditingUser(null);
+        setError('');
         fetchData();
       } else {
-        const error = await res.json();
-        alert(error.error || "Failed to update user");
+        const errorData = await res.json();
+        setError(errorData.error || "Failed to update user");
       }
     } catch (error) {
-      alert("Failed to update user");
+      setError("Failed to update user");
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-600 dark:text-neutral-400">Loading...</div>
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -164,38 +171,43 @@ export default function TeamsManagementPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-neutral-100">Team & User Management</h1>
-        <p className="mt-1 text-slate-600 dark:text-neutral-400">Manage teams and assign users to departments</p>
+        <h1 className="text-3xl font-bold text-foreground">Team & User Management</h1>
+        <p className="mt-1 text-muted-foreground">Manage teams and assign users to departments</p>
       </div>
 
+      {error && (
+        <ErrorAlert message={error} onDismiss={() => setError('')} />
+      )}
+
       {/* Teams Section */}
-      <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <div className="card-base p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Building2 size={20} className="text-primary" />
             Teams / Departments
           </h2>
-          <button
+          <Button
             onClick={() => {
               setEditingTeam(null);
               setShowTeamModal(true);
+              setError('');
             }}
-            className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
-            style={{ fontSize: '14px', padding: '6px 12px' }}
+            size="sm"
+            className="gap-2"
           >
             <Plus size={16} />
             Create Team
-          </button>
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
-            <div key={team.id} className="rounded-lg border border-slate-200 dark:border-neutral-700 p-4">
+            <div key={team.id} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-slate-900 dark:text-neutral-100 truncate">{team.name}</h3>
+                  <h3 className="font-semibold text-foreground truncate">{team.name}</h3>
                   {team.description && (
-                    <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1">{team.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{team.description}</p>
                   )}
                 </div>
                 <div className="flex gap-1 ml-2">
@@ -203,20 +215,23 @@ export default function TeamsManagementPage() {
                     onClick={() => {
                       setEditingTeam(team);
                       setShowTeamModal(true);
+                      setError('');
                     }}
-                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                    className="p-1 text-primary hover:bg-primary/10 rounded"
+                    aria-label={`Edit team ${team.name}`}
                   >
-                    <Edit2 size={14} />
+                    <Edit2 size={14} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => handleDeleteTeam(team.id)}
-                    className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                    className="p-1 text-destructive hover:bg-destructive/10 rounded"
+                    aria-label={`Delete team ${team.name}`}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} aria-hidden="true" />
                   </button>
                 </div>
               </div>
-              <div className="text-xs text-slate-500 dark:text-neutral-400">
+              <div className="text-xs text-muted-foreground">
                 {team._count.members} member{team._count.members !== 1 ? "s" : ""}
               </div>
             </div>
@@ -225,43 +240,44 @@ export default function TeamsManagementPage() {
       </div>
 
       {/* Users Section */}
-      <div className="rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm">
+      <div className="card-base p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-            <Users size={20} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Users size={20} className="text-primary" />
             Users & Team Assignments
           </h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-neutral-700/50 border-b border-slate-200 dark:border-neutral-700">
+            <thead className="bg-muted border-b border-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Team</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-neutral-300 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Team</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-neutral-700">
+            <tbody className="divide-y divide-border">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50">
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-neutral-100">{user.name}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user.email}</td>
+                <tr key={user.id} className="hover:bg-muted/50">
+                  <td className="px-4 py-3 font-medium text-foreground">{user.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex rounded-full px-2 py-1 text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                    <span className="inline-flex rounded-full px-2 py-1 text-xs font-semibold bg-primary/10 text-primary">
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-neutral-400">{user.team?.name || "-"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.team?.name || "-"}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => {
                         setEditingUser(user);
                         setShowUserModal(true);
+                        setError('');
                       }}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                      className="text-primary hover:text-primary/80 font-medium"
                     >
                       Edit
                     </button>
@@ -275,68 +291,74 @@ export default function TeamsManagementPage() {
 
       {/* Team Modal */}
       {showTeamModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-lg p-6 max-w-md w-full border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">
+              <h3 className="text-lg font-semibold text-foreground">
                 {editingTeam ? "Edit Team" : "Create Team"}
               </h3>
               <button
                 onClick={() => {
                   setShowTeamModal(false);
                   setEditingTeam(null);
+                  setError('');
                 }}
-                className="text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Close modal"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={editingTeam ? handleUpdateTeam : handleCreateTeam} className="space-y-4">
+              {error && (
+                <ErrorAlert message={error} onDismiss={() => setError('')} />
+              )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
-                  Team Name *
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Team Name <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   name="name"
                   defaultValue={editingTeam?.name}
                   required
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Description
                 </label>
                 <textarea
                   name="description"
                   defaultValue={editingTeam?.description || ""}
                   rows={3}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
+                <Button
                   type="submit"
-                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
-                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                  variant="primary"
+                  className="flex-1"
                 >
                   {editingTeam ? "Update" : "Create"}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => {
                     setShowTeamModal(false);
                     setEditingTeam(null);
+                    setError('');
                   }}
-                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
-                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                  variant="secondary"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -345,51 +367,56 @@ export default function TeamsManagementPage() {
 
       {/* User Modal */}
       {showUserModal && editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-lg p-6 max-w-md w-full border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Edit User</h3>
+              <h3 className="text-lg font-semibold text-foreground">Edit User</h3>
               <button
                 onClick={() => {
                   setShowUserModal(false);
                   setEditingUser(null);
+                  setError('');
                 }}
-                className="text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Close modal"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleUpdateUser} className="space-y-4">
+              {error && (
+                <ErrorAlert message={error} onDismiss={() => setError('')} />
+              )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Name <span className="text-destructive">*</span></label>
                 <input
                   type="text"
                   name="name"
                   defaultValue={editingUser.name}
                   required
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Email <span className="text-destructive">*</span></label>
                 <input
                   type="email"
                   name="email"
                   defaultValue={editingUser.email}
                   required
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Role *</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Role <span className="text-destructive">*</span></label>
                 <select
                   name="role"
                   defaultValue={editingUser.role}
                   required
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 >
                   <option value="Admin">Admin</option>
                   <option value="TeamLead">Team Lead</option>
@@ -399,11 +426,11 @@ export default function TeamsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-neutral-300 mb-1">Team</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Team</label>
                 <select
                   name="teamId"
                   defaultValue={editingUser.teamId || ""}
-                  className="w-full rounded-lg border border-slate-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-sm text-slate-900 dark:text-neutral-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all"
+                  className="input-base"
                 >
                   <option value="">No Team</option>
                   {teams.map((team) => (
@@ -415,24 +442,25 @@ export default function TeamsManagementPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
+                <Button
                   type="submit"
-                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
-                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                  variant="primary"
+                  className="flex-1"
                 >
                   Update
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => {
                     setShowUserModal(false);
                     setEditingUser(null);
+                    setError('');
                   }}
-                  className="neu-button flex-1 inline-flex items-center justify-center text-sm font-medium"
-                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                  variant="secondary"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>
