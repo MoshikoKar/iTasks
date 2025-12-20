@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Clock } from "lucide-react";
+import { Clock, Circle } from "lucide-react";
 import { usePolling } from "@/hooks/usePolling";
 
 interface DashboardClientProps {
@@ -12,10 +12,14 @@ interface DashboardClientProps {
 export function DashboardClient({ initialCountdown = 120 }: DashboardClientProps) {
   const router = useRouter();
   const [countdown, setCountdown] = useState(initialCountdown);
+  const [justRefreshed, setJustRefreshed] = useState(false);
 
   const refresh = useCallback(() => {
     router.refresh();
     setCountdown(120);
+    setJustRefreshed(true);
+    // Hide "just refreshed" indicator after 3 seconds
+    setTimeout(() => setJustRefreshed(false), 3000);
   }, [router]);
 
   // Use polling hook for auto-refresh (120 seconds / 2 minutes)
@@ -49,13 +53,22 @@ export function DashboardClient({ initialCountdown = 120 }: DashboardClientProps
   }, [refresh]);
 
   return (
-    <div className="text-sm text-slate-500 dark:text-neutral-400 flex flex-col items-end">
-      <div>
-        <Clock className="inline mr-1" size={14} />
-        Auto-refresh: 120s
-        <span className="ml-2 font-medium text-slate-700 dark:text-neutral-300">({countdown}s)</span>
+    <div className="text-sm text-slate-500 dark:text-neutral-400 flex flex-col items-end gap-1">
+      {justRefreshed && (
+        <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 animate-pulse">
+          <Circle size={8} fill="currentColor" />
+          <span>Updated just now</span>
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <Circle size={6} className="text-green-500 animate-pulse" fill="currentColor" />
+          <span className="text-xs font-medium text-green-600 dark:text-green-400">Live</span>
+        </div>
+        <Clock className="inline" size={14} />
+        <span>Auto-refresh: {countdown}s</span>
       </div>
-      <div className="text-xs text-slate-400 dark:text-neutral-500 mt-1">
+      <div className="text-xs text-slate-400 dark:text-neutral-500">
         Press F5 to refresh
       </div>
     </div>

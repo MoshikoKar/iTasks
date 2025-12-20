@@ -88,7 +88,7 @@ export function TasksPageWrapper({
         </Button>
       </div>
 
-      <DataTable tasks={tasks} showFilters={showFilters} />
+      <DataTable tasks={tasks} showFilters={showFilters} currentUserId={currentUser.id} />
 
       {totalPages > 1 && (
         <div className="flex justify-center pt-4">

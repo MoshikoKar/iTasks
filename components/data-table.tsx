@@ -1,13 +1,94 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TaskStatus, TaskPriority } from "@prisma/client";
-import { Filter, Search, ExternalLink } from "lucide-react";
+import { Filter, Search, UserPlus, RefreshCw, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { formatDate } from "@/lib/utils/date";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { toast } from "sonner";
+import { CopyButton } from "@/components/ui/copy-button";
+
+// Quick Status Change Component - Single click with next status preview on hover
+function QuickStatusChange({
+  taskId,
+  currentStatus,
+  onStatusChange
+}: {
+  taskId: string;
+  currentStatus: TaskStatus;
+  onStatusChange: () => void;
+}) {
+  const [isChanging, setIsChanging] = useState(false);
+
+  // Get next logical status in workflow
+  const getNextStatus = (status: TaskStatus): TaskStatus | null => {
+    switch (status) {
+      case TaskStatus.Open:
+        return TaskStatus.InProgress;
+      case TaskStatus.InProgress:
+        return TaskStatus.Resolved;
+      case TaskStatus.PendingVendor:
+      case TaskStatus.PendingUser:
+        return TaskStatus.InProgress;
+      case TaskStatus.Resolved:
+        return TaskStatus.Closed;
+      case TaskStatus.Closed:
+        return null; // No next status for closed tasks
+      default:
+        return null;
+    }
+  };
+
+  const nextStatus = getNextStatus(currentStatus);
+
+  const handleStatusChange = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!nextStatus) return;
+
+    setIsChanging(true);
+
+    try {
+      const response = await fetch('/api/tasks/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId, status: nextStatus }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update status');
+
+      toast.success(`Status → ${nextStatus}`, {
+        duration: 2000,
+      });
+      onStatusChange();
+    } catch (error) {
+      toast.error('Failed to change status');
+    } finally {
+      setIsChanging(false);
+    }
+  };
+
+  if (!nextStatus) return null;
+
+  return (
+    <button
+      onClick={handleStatusChange}
+      className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+      title={`Click to change to: ${nextStatus}`}
+      aria-label={`Change status to ${nextStatus}`}
+      disabled={isChanging}
+    >
+      {isChanging ? (
+        <RefreshCw size={16} className="animate-spin" />
+      ) : (
+        <RefreshCw size={16} />
+      )}
+    </button>
+  );
+}
 
 interface Task {
   id: string;
@@ -17,16 +98,18 @@ interface Task {
   branch: string | null;
   dueDate: Date | null;
   slaDeadline: Date | null;
-  assignee: { name: string };
+  assignee: { name: string; id: string };
+  assigneeId: string;
   context: { serverName: string | null; application: string | null } | null;
 }
 
 interface DataTableProps {
   tasks: Task[];
   showFilters?: boolean;
+  currentUserId?: string;
 }
 
-export function DataTable({ tasks, showFilters = true }: DataTableProps) {
+export function DataTable({ tasks, showFilters = true, currentUserId }: DataTableProps) {
   const router = useRouter();
   const {
     filteredTasks,
@@ -42,10 +125,27 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
     uniqueBranches,
   } = useTaskFilters(tasks);
 
+  // Persist filter panel open/closed state
+  const [isFilterOpen, setIsFilterOpen] = useLocalStorage<boolean>('task-filter-panel-open', false);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+
+  // Restore filter panel state on mount
+  useEffect(() => {
+    if (detailsRef.current && showFilters) {
+      detailsRef.current.open = isFilterOpen;
+    }
+  }, [isFilterOpen, showFilters]);
+
   return (
     <div className="space-y-4">
       {showFilters && (
-        <details className="rounded-xl border border-border bg-card shadow-sm">
+        <details
+          ref={detailsRef}
+          className="rounded-xl border border-border bg-card shadow-sm"
+          onToggle={(e) => {
+            setIsFilterOpen((e.target as HTMLDetailsElement).open);
+          }}
+        >
           <summary className="cursor-pointer flex items-center gap-2 p-5 font-semibold text-foreground list-none">
             <Filter size={18} className="text-primary" />
             <span>Filters</span>
@@ -133,42 +233,55 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider">SLA</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider">Server/App</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider">Assignee</th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-foreground uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredTasks.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={9} className="px-6 py-12 text-center">
                     <Search size={48} className="mx-auto text-muted-foreground/50 mb-3" />
-                    <p className="text-muted-foreground font-medium mb-2">No tasks found</p>
-                    <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters or create a new task</p>
-                    <Link 
-                      href="/tasks?create=1" 
-                      className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
-                      style={{ fontSize: '14px', padding: '8px 20px' }}
-                    >
-                      Create New Task
-                    </Link>
+                    <p className="text-foreground font-semibold mb-2">
+                      {tasks.length === 0
+                        ? "All tasks are under control"
+                        : "No matching tasks"}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {tasks.length === 0
+                        ? "No incidents right now - nice work! Ready to create a task?"
+                        : "Try adjusting your filters to see more tasks"}
+                    </p>
+                    {tasks.length === 0 && (
+                      <Link
+                        href="/tasks?create=1"
+                        className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+                        style={{ fontSize: '14px', padding: '8px 20px' }}
+                      >
+                        Create New Task
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ) : (
                 filteredTasks.map((task) => (
-                  <tr 
-                    key={task.id} 
+                  <tr
+                    key={task.id}
                     onClick={() => router.push(`/tasks/${task.id}`)}
                     className="hover:bg-primary/5 cursor-pointer transition-colors group"
                   >
                     <td className="px-6 py-4">
                       <div className="font-medium text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
                         {task.title}
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <CopyButton text={task.id} label="Copy task ID" iconSize={12} />
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant="status" value={task.status} />
+                      <Badge variant="status" value={task.status} enableHighlight showTooltip />
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant="priority" value={task.priority} />
+                      <Badge variant="priority" value={task.priority} enableHighlight showTooltip />
                     </td>
                     <td className="px-6 py-4">
                       {task.branch ? (
@@ -189,6 +302,28 @@ export function DataTable({ tasks, showFilters = true }: DataTableProps) {
                       {task.context?.serverName || task.context?.application || "-"}
                     </td>
                     <td className="px-6 py-4 text-muted-foreground font-medium">{task.assignee.name}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <QuickStatusChange
+                          taskId={task.id}
+                          currentStatus={task.status}
+                          onStatusChange={() => router.refresh()}
+                        />
+                        {currentUserId && task.assigneeId !== currentUserId && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toast.info('Assign to me - Navigate to task detail to assign');
+                            }}
+                            className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                            title="Assign to me"
+                            aria-label="Assign task to me"
+                          >
+                            <UserPlus size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}

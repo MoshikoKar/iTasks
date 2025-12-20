@@ -7,6 +7,7 @@ import { Paperclip, X } from 'lucide-react';
 import { changeStatusAction } from '@/app/tasks/[id]/actions/task-actions';
 import { addCommentAction } from '@/app/actions/comments';
 import { ErrorAlert } from './ui/error-alert';
+import { toast } from 'sonner';
 
 interface StatusUpdateFormProps {
   taskId: string;
@@ -21,6 +22,7 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newStatus, setNewStatus] = useState<TaskStatus | null>(null);
   const [error, setError] = useState<string>('');
+  const previousStatusRef = useRef<TaskStatus>(currentStatus);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -35,6 +37,7 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
     e.preventDefault();
     if (!newStatus) return;
 
+    const oldStatus = previousStatusRef.current;
     setIsSubmitting(true);
     try {
       // Change status
@@ -49,7 +52,7 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
           const uploadFormData = new FormData();
           uploadFormData.append('taskId', taskId);
           uploadFormData.append('file', file);
-          
+
           const response = await fetch('/api/attachments', {
             method: 'POST',
             body: uploadFormData,
@@ -72,6 +75,29 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
         );
       }
 
+      previousStatusRef.current = newStatus;
+
+      // Show toast with undo option
+      toast.success(`Status updated to ${newStatus}`, {
+        duration: 5000,
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            try {
+              const undoFormData = new FormData();
+              undoFormData.append('taskId', taskId);
+              undoFormData.append('status', oldStatus);
+              await changeStatusAction(undoFormData);
+              previousStatusRef.current = oldStatus;
+              toast.info('Status change undone');
+              window.location.reload();
+            } catch (error) {
+              toast.error('Failed to undo status change');
+            }
+          },
+        },
+      });
+
       setProgressNotes('');
       setSelectedFiles([]);
       setNewStatus(null);
@@ -84,6 +110,7 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
     } catch (error) {
       console.error('Error updating status:', error);
       setError('Failed to update status. Please try again.');
+      toast.error('Failed to update status');
     } finally {
       setIsSubmitting(false);
     }

@@ -9,6 +9,7 @@ import { Pagination } from './pagination';
 import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
 import { ErrorAlert } from './ui/error-alert';
+import { CopyButton } from './ui/copy-button';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -394,7 +395,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t border-border hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-foreground">{user.name}</td>
+                  <td className="px-4 py-3 font-medium text-foreground flex items-center gap-2">
+                    {user.name}
+                    <CopyButton text={user.id} label="Copy user ID" iconSize={12} />
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">
                     <RoleBadge role={user.role} />

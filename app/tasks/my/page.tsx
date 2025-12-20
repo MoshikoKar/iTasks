@@ -63,7 +63,7 @@ export default function MyTasksPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">My Tasks</h1>
-      <DataTable tasks={tasks} showFilters={true} />
+      <DataTable tasks={tasks} showFilters={true} currentUserId={userId} />
     </div>
   );
 }

@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const tasks = await db.task.findMany({
       where,
       include: {
-        assignee: { select: { name: true } },
+        assignee: { select: { id: true, name: true } },
         context: { select: { serverName: true, application: true } },
       },
       orderBy: { createdAt: "desc" },

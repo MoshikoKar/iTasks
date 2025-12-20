@@ -14,6 +14,7 @@ import Link from "next/link";
 import { BarChart } from "@/components/BarChart";
 import { DonutChart } from "@/components/DonutChart";
 import { Badge } from "@/components/ui/badge";
+import { AuditPreview } from "@/components/ui/audit-preview";
 import { formatDateTime, formatDate } from "@/lib/utils/date";
 import { getDashboardStats } from "@/app/actions/dashboard";
 import { getCurrentUser } from "@/lib/auth";
@@ -91,12 +92,13 @@ export default async function DashboardPage() {
             {stats.myOpenTasks.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
-                <p className="text-sm text-muted-foreground font-medium mb-3">No open tasks!</p>
-                <Link 
-                  href="/tasks?create=1" 
+                <p className="text-foreground font-semibold mb-1">All clear!</p>
+                <p className="text-sm text-muted-foreground mb-3">No open tasks assigned to you</p>
+                <Link
+                  href="/tasks?create=1"
                   className="inline-flex items-center justify-center gap-2 text-xs font-medium px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
-                  Create Your First Task
+                  Create Task
                 </Link>
               </div>
             ) : (
@@ -234,7 +236,8 @@ export default async function DashboardPage() {
           {stats.branchDistribution.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <PieChart size={40} className="mx-auto text-muted-foreground/50 mb-2" />
-              <p className="text-sm">No branch data available</p>
+              <p className="text-foreground font-semibold mb-1">All locations covered</p>
+              <p className="text-sm text-muted-foreground">No branch-specific tasks yet</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -268,7 +271,8 @@ export default async function DashboardPage() {
             {!stats.userDistribution || stats.userDistribution.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
                 <ListTodo size={40} className="mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-sm">No task assignments available</p>
+                <p className="text-foreground font-semibold mb-1">Workload balanced</p>
+                <p className="text-sm text-muted-foreground">No active task assignments</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -304,7 +308,8 @@ export default async function DashboardPage() {
         {stats.staleTasks.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
             <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
-            <p className="text-sm">No stale tasks</p>
+            <p className="text-foreground font-semibold mb-1">Everything's moving!</p>
+            <p className="text-sm text-muted-foreground">No stale tasks - great job keeping things updated</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -318,9 +323,15 @@ export default async function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-foreground text-sm truncate">{task.title}</div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        Last update: {formatDate(task.updatedAt)}
-                      </span>
+                      <AuditPreview
+                        lastUpdated={task.updatedAt}
+                        updatedBy={task.assignee?.name}
+                        change="Task updated"
+                      >
+                        <span className="text-xs text-muted-foreground cursor-help">
+                          Last update: {formatDate(task.updatedAt)}
+                        </span>
+                      </AuditPreview>
                       <Badge variant="priority" value={task.priority} />
                     </div>
                   </div>

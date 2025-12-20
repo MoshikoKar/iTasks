@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatDateTime } from "@/lib/utils/date";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export default async function SLAPage() {
   try {
@@ -121,7 +122,20 @@ export default async function SLAPage() {
                             {task.slaDeadline ? formatDateTime(task.slaDeadline) : "-"}
                           </td>
                           <td className={`px-4 py-2 font-semibold ${isOverdue ? "text-destructive" : hoursRemaining && hoursRemaining < 24 ? "text-warning" : "text-foreground"}`}>
-                            {isOverdue ? "OVERDUE" : hoursRemaining !== null ? `${hoursRemaining}h` : "-"}
+                            <Tooltip
+                              content={
+                                isOverdue
+                                  ? "SLA deadline has passed - task is overdue"
+                                  : hoursRemaining !== null
+                                  ? `Time remaining until SLA deadline: ${hoursRemaining} hours`
+                                  : "No SLA deadline set"
+                              }
+                              showIcon={false}
+                            >
+                              <span className="cursor-help">
+                                {isOverdue ? "OVERDUE" : hoursRemaining !== null ? `${hoursRemaining}h` : "-"}
+                              </span>
+                            </Tooltip>
                           </td>
                           <td className="px-4 py-2">
                             <StatusBadge status={task.status} />

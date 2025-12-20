@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Role } from '@prisma/client';
 import { UserPlus, Edit2, Trash2, Building2, Plus, AlertCircle } from 'lucide-react';
+import { CopyButton } from './ui/copy-button';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
@@ -305,7 +306,10 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t border-border hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-foreground">{user.name}</td>
+                  <td className="px-4 py-3 font-medium text-foreground flex items-center gap-2">
+                    {user.name}
+                    <CopyButton text={user.id} label="Copy user ID" iconSize={12} />
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">
                     <RoleBadge role={user.role} />

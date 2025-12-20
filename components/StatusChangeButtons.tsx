@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { TaskStatus } from '@prisma/client';
 import { Button } from './button';
+import { toast } from 'sonner';
 
 interface StatusChangeButtonsProps {
   currentStatus: TaskStatus;
@@ -12,6 +13,7 @@ interface StatusChangeButtonsProps {
 
 export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: StatusChangeButtonsProps) {
   const [changingStatus, setChangingStatus] = useState<TaskStatus | null>(null);
+  const previousStatusRef = useRef<TaskStatus>(currentStatus);
 
   const getStatusTextColorClass = (status: TaskStatus) => {
     switch (status) {
@@ -33,14 +35,37 @@ export function StatusChangeButtons({ currentStatus, taskId, changeStatus }: Sta
   };
 
   const handleStatusChange = async (status: TaskStatus) => {
+    const oldStatus = previousStatusRef.current;
     setChangingStatus(status);
     const formData = new FormData();
     formData.append('taskId', taskId);
     formData.append('status', status);
     try {
       await changeStatus(formData);
+      previousStatusRef.current = status;
+
+      // Show toast with undo option
+      toast.success(`Status updated to ${status}`, {
+        duration: 5000,
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            try {
+              const undoFormData = new FormData();
+              undoFormData.append('taskId', taskId);
+              undoFormData.append('status', oldStatus);
+              await changeStatus(undoFormData);
+              previousStatusRef.current = oldStatus;
+              toast.info('Status change undone');
+            } catch (error) {
+              toast.error('Failed to undo status change');
+            }
+          },
+        },
+      });
     } catch (error) {
       console.error('Error changing status:', error);
+      toast.error('Failed to update status');
     } finally {
       setChangingStatus(null);
     }

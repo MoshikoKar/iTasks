@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TaskStatus, TaskPriority } from '@prisma/client';
+import { useLocalStorage } from './useLocalStorage';
 
 interface Task {
   id: string;
@@ -39,12 +40,13 @@ export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn
   const overdueParam = searchParams.get('overdue');
   const slaBreachParam = searchParams.get('slaBreach');
 
-  const [statusFilter, setStatusFilter] = useState<string>(statusParam || 'all');
-  const [priorityFilter, setPriorityFilter] = useState<string>(priorityParam || 'all');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
+  // Use localStorage to persist filter preferences
+  const [statusFilter, setStatusFilter] = useLocalStorage<string>('task-filter-status', statusParam || 'all');
+  const [priorityFilter, setPriorityFilter] = useLocalStorage<string>('task-filter-priority', priorityParam || 'all');
+  const [branchFilter, setBranchFilter] = useLocalStorage<string>('task-filter-branch', 'all');
+  const [assigneeFilter, setAssigneeFilter] = useLocalStorage<string>('task-filter-assignee', 'all');
 
-  // Update filters when URL params change
+  // Update filters when URL params change (URL params take precedence)
   useEffect(() => {
     if (statusParam) {
       setStatusFilter(statusParam);
@@ -52,7 +54,7 @@ export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn
     if (priorityParam) {
       setPriorityFilter(priorityParam);
     }
-  }, [statusParam, priorityParam]);
+  }, [statusParam, priorityParam, setStatusFilter, setPriorityFilter]);
 
   // Extract unique assignees
   const uniqueAssignees = useMemo(() => 

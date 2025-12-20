@@ -5,6 +5,7 @@ import { Settings, Mail, Activity, Sliders } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
+import { Tooltip } from './ui/tooltip';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -46,7 +47,10 @@ export function AdminSettingsPage() {
                 <Mail size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-foreground">SMTP Server</div>
+                <div className="font-medium text-foreground flex items-center gap-2">
+                  SMTP Server
+                  <Tooltip content="Configure email server settings for sending notifications and alerts" />
+                </div>
                 <div className="text-sm text-muted-foreground">Local LAN, Port 25</div>
               </div>
             </div>
@@ -64,7 +68,10 @@ export function AdminSettingsPage() {
                 <Settings size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-foreground">SLA Defaults</div>
+                <div className="font-medium text-foreground flex items-center gap-2">
+                  SLA Defaults
+                  <Tooltip content="Set default Service Level Agreement deadlines based on task priority" />
+                </div>
                 <div className="text-sm text-muted-foreground">Configure default SLA deadlines</div>
               </div>
             </div>
@@ -82,7 +89,10 @@ export function AdminSettingsPage() {
                 <Activity size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-foreground">LDAP / LDAPS Authentication</div>
+                <div className="font-medium text-foreground flex items-center gap-2">
+                  LDAP / LDAPS Authentication
+                  <Tooltip content="Integrate with Active Directory or LDAP for enterprise user authentication" />
+                </div>
                 <div className="text-sm text-muted-foreground">Enterprise authentication integration</div>
               </div>
             </div>
@@ -100,7 +110,10 @@ export function AdminSettingsPage() {
                 <Sliders size={20} className="text-primary" />
               </div>
               <div>
-                <div className="font-medium text-foreground">Variable Configuration</div>
+                <div className="font-medium text-foreground flex items-center gap-2">
+                  Variable Configuration
+                  <Tooltip content="Manage application-wide configuration variables like support email address" />
+                </div>
                 <div className="text-sm text-muted-foreground">Application-wide variables (support email, etc.)</div>
               </div>
             </div>

@@ -74,15 +74,27 @@ export async function createTask(data: {
   const user = await requireAuth();
   const creatorId = user.id;
 
-  // Validate input with Zod schema
-  const validationResult = createTaskSchema.safeParse({
+  // Convert Date objects to ISO strings and handle empty strings for Zod validation
+  const dataForValidation = {
     ...data,
+    dueDate: data.dueDate instanceof Date
+      ? data.dueDate.toISOString()
+      : (data.dueDate === '' || data.dueDate === undefined ? null : data.dueDate),
+    slaDeadline: data.slaDeadline instanceof Date
+      ? data.slaDeadline.toISOString()
+      : (data.slaDeadline === '' || data.slaDeadline === undefined ? null : data.slaDeadline),
     creatorId, // Add authenticated creatorId for validation
     assigneeId: data.assigneeId || creatorId,
-  });
+  };
+
+  // Validate input with Zod schema
+  const validationResult = createTaskSchema.safeParse(dataForValidation);
 
   if (!validationResult.success) {
-    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+    const errorMessages = validationResult.error.issues
+      ? validationResult.error.issues.map(e => e.message).join(", ")
+      : "Validation failed";
+    throw new Error(`Validation failed: ${errorMessages}`);
   }
 
   const validatedData = validationResult.data;
@@ -195,8 +207,12 @@ export async function updateTask(
   // Validate input with Zod schema
   const validationResult = updateTaskSchema.safeParse(data);
   if (!validationResult.success) {
-    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+    const errorMessages = validationResult.error.issues
+      ? validationResult.error.issues.map(e => e.message).join(", ")
+      : "Validation failed";
+    throw new Error(`Validation failed: ${errorMessages}`);
   }
+  const validatedData = validationResult.data;
   const existing = await db.task.findUnique({
     where: { id },
     include: { creator: true, assignee: true }

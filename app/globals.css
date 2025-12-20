@@ -8,14 +8,14 @@
     --color-card-foreground: hsl(222.2 84% 4.9%);
     --color-popover: hsl(0 0% 100%);
     --color-popover-foreground: hsl(222.2 84% 4.9%);
-    --color-primary: hsl(222.2 47.4% 11.2%);
+    --color-primary: hsl(225, 11%, 14%);
     --color-primary-foreground: hsl(210 40% 98%);
     --color-secondary: hsl(210 40% 96.1%);
-    --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+    --color-secondary-foreground: hsl(225, 11%, 14%);
     --color-muted: hsl(210 40% 96.1%);
     --color-muted-foreground: hsl(215.4 16.3% 46.9%);
     --color-accent: hsl(210 40% 96.1%);
-    --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+    --color-accent-foreground: hsl(225, 11%, 14%);
     --color-destructive: hsl(0 84.2% 60.2%);
     --color-destructive-foreground: hsl(210 40% 98%);
     --color-border: hsl(214.3 31.8% 91.4%);
@@ -62,14 +62,14 @@
   }
 
   .dark {
-    --color-background: hsl(222.2 47.4% 11.2%);
+    --color-background: hsl(225, 11%, 14%);
     --color-foreground: hsl(210 40% 98%);
     --color-card: hsl(222.2 47.4% 15%);
     --color-card-foreground: hsl(210 40% 98%);
     --color-popover: hsl(222.2 47.4% 15%);
     --color-popover-foreground: hsl(210 40% 98%);
     --color-primary: hsl(210 40% 98%);
-    --color-primary-foreground: hsl(222.2 47.4% 11.2%);
+    --color-primary-foreground: hsl(225, 11%, 14%);
     --color-secondary: hsl(217.2 32.6% 17.5%);
     --color-secondary-foreground: hsl(210 40% 98%);
     --color-muted: hsl(217.2 32.6% 17.5%);
@@ -110,6 +110,26 @@
   body {
     background-color: hsl(var(--color-background));
     color: hsl(var(--color-foreground));
+  }
+  
+  select {
+    color: hsl(var(--color-foreground));
+    background-color: hsl(var(--color-background));
+  }
+  
+  select option {
+    color: hsl(var(--color-foreground));
+    background-color: hsl(var(--color-background));
+  }
+  
+  .dark select {
+    color: hsl(210 40% 98%);
+    background-color: hsl(225, 11%, 14%);
+  }
+  
+  .dark select option {
+    color: hsl(210 40% 98%) !important;
+    background-color: hsl(225, 11%, 14%) !important;
   }
 }
 
@@ -224,6 +244,39 @@ button[data-nextjs-toast],
   box-shadow: rgba(255, 255, 255, 0.15) 0px 50px 100px -20px, rgba(255, 255, 255, 0.2) 0px 30px 60px -30px, rgba(255, 255, 255, 0.25) 0px -2px 6px 0px inset !important;
 }
 
+/* Change Highlight Animation */
+@keyframes highlight-flash {
+  0% {
+    background-color: transparent;
+  }
+  15% {
+    background-color: rgba(59, 130, 246, 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes highlight-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+  15% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.dark .change-highlight {
+  animation: highlight-flash 1s ease-out;
+}
+
+.change-highlight {
+  animation: highlight-flash 1s ease-out;
+}
+
 @layer utilities {
   .input-base {
     @apply w-full rounded-lg border px-3 py-2 text-sm transition-all;
@@ -231,21 +284,65 @@ button[data-nextjs-toast],
     background-color: hsl(var(--color-background));
     color: hsl(var(--color-foreground));
   }
-  
+
   .input-base::placeholder {
-    color: hsl(var(--color-muted-foreground));
+    color: hsl(215.4 16.3% 65%);
   }
   
+  .dark .input-base::placeholder {
+    color: hsl(215 20.2% 45%);
+  }
+
   .input-base:focus {
     outline: none;
     border-color: hsl(var(--color-ring));
     box-shadow: 0 0 0 2px hsl(var(--color-ring) / 0.2);
   }
+
+  .input-base option {
+    color: hsl(var(--color-foreground));
+    background-color: hsl(var(--color-background));
+  }
   
+  .dark .input-base {
+    color: hsl(210 40% 98%);
+    background-color: hsl(225, 11%, 14%);
+  }
+  
+  .dark .input-base option {
+    color: hsl(210 40% 98%) !important;
+    background-color: hsl(222.2 47.4% 15%) !important;
+  }
+
   .card-base {
     @apply rounded-xl border shadow-sm;
     border-color: hsl(var(--color-border));
     background-color: hsl(var(--color-card));
+  }
+
+  .change-highlight {
+    @apply rounded-md;
+  }
+
+  .read-only-field {
+    @apply cursor-not-allowed opacity-75;
+    background-color: hsl(var(--color-muted));
+  }
+
+  .read-only-field:hover::after {
+    content: 'Read-only';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.5rem;
+    background-color: hsl(var(--color-neutral-900));
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+    pointer-events: none;
+    margin-bottom: 0.25rem;
   }
 }
 

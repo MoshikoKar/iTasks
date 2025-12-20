@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { UserSearch } from "./UserSearch";
 import { User as UserIcon, UserPlus } from "lucide-react";
 import { ErrorAlert } from "./ui/error-alert";
 import { Button } from "./button";
+import { toast } from "sonner";
+import { clsx } from "clsx";
+import { useChangeHighlight } from "@/hooks/useChangeHighlight";
+import { useUndo } from "@/hooks/useUndo";
 
 interface User {
   id: string;
@@ -34,16 +38,32 @@ export function TaskAssignment({
   const [changingTechnicianId, setChangingTechnicianId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const previousAssigneeRef = useRef<{ id: string; name: string } | null>(currentAssignee);
+  const { executeWithUndo, isUndoing } = useUndo();
 
   const handleAssign = async (user: User) => {
+    const oldAssignee = previousAssigneeRef.current;
     setLoading(true);
     setError('');
     try {
-      await onAssign(taskId, user.id);
-      setIsChangingAssignee(false);
+      await executeWithUndo(
+        async () => {
+          await onAssign(taskId, user.id);
+          previousAssigneeRef.current = { id: user.id, name: user.name };
+          setIsChangingAssignee(false);
+        },
+        async () => {
+          if (oldAssignee) {
+            await onAssign(taskId, oldAssignee.id);
+            previousAssigneeRef.current = oldAssignee;
+          }
+        },
+        `Task reassigned to ${user.name}`
+      );
     } catch (error) {
       console.error("Failed to assign task:", error);
       setError("Failed to assign task. Please try again.");
+      toast.error('Failed to assign task');
     } finally {
       setLoading(false);
     }
@@ -92,7 +112,10 @@ export function TaskAssignment({
         {/* Main Assignee */}
         <div>
             <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+            <div className={clsx(
+              "flex items-center gap-3 px-2 py-1 rounded-md transition-all",
+              useChangeHighlight(currentAssignee?.id) && 'change-highlight'
+            )}>
               <div className="rounded-full bg-primary/10 p-2">
                 <UserIcon size={18} className="text-primary" />
               </div>
@@ -105,12 +128,13 @@ export function TaskAssignment({
                 </div>
               </div>
             </div>
-            <Button
-              onClick={() => {
-                setIsChangingAssignee(true);
-                setError('');
-              }}
-              size="sm"
+                <Button
+                  onClick={() => {
+                    setIsChangingAssignee(true);
+                    setError('');
+                  }}
+                  size="sm"
+                  disabled={isUndoing}
             >
               Change
             </Button>

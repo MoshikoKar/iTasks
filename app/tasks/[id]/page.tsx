@@ -18,6 +18,9 @@ import { changeStatusAction, saveTask } from "./actions/task-actions";
 import { deleteCommentFormData } from "./actions/comment-actions";
 import { assignTask, addTechnician, removeTechnician } from "./actions/assignment-actions";
 import { deleteTaskActionFormData } from "./actions/delete-action";
+import { DeleteCommentButton } from "@/components/DeleteCommentButton";
+import { AuditPreview } from "@/components/ui/audit-preview";
+import { CopyButton } from "@/components/ui/copy-button";
 
 type TaskWithRelations = Prisma.TaskGetPayload<{
   include: {
@@ -194,7 +197,8 @@ export default async function TaskDetail({
                       type="text"
                       value={task.title}
                       readOnly
-                      className="input-base bg-muted"
+                      className="input-base bg-muted read-only-field"
+                      title="Read-only"
                     />
                   </div>
 
@@ -270,7 +274,7 @@ export default async function TaskDetail({
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Status</div>
-                  <Badge variant="status" value={task.status} />
+                  <Badge variant="status" value={task.status} showTooltip enableHighlight />
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -279,7 +283,7 @@ export default async function TaskDetail({
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Priority</div>
-                  <Badge variant="priority" value={task.priority} />
+                  <Badge variant="priority" value={task.priority} showTooltip enableHighlight />
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -398,15 +402,30 @@ export default async function TaskDetail({
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">Server Name</div>
-                  <div className="font-semibold text-sm text-foreground">{task.context?.serverName || "-"}</div>
+                  <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+                    {task.context?.serverName || "-"}
+                    {task.context?.serverName && (
+                      <CopyButton text={task.context.serverName} label="Copy server name" iconSize={12} />
+                    )}
+                  </div>
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">Application</div>
-                  <div className="font-semibold text-sm text-foreground">{task.context?.application || "-"}</div>
+                  <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+                    {task.context?.application || "-"}
+                    {task.context?.application && (
+                      <CopyButton text={task.context.application} label="Copy application name" iconSize={12} />
+                    )}
+                  </div>
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">IP Address</div>
-                  <div className="font-semibold text-sm text-foreground">{task.context?.ipAddress || "-"}</div>
+                  <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+                    {task.context?.ipAddress || "-"}
+                    {task.context?.ipAddress && (
+                      <CopyButton text={task.context.ipAddress} label="Copy IP address" iconSize={12} />
+                    )}
+                  </div>
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">Environment</div>
@@ -414,11 +433,21 @@ export default async function TaskDetail({
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">Workstation ID</div>
-                  <div className="font-semibold text-sm text-foreground">{task.context?.workstationId || "-"}</div>
+                  <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+                    {task.context?.workstationId || "-"}
+                    {task.context?.workstationId && (
+                      <CopyButton text={task.context.workstationId} label="Copy workstation ID" iconSize={12} />
+                    )}
+                  </div>
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">AD User</div>
-                  <div className="font-semibold text-sm text-foreground">{task.context?.adUser || "-"}</div>
+                  <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+                    {task.context?.adUser || "-"}
+                    {task.context?.adUser && (
+                      <CopyButton text={task.context.adUser} label="Copy AD user" iconSize={12} />
+                    )}
+                  </div>
                 </div>
                 <div className="rounded-md bg-muted/50 p-2 border border-border">
                   <div className="text-xs text-muted-foreground mb-0.5">Manufacturer</div>
@@ -507,24 +536,21 @@ export default async function TaskDetail({
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <div className="font-semibold text-foreground">{comment.user?.name || "User"}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {formatDateTime(comment.createdAt)}
-                          </div>
+                          <AuditPreview
+                            lastUpdated={comment.createdAt}
+                            updatedBy={comment.user?.name}
+                            change="Comment created"
+                          >
+                            <div className="text-xs text-muted-foreground mt-1 cursor-help">
+                              {formatDateTime(comment.createdAt)}
+                            </div>
+                          </AuditPreview>
                         </div>
                         {(comment.userId === currentUser.id || currentUser.role === Role.Admin) && (
-                          <form action={deleteCommentFormData}>
-                            <input type="hidden" name="commentId" value={comment.id} />
-                            <Button
-                              type="submit"
-                              size="sm"
-                              variant="danger"
-                              className="gap-1"
-                              aria-label="Delete comment"
-                            >
-                              <Trash2 size={14} className="shrink-0" aria-hidden="true" />
-                              <span>Delete</span>
-                            </Button>
-                          </form>
+                          <DeleteCommentButton 
+                            commentId={comment.id}
+                            commentContent={comment.content}
+                          />
                         )}
                       </div>
                       <CommentDisplay content={comment.content} mentions={comment.mentions} />
