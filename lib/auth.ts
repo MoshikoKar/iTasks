@@ -42,6 +42,8 @@ export async function getCurrentUser() {
 export async function requireAuth() {
   const user = await getCurrentUser();
   if (!user) {
+    // Throw error for API routes to catch and return 401
+    // Page components should use getCurrentUser() + redirect() pattern instead
     throw new Error("Unauthorized");
   }
   return user;

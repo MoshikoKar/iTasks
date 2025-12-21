@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { TaskStatus, TaskPriority, Role, Prisma } from "@prisma/client";
-import { notFound } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { FileText, Server, Calendar, User, MessageSquare, CheckCircle, Trash2, Edit } from "lucide-react";
 import Link from "next/link";
 import { TaskAttachments } from "@/components/TaskAttachments";
@@ -58,7 +58,10 @@ export default async function TaskDetail({
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const currentUser = await requireAuth();
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    redirect("/login");
+  }
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
   const task = await db.task.findUnique({

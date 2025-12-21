@@ -97,6 +97,12 @@ const prisma = new PrismaClient({ adapter });
     await prisma.recurringTaskConfig.deleteMany({});
     console.log("Deleted all recurring task configs");
     
+    await prisma.systemLog.deleteMany({});
+    console.log("Deleted all system logs");
+    
+    await prisma.session.deleteMany({});
+    console.log("Deleted all sessions");
+    
     await prisma.user.deleteMany({});
     console.log("Deleted all users");
     
