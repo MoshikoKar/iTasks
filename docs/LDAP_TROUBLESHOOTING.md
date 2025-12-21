@@ -223,4 +223,4 @@ Check **Admin Settings → Recent Activity** for authentication logs.
 
 ---
 
-**Last Updated**: December 2025
+**Last Updated**: 21-12-2025

@@ -473,7 +473,11 @@ This is an internal enterprise tool. For contributions, please follow the existi
 
 ## License
 
-[Your License Here]
+MIT License
+
+Copyright (c) 2025 iTasks Contributors
+
+See [LICENSE](LICENSE) file for details.
 
 ## Links
 
