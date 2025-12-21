@@ -48,12 +48,8 @@ clear-database.ps1
 # uploads
 /public/uploads
 
-# claude
+# IDE and development files
 /.claude/
-
-# todo
 todo.md
-
-# cursor
 .cursorignore
 
