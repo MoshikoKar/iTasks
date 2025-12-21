@@ -86,8 +86,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col min-h-screen">
-                <main id="main-content" className="flex-1 p-6">{children}</main>
+              <div className="flex flex-col h-screen overflow-hidden">
+                <main id="main-content" className="flex-1 p-6 overflow-y-auto">{children}</main>
                 <Footer 
                   supportEmail={supportEmail}
                   timezone={timezone}
