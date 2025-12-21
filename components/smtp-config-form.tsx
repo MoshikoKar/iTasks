@@ -133,7 +133,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
       smtpFrom: smtpFrom,
       smtpSecure: smtpSecure,
       smtpUser: smtpUser || null,
-      smtpPassword: smtpPassword || null,
+      smtpPassword: smtpPassword && smtpPassword.trim() !== '' ? smtpPassword : null,
     };
 
     try {
@@ -264,18 +264,17 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
 
           <div>
             <label htmlFor="smtpPassword" className="block text-xs font-medium text-foreground mb-1">
-              SMTP Password {smtpUser ? <span className="text-destructive">*</span> : <span className="text-muted-foreground">(optional)</span>}
+              SMTP Password <span className="text-muted-foreground">(optional)</span>
             </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="smtpPassword"
                 name="smtpPassword"
-                required={!!smtpUser}
                 value={smtpPassword}
                 onChange={(e) => setSmtpPassword(e.target.value)}
                 className="input-base pr-20"
-                placeholder={smtpUser ? 'Enter password' : 'Leave empty to keep current password'}
+                placeholder="Leave empty for no authentication or to keep current password"
               />
               <button
                 type="button"
@@ -287,9 +286,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
               </button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {smtpUser
-                ? 'Password is required when username is set'
-                : 'Leave empty to keep current password unchanged'}
+              Leave empty for no authentication (e.g., port 25) or to keep current password unchanged
             </p>
           </div>
         </div>

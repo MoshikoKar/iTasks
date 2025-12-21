@@ -29,6 +29,63 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
   const [isTesting, setIsTesting] = useState(false);
   const [error, setError] = useState('');
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Parse LDAP errors into human-readable messages
+  const parseLDAPError = (errorMessage: string): string => {
+    if (!errorMessage) return 'Connection failed';
+    
+    const errorStr = errorMessage.toLowerCase();
+    
+    // Invalid credentials errors
+    if (errorStr.includes('52e') || errorStr.includes('0x31') || errorStr.includes('80090308') || 
+        errorStr.includes('invalid credentials') || errorStr.includes('acceptsecuritycontext')) {
+      return 'Invalid credentials: The username or password is incorrect. Please check your service account credentials.';
+    }
+    
+    // Account disabled or locked
+    if (errorStr.includes('52b')) {
+      return 'Account disabled: The service account is disabled or locked. Please contact your administrator.';
+    }
+    
+    // Logon restricted
+    if (errorStr.includes('52d')) {
+      return 'Logon restricted: The service account has logon restrictions. Please contact your administrator.';
+    }
+    
+    // Connection errors
+    if (errorStr.includes('timeout') || errorStr.includes('econnrefused') || errorStr.includes('enotfound')) {
+      return 'Connection failed: Cannot connect to the LDAP server. Please check the host and port settings.';
+    }
+    
+    // TLS/SSL errors
+    if (errorStr.includes('certificate') || errorStr.includes('tls') || errorStr.includes('ssl')) {
+      return 'TLS/SSL error: Certificate validation failed. Please check your TLS settings or certificate configuration.';
+    }
+    
+    // Authentication errors
+    if (errorStr.includes('authentication') || errorStr.includes('bind')) {
+      return 'Authentication failed: Unable to authenticate with the provided credentials.';
+    }
+    
+    // Network errors
+    if (errorStr.includes('network') || errorStr.includes('unreachable')) {
+      return 'Network error: Cannot reach the LDAP server. Please check your network connection and server settings.';
+    }
+    
+    // Base DN errors
+    if (errorStr.includes('base dn') || errorStr.includes('basedn') || errorStr.includes('no such object')) {
+      return 'Base DN error: The specified Base DN is incorrect or does not exist. Please verify your Base DN configuration.';
+    }
+    
+    // Generic LDAP errors - try to extract meaningful parts
+    if (errorStr.includes('ldaperr') || errorStr.includes('ldap')) {
+      // If it's a generic LDAP error, return a simplified message
+      return 'LDAP connection error: Please verify your server settings, credentials, and network connectivity.';
+    }
+    
+    // Return original message if no pattern matches
+    return errorMessage;
+  };
   const [config, setConfig] = useState<LDAPConfig>({
     ldapEnabled: false,
     ldapHost: '',
@@ -248,14 +305,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         } else {
           setTestResult({
             success: false,
-            message: result.error || 'Connection failed',
+            message: parseLDAPError(result.error || 'Connection failed'),
           });
           if (result.discoveredBaseDn) {
             setDiscoveredBaseDn(result.discoveredBaseDn);
           }
         }
       } catch (err) {
-        setTestResult({ success: false, message: err instanceof Error ? err.message : 'Connection test failed' });
+        setTestResult({ success: false, message: parseLDAPError(err instanceof Error ? err.message : 'Connection test failed') });
       } finally {
         setIsTesting(false);
       }
@@ -290,10 +347,10 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         if (result.success) {
           setTestResult({ success: true, message: 'Connection successful! LDAP server is reachable and credentials are valid.' });
         } else {
-          setTestResult({ success: false, message: result.error || 'Connection failed' });
+          setTestResult({ success: false, message: parseLDAPError(result.error || 'Connection failed') });
         }
       } catch (err) {
-        setTestResult({ success: false, message: err instanceof Error ? err.message : 'Connection test failed' });
+        setTestResult({ success: false, message: parseLDAPError(err instanceof Error ? err.message : 'Connection test failed') });
       } finally {
         setIsTesting(false);
       }
@@ -406,18 +463,51 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         <div className={`rounded-lg border p-3 flex items-start gap-3 ${
           testResult.success 
             ? 'bg-success/10 border-success/20' 
-            : 'bg-warning/10 border-warning/20'
+            : 'bg-destructive/10 border-destructive/20'
         }`}>
           {testResult.success ? (
             <CheckCircle className="text-success flex-shrink-0 mt-0.5" size={20} aria-hidden="true" />
           ) : (
-            <AlertCircle className="text-warning flex-shrink-0 mt-0.5" size={20} aria-hidden="true" />
+            <AlertCircle className="text-destructive flex-shrink-0 mt-0.5" size={20} aria-hidden="true" />
           )}
-          <span className={`text-sm ${testResult.success ? 'text-success' : 'text-warning'}`}>
+          <span 
+            className={`text-sm ${testResult.success ? 'text-success' : 'text-destructive'}`}
+            style={testResult.success 
+              ? { color: 'hsl(142 76% 36%)' } 
+              : { color: 'hsl(0 84.2% 60.2%)' }
+            }
+          >
             {testResult.message}
           </span>
         </div>
       )}
+
+      <div className="rounded-lg border p-4 bg-primary/5 border-primary/20 space-y-2">
+        <div className="flex items-start gap-2">
+          <Shield className="text-primary flex-shrink-0 mt-0.5" size={18} aria-hidden="true" />
+          <div className="flex-1 space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">Service Account Permissions Required</h3>
+            <div className="text-xs text-muted-foreground space-y-1.5">
+              <p className="font-medium text-foreground">Active Directory:</p>
+              <ul className="list-disc list-inside space-y-0.5 ml-2">
+                <li><strong>Group Membership:</strong> Domain Users (default) - no special groups required</li>
+                <li><strong>ACL Permissions on Base DN:</strong> "List Contents" and "Read All Properties" on user objects</li>
+                <li><strong>Scope:</strong> Base DN and all sub-containers (subtree search)</li>
+                <li><strong>Attributes Read:</strong> cn, mail, displayName, sAMAccountName, userPrincipalName, uid, dn</li>
+              </ul>
+              <p className="font-medium text-foreground mt-2">OpenLDAP:</p>
+              <ul className="list-disc list-inside space-y-0.5 ml-2">
+                <li><strong>ACL Permissions:</strong> Read access (r) on Base DN</li>
+                <li><strong>Scope:</strong> Base DN and all sub-containers (subtree search)</li>
+                <li><strong>Attributes Read:</strong> cn, mail, displayName, uid, dn</li>
+              </ul>
+              <p className="mt-2 inline-block text-xs font-semibold text-warning bg-warning/10 rounded px-2 py-1.5" style={{ borderColor: 'hsl(var(--color-warning) / 0.5)', borderWidth: '1px', borderStyle: 'solid' }}>
+                ⚠️ <strong>Note:</strong> No admin privileges, no write permissions, no special security groups required.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -732,7 +822,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           <p className="mt-1 text-xs text-muted-foreground">
             LDAP filter for finding users. Use {'{'}{'{'} username {'}'} {'}'} as placeholder
           </p>
-          <p className="mt-1 text-xs text-warning">
+          <p className="mt-1 inline-block text-xs font-semibold text-warning bg-warning/10 rounded px-2 py-1.5" style={{ borderColor: 'hsl(var(--color-warning) / 0.5)', borderWidth: '1px', borderStyle: 'solid' }}>
             ⚠️ For Active Directory, use: <code className="bg-warning/20 px-1 rounded text-warning">(sAMAccountName=&#123;&#123;username&#125;&#125;)</code>
           </p>
         </div>
@@ -752,12 +842,12 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           <p className="mt-1 text-xs text-muted-foreground">
             LDAP attribute containing the username
           </p>
-          <p className="mt-1 text-xs text-warning">
+          <p className="mt-1 inline-block text-xs font-semibold text-warning bg-warning/10 rounded px-2 py-1.5" style={{ borderColor: 'hsl(var(--color-warning) / 0.5)', borderWidth: '1px', borderStyle: 'solid' }}>
             ⚠️ For Active Directory, use: <code className="bg-warning/20 px-1 rounded text-warning">sAMAccountName</code> (not uid)
           </p>
         </div>
 
-        <div className="flex items-start gap-2 p-2 bg-warning/10 border border-warning/20 rounded-lg">
+        <div className="flex items-start gap-2 p-2 bg-warning/10 rounded-lg" style={{ borderColor: '#0066ff', borderWidth: '2px', borderStyle: 'solid' }}>
           <Shield className="text-warning flex-shrink-0 mt-0.5" size={16} aria-hidden="true" />
           <div className="flex-1">
             <label htmlFor="ldapEnforced" className="inline-flex items-center gap-1.5 cursor-pointer">
@@ -781,9 +871,10 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
       <div className="flex justify-between gap-3 pt-4 border-t border-border">
         <Button
           type="button"
-          variant="secondary"
+          variant={testResult ? (testResult.success ? 'primary' : 'danger') : 'secondary'}
           onClick={handleTestConnection}
           isLoading={isTesting}
+          className={testResult?.success ? '!text-success' : ''}
         >
           Test Connection
         </Button>

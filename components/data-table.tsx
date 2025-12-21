@@ -16,11 +16,13 @@ import { CopyButton } from "@/components/ui/copy-button";
 function QuickStatusChange({
   taskId,
   currentStatus,
-  onStatusChange
+  onStatusChange,
+  onRefresh
 }: {
   taskId: string;
   currentStatus: TaskStatus;
-  onStatusChange: () => void;
+  onStatusChange: (newStatus: TaskStatus) => void;
+  onRefresh?: () => void;
 }) {
   const [isChanging, setIsChanging] = useState(false);
 
@@ -51,6 +53,9 @@ function QuickStatusChange({
 
     setIsChanging(true);
 
+    // Optimistically update the UI immediately
+    onStatusChange(nextStatus);
+
     try {
       const response = await fetch('/api/tasks/status', {
         method: 'POST',
@@ -63,8 +68,16 @@ function QuickStatusChange({
       toast.success(`Status → ${nextStatus}`, {
         duration: 2000,
       });
-      onStatusChange();
+
+      // Refresh after a short delay to ensure server has processed the update
+      if (onRefresh) {
+        setTimeout(() => {
+          onRefresh();
+        }, 300);
+      }
     } catch (error) {
+      // Revert on error
+      onStatusChange(currentStatus);
       toast.error('Failed to change status');
     } finally {
       setIsChanging(false);
@@ -111,6 +124,21 @@ interface DataTableProps {
 
 export function DataTable({ tasks, showFilters = true, currentUserId }: DataTableProps) {
   const router = useRouter();
+  const [localTasks, setLocalTasks] = useState<Task[]>(() => tasks);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Mark as mounted after hydration to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Update local tasks when props change (but only after mount to avoid hydration issues)
+  useEffect(() => {
+    if (isMounted) {
+      setLocalTasks(tasks);
+    }
+  }, [tasks, isMounted]);
+
   const {
     filteredTasks,
     statusFilter,
@@ -123,7 +151,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
     setAssigneeFilter,
     uniqueAssignees,
     uniqueBranches,
-  } = useTaskFilters(tasks);
+  } = useTaskFilters(localTasks);
 
   // Persist filter panel open/closed state
   const [isFilterOpen, setIsFilterOpen] = useLocalStorage<boolean>('task-filter-panel-open', false);
@@ -135,6 +163,15 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
       detailsRef.current.open = isFilterOpen;
     }
   }, [isFilterOpen, showFilters]);
+
+  // Handle status change with optimistic update
+  const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
+    setLocalTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, status: newStatus } : task
+      )
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -150,7 +187,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
             <Filter size={18} className="text-primary" />
             <span>Filters</span>
             <span className="ml-auto text-xs text-muted-foreground font-normal">
-              ({filteredTasks.length} of {tasks.length} tasks)
+              ({filteredTasks.length} of {isMounted ? localTasks.length : tasks.length} tasks)
             </span>
           </summary>
           <div className="px-5 pb-5">
@@ -242,16 +279,16 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                   <td colSpan={9} className="px-6 py-12 text-center">
                     <Search size={48} className="mx-auto text-muted-foreground/50 mb-3" />
                     <p className="text-foreground font-semibold mb-2">
-                      {tasks.length === 0
+                      {(isMounted ? localTasks.length : tasks.length) === 0
                         ? "All tasks are under control"
                         : "No matching tasks"}
                     </p>
                     <p className="text-sm text-muted-foreground mb-4">
-                      {tasks.length === 0
+                      {(isMounted ? localTasks.length : tasks.length) === 0
                         ? "No incidents right now - nice work! Ready to create a task?"
                         : "Try adjusting your filters to see more tasks"}
                     </p>
-                    {tasks.length === 0 && (
+                    {(isMounted ? localTasks.length : tasks.length) === 0 && (
                       <Link
                         href="/tasks?create=1"
                         className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
@@ -303,11 +340,12 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                     </td>
                     <td className="px-6 py-4 text-muted-foreground font-medium">{task.assignee.name}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1">
                         <QuickStatusChange
                           taskId={task.id}
                           currentStatus={task.status}
-                          onStatusChange={() => router.refresh()}
+                          onStatusChange={(newStatus) => handleStatusChange(task.id, newStatus)}
+                          onRefresh={() => router.refresh()}
                         />
                         {currentUserId && task.assigneeId !== currentUserId && (
                           <button
@@ -315,7 +353,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                               e.stopPropagation();
                               toast.info('Assign to me - Navigate to task detail to assign');
                             }}
-                            className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                            className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Assign to me"
                             aria-label="Assign task to me"
                           >

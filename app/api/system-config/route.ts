@@ -65,6 +65,9 @@ export async function PATCH(request: NextRequest) {
       supportEmail,
     } = body;
 
+    // Fetch old config BEFORE upsert for change tracking
+    const oldConfig = await db.systemConfig.findUnique({ where: { id: "system" } });
+
     const updateData: any = {};
 
     if (smtpHost !== undefined) updateData.smtpHost = smtpHost;
@@ -72,9 +75,24 @@ export async function PATCH(request: NextRequest) {
     if (smtpFrom !== undefined) updateData.smtpFrom = smtpFrom;
     if (smtpSecure !== undefined) updateData.smtpSecure = smtpSecure;
     if (smtpUser !== undefined) updateData.smtpUser = smtpUser;
-    if (smtpPassword !== undefined && smtpPassword !== "") {
-      updateData.smtpPassword = encryptSecret(smtpPassword);
+    // Only encrypt and update password if it's provided and not empty/null
+    // Password is optional even when username is set (e.g., port 25 without auth)
+    // If password is null or empty, we don't update it (keeps existing password or allows no password)
+    if (smtpPassword !== undefined && smtpPassword !== null && smtpPassword.trim() !== "") {
+      try {
+        updateData.smtpPassword = encryptSecret(smtpPassword);
+      } catch (encryptError: any) {
+        logger.error("Error encrypting SMTP password", encryptError);
+        return NextResponse.json(
+          { error: encryptError.message?.includes('ENCRYPTION_KEY') 
+            ? "Encryption key is not configured. Please set ENCRYPTION_KEY environment variable."
+            : "Failed to encrypt password. Please check server configuration." },
+          { status: 500 }
+        );
+      }
     }
+    // If smtpPassword is null or empty string, we don't add it to updateData
+    // This means the existing password (if any) will be preserved, or no password will be used
     if (slaLowHours !== undefined) updateData.slaLowHours = slaLowHours;
     if (slaMediumHours !== undefined) updateData.slaMediumHours = slaMediumHours;
     if (slaHighHours !== undefined) updateData.slaHighHours = slaHighHours;
@@ -99,7 +117,6 @@ export async function PATCH(request: NextRequest) {
     const user = await getCurrentUser();
     if (user) {
       const changes: Record<string, { old: unknown; new: unknown }> = {};
-      const oldConfig = await db.systemConfig.findUnique({ where: { id: "system" } });
       
       for (const [key, newValue] of Object.entries(updateData)) {
         const oldValue = oldConfig ? (oldConfig as any)[key] : null;
@@ -122,13 +139,18 @@ export async function PATCH(request: NextRequest) {
           }
         }
         
-        await createSystemLog({
-          entityType: LogEntityType.System,
-          actionType: LogActionType.Update,
-          actorId: user.id,
-          description: `System configuration updated by ${user.name}`,
-          metadata: { changes: safeChanges },
-        });
+        try {
+          await createSystemLog({
+            entityType: LogEntityType.System,
+            actionType: LogActionType.Update,
+            actorId: user.id,
+            description: `System configuration updated by ${user.name}`,
+            metadata: { changes: safeChanges },
+          });
+        } catch (logError) {
+          // Log error but don't fail the request if logging fails
+          logger.error("Error creating system log", logError);
+        }
       }
     }
 
@@ -140,10 +162,32 @@ export async function PATCH(request: NextRequest) {
     };
 
     return NextResponse.json(safeConfig);
-  } catch (error) {
+  } catch (error: any) {
     logger.error("Error updating system config", error);
+    
+    // Provide more specific error messages
+    let errorMessage = "Failed to update system configuration";
+    if (error.message) {
+      if (error.message.includes('ENCRYPTION_KEY')) {
+        errorMessage = "Encryption key is not configured. Please set ENCRYPTION_KEY environment variable.";
+      } else if (error.message.includes('Unique constraint')) {
+        errorMessage = "Configuration conflict. Please try again.";
+      } else if (error.message.includes('Invalid')) {
+        errorMessage = `Invalid configuration: ${error.message}`;
+      } else if (error.code === 'P2002') {
+        errorMessage = "Configuration conflict. Please try again.";
+      } else if (error.code === 'P2003') {
+        errorMessage = "Invalid reference in configuration.";
+      } else {
+        // In development, include more details
+        if (process.env.NODE_ENV !== 'production') {
+          errorMessage = `Failed to update system configuration: ${error.message}`;
+        }
+      }
+    }
+    
     return NextResponse.json(
-      { error: "Failed to update system configuration" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
