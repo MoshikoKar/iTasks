@@ -48,12 +48,12 @@ export function DeleteCommentButton({ commentId, commentContent }: DeleteComment
       onClick={handleDelete}
       size="sm"
       variant="danger"
-      className="gap-1"
+      className="gap-1 text-destructive"
       disabled={isDeleting || isUndoing}
       aria-label="Delete comment"
     >
-      <Trash2 size={14} className="shrink-0" aria-hidden="true" />
-      <span>{isDeleting || isUndoing ? 'Deleting...' : 'Delete'}</span>
+      <Trash2 size={14} className="shrink-0 text-destructive" aria-hidden="true" />
+      <span className="text-destructive">{isDeleting || isUndoing ? 'Deleting...' : 'Delete'}</span>
     </Button>
   );
 }

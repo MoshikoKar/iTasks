@@ -172,6 +172,126 @@
   box-shadow: inset 2px 2px 5px #1a1a1a, inset -4px -4px 5px #404040, 2px 2px 5px #1a1a1a, -2px -2px 5px #404040;
 }
 
+/* Override text color for danger/destructive buttons */
+.neu-button.text-destructive,
+.neu-button .text-destructive,
+.neu-button.text-destructive span {
+  color: #ef4444 !important;
+}
+
+.neu-button.text-destructive svg,
+.neu-button svg.text-destructive {
+  color: #ef4444 !important;
+  fill: none !important;
+  stroke: #ef4444 !important;
+  stroke-width: 2 !important;
+}
+
+.dark .neu-button.text-destructive,
+.dark .neu-button .text-destructive,
+.dark .neu-button.text-destructive span {
+  color: #dc2626 !important;
+}
+
+.dark .neu-button.text-destructive svg,
+.dark .neu-button svg.text-destructive {
+  color: #dc2626 !important;
+  fill: none !important;
+  stroke: #dc2626 !important;
+  stroke-width: 2 !important;
+}
+
+/* Override text color for inline delete buttons (not using Button component) */
+button.text-destructive,
+button .text-destructive,
+button.text-destructive span,
+button[class*="text-destructive"],
+button[class*="text-destructive"] span {
+  color: #ef4444 !important;
+}
+
+button.text-destructive svg,
+button[class*="text-destructive"] svg,
+button svg.text-destructive {
+  color: #ef4444 !important;
+  fill: none !important;
+  stroke: #ef4444 !important;
+  stroke-width: 2 !important;
+}
+
+.dark button.text-destructive,
+.dark button .text-destructive,
+.dark button.text-destructive span,
+.dark button[class*="text-destructive"],
+.dark button[class*="text-destructive"] span {
+  color: #dc2626 !important;
+}
+
+.dark button.text-destructive svg,
+.dark button[class*="text-destructive"] svg,
+.dark button svg.text-destructive {
+  color: #dc2626 !important;
+  fill: none !important;
+  stroke: #dc2626 !important;
+  stroke-width: 2 !important;
+}
+
+/* Force red color for any element with text-destructive class inside buttons */
+button .text-destructive,
+button span.text-destructive,
+button[class*="text-destructive"] span {
+  color: #ef4444 !important;
+}
+
+button svg.text-destructive,
+button[class*="text-destructive"] svg {
+  color: #ef4444 !important;
+  fill: none !important;
+  stroke: #ef4444 !important;
+  stroke-width: 2 !important;
+}
+
+.dark button .text-destructive,
+.dark button span.text-destructive,
+.dark button[class*="text-destructive"] span {
+  color: #dc2626 !important;
+}
+
+.dark button svg.text-destructive,
+.dark button[class*="text-destructive"] svg {
+  color: #dc2626 !important;
+  fill: none !important;
+  stroke: #dc2626 !important;
+  stroke-width: 2 !important;
+}
+
+/* Ultra-specific override for delete buttons - must be last */
+button[class*="text-destructive"],
+button[class*="text-destructive"] span,
+button[class*="text-destructive"] .text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+button[class*="text-destructive"] svg {
+  color: hsl(0 84.2% 60.2%) !important;
+  fill: none !important;
+  stroke: hsl(0 84.2% 60.2%) !important;
+  stroke-width: 2 !important;
+}
+
+.dark button[class*="text-destructive"],
+.dark button[class*="text-destructive"] span,
+.dark button[class*="text-destructive"] .text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+.dark button[class*="text-destructive"] svg {
+  color: hsl(0 84.2% 60.2%) !important;
+  fill: none !important;
+  stroke: hsl(0 84.2% 60.2%) !important;
+  stroke-width: 2 !important;
+}
+
 /* Hide Next.js development overlay "N" tooltip */
 [data-nextjs-dialog-overlay],
 [data-nextjs-dialog],
@@ -344,5 +464,42 @@ button[data-nextjs-toast],
     pointer-events: none;
     margin-bottom: 0.25rem;
   }
+}
+
+/* FINAL OVERRIDE: Force red color for all delete buttons - highest priority */
+button.text-destructive,
+button[class*="text-destructive"],
+button.text-destructive span,
+button[class*="text-destructive"] span,
+button .text-destructive,
+button span.text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+button.text-destructive svg,
+button[class*="text-destructive"] svg,
+button svg.text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+  fill: none !important;
+  stroke: hsl(0 84.2% 60.2%) !important;
+  stroke-width: 2 !important;
+}
+
+.dark button.text-destructive,
+.dark button[class*="text-destructive"],
+.dark button.text-destructive span,
+.dark button[class*="text-destructive"] span,
+.dark button .text-destructive,
+.dark button span.text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+.dark button.text-destructive svg,
+.dark button[class*="text-destructive"] svg,
+.dark button svg.text-destructive {
+  color: hsl(0 84.2% 60.2%) !important;
+  fill: none !important;
+  stroke: hsl(0 84.2% 60.2%) !important;
+  stroke-width: 2 !important;
 }
 

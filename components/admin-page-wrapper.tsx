@@ -343,10 +343,10 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                         setIsTeamModalOpen(true);
                         setTeamError('');
                       }}
-                      className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+                      className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                       aria-label={`Edit team ${team.name}`}
                     >
-                      <Edit2 size={14} aria-hidden="true" />
+                      <Edit2 size={14} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => handleDeleteTeam(team)}
@@ -354,7 +354,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                       className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50"
                       aria-label={`Delete team ${team.name}`}
                     >
-                      <Trash2 size={14} aria-hidden="true" />
+                      <Trash2 size={14} className="text-destructive" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -422,17 +422,17 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="text-primary hover:text-primary/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
-                        <Edit2 size={14} />
+                        <Edit2 size={14} className="text-blue-600 dark:text-blue-400" />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
                         className="text-destructive hover:text-destructive/80 hover:underline text-xs font-medium flex items-center gap-1 transition-colors"
                       >
-                        <Trash2 size={14} />
-                        Delete
+                        <Trash2 size={14} className="text-destructive" />
+                        <span className="text-destructive">Delete</span>
                       </button>
                     </div>
                   </td>
@@ -589,7 +589,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               className="text-primary"
               onClick={() => setIsSMTPModalOpen(true)}
             >
-              Configure
+              <span>Configure</span>
             </Button>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
@@ -607,7 +607,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               className="text-primary"
               onClick={() => setIsSLAModalOpen(true)}
             >
-              Configure
+              <span>Configure</span>
             </Button>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
@@ -625,7 +625,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               className="text-primary"
               onClick={() => setIsLDAPModalOpen(true)}
             >
-              Configure
+              <span>Configure</span>
             </Button>
           </div>
         </div>
@@ -697,8 +697,8 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             >
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDelete} isLoading={isDeleting}>
-              Delete User
+            <Button variant="danger" onClick={confirmDelete} isLoading={isDeleting} className="text-destructive">
+              <span className="text-destructive">Delete User</span>
             </Button>
           </div>
         </div>

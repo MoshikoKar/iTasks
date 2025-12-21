@@ -18,10 +18,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: { fontSize: '18px', padding: '15px 40px' },
     };
 
+    // Semantic text colors based on variant
+    const textColorClass = {
+      primary: 'text-primary',
+      secondary: 'text-muted-foreground',
+      danger: 'text-destructive',
+      ghost: 'text-primary',
+    }[variant];
+
     return (
       <motion.button
         ref={ref}
-        className={clsx('neu-button inline-flex items-center justify-center font-medium', className)}
+        className={clsx('neu-button inline-flex items-center justify-center font-medium', textColorClass, className)}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         whileHover={{ scale: disabled || isLoading ? 1 : 1.02 }}

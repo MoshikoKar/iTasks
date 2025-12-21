@@ -350,7 +350,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     
     // Validation: If using auto-discovery, username and domain are required
     if (useAutoDiscovery && (!username || !domain)) {
-      setError('Please enter service account in format: domain\\username or username@domain');
+      setError('Please enter service account in format: domain\\username or username@domain.com');
       setIsLoading(false);
       return;
     }
@@ -507,13 +507,6 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
         {useAutoDiscovery ? (
           <>
-            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg mb-4">
-              <p className="text-xs font-medium text-primary mb-1">Supported Formats:</p>
-              <p className="text-xs text-primary">
-                • Single field: <code className="bg-primary/20 px-1 rounded text-primary">domain\username</code> or <code className="bg-primary/20 px-1 rounded text-primary">username@domain</code><br/>
-                • Or separate: <code className="bg-primary/20 px-1 rounded text-primary">username</code> + <code className="bg-primary/20 px-1 rounded text-primary">domain</code>
-              </p>
-            </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label htmlFor="ldapUsername" className="flex items-center whitespace-nowrap text-xs font-medium text-foreground mb-1 h-5">
@@ -561,7 +554,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                   placeholder="Domain\username or email"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Enter service account in format: <code className="bg-muted px-1 rounded text-foreground">domain\username</code> or <code className="bg-muted px-1 rounded text-foreground">username@domain</code>
+                  Enter service account in format: <code className="bg-muted px-1 rounded text-foreground">domain\username</code> or <code className="bg-muted px-1 rounded text-foreground">username@domain.com</code>
                 </p>
               </div>
 

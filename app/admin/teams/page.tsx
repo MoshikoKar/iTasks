@@ -217,17 +217,17 @@ export default function TeamsManagementPage() {
                       setShowTeamModal(true);
                       setError('');
                     }}
-                    className="p-1 text-primary hover:bg-primary/10 rounded"
+                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                     aria-label={`Edit team ${team.name}`}
                   >
-                    <Edit2 size={14} aria-hidden="true" />
+                    <Edit2 size={14} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => handleDeleteTeam(team.id)}
                     className="p-1 text-destructive hover:bg-destructive/10 rounded"
                     aria-label={`Delete team ${team.name}`}
                   >
-                    <Trash2 size={14} aria-hidden="true" />
+                    <Trash2 size={14} className="text-destructive" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -277,7 +277,7 @@ export default function TeamsManagementPage() {
                         setShowUserModal(true);
                         setError('');
                       }}
-                      className="text-primary hover:text-primary/80 font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                     >
                       Edit
                     </button>

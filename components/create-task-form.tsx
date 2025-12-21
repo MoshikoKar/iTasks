@@ -285,9 +285,9 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
                       onClick={() => removeFile(index)}
                       size="sm"
                       variant="ghost"
-                      className="ml-2"
+                      className="ml-2 text-destructive"
                     >
-                      <X size={14} />
+                      <X size={14} className="text-destructive" />
                     </Button>
                   </div>
                 ))}

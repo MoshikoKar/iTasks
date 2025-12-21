@@ -35,10 +35,10 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
         variant="danger"
         size="sm"
         onClick={() => setIsModalOpen(true)}
-        className="inline-flex items-center gap-1"
+        className="inline-flex items-center gap-1 text-destructive"
       >
-        <Trash2 size={14} className="shrink-0" aria-hidden="true" />
-        <span>Delete Task</span>
+        <Trash2 size={14} className="shrink-0 text-destructive" aria-hidden="true" />
+        <span className="text-destructive">Delete Task</span>
       </Button>
 
       <Modal
@@ -65,8 +65,9 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
                 variant="danger"
                 isLoading={isDeleting}
                 disabled={isDeleting}
+                className="text-destructive"
               >
-                Delete
+                <span className="text-destructive">Delete</span>
               </Button>
             </form>
           </div>

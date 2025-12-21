@@ -125,7 +125,7 @@ export default async function TaskDetail({
                   size="sm"
                   className="inline-flex items-center gap-1"
                 >
-                  <CheckCircle size={14} className="shrink-0" aria-hidden="true" />
+                  <CheckCircle size={14} className="shrink-0 text-primary" aria-hidden="true" />
                   <span>Save Changes</span>
                 </Button>
                 <Link href={`/tasks/${task.id}`}>
@@ -142,9 +142,9 @@ export default async function TaskDetail({
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="inline-flex items-center gap-1"
+                  className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400"
                 >
-                  <Edit size={14} className="shrink-0" aria-hidden="true" />
+                  <Edit size={14} className="shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                   <span>Edit</span>
                 </Button>
               </Link>

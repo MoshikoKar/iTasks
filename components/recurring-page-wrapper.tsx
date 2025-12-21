@@ -222,11 +222,11 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                         <button
                           onClick={() => handleRunNow(config)}
                           disabled={runningConfigId === config.id}
-                          className="flex items-center gap-1 text-success hover:text-success/80 hover:underline text-xs font-medium transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:underline text-xs font-medium transition-colors disabled:opacity-50"
                           title="Run this recurring task now (creates a task immediately)"
                           aria-label="Run recurring task now"
                         >
-                          <Play size={14} aria-hidden="true" />
+                          <Play size={14} className="text-green-600 dark:text-green-400" aria-hidden="true" />
                           {runningConfigId === config.id ? 'Running...' : 'Run Now'}
                         </button>
                         <button
@@ -234,15 +234,15 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                           className="flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline text-xs font-medium transition-colors"
                           aria-label="View recurring task"
                         >
-                          <Eye size={14} aria-hidden="true" />
+                          <Eye size={14} className="text-muted-foreground" aria-hidden="true" />
                           View
                         </button>
                         <button
                           onClick={() => handleEdit(config)}
-                          className="flex items-center gap-1 text-primary hover:text-primary/80 hover:underline text-xs font-medium transition-colors"
+                          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline text-xs font-medium transition-colors"
                           aria-label="Edit recurring task"
                         >
-                          <Edit size={14} aria-hidden="true" />
+                          <Edit size={14} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
                           Edit
                         </button>
                         <button
@@ -250,8 +250,8 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
                           className="flex items-center gap-1 text-destructive hover:text-destructive/80 hover:underline text-xs font-medium transition-colors"
                           aria-label="Delete recurring task"
                         >
-                          <Trash2 size={14} aria-hidden="true" />
-                          Delete
+                          <Trash2 size={14} className="text-destructive" aria-hidden="true" />
+                          <span className="text-destructive">Delete</span>
                         </button>
                       </div>
                     </td>
@@ -460,8 +460,9 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
               disabled={isDeleting}
               variant="danger"
               isLoading={isDeleting}
+              className="text-destructive"
             >
-              Delete
+              <span className="text-destructive">Delete</span>
             </Button>
           </div>
         </div>

@@ -154,11 +154,11 @@ function AttachmentItem({
         {canDelete && (
           <button
             onClick={handleDelete}
-            className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+            className="p-1 text-destructive hover:text-destructive/80 hover:bg-destructive/10 rounded transition-colors"
             title="Delete"
             aria-label="Delete attachment"
           >
-            <X size={12} aria-hidden="true" />
+            <X size={12} className="text-destructive" aria-hidden="true" />
           </button>
         )}
       </div>

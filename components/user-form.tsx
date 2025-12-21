@@ -5,6 +5,7 @@ import { Role } from '@prisma/client';
 import { Button } from './button';
 import { AlertCircle } from 'lucide-react';
 import { ErrorAlert } from './ui/error-alert';
+import { useCSRF } from '@/hooks/useCSRF';
 
 interface Team {
   id: string;
@@ -28,6 +29,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
 
   useEffect(() => {
     // Fetch teams for the dropdown
@@ -41,6 +43,12 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    if (csrfLoading || !csrfToken) {
+      setError('CSRF token not ready. Please wait and try again.');
+      setIsLoading(false);
+      return;
+    }
 
     const formData = new FormData(e.currentTarget);
     const passwordValue = formData.get('password') as string;
@@ -82,7 +90,11 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getHeaders(),
+        },
+        credentials: 'same-origin',
         body: JSON.stringify(data),
       });
 
@@ -227,7 +239,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-border">
-        <Button type="submit" variant="primary" isLoading={isLoading}>
+        <Button type="submit" variant="primary" isLoading={isLoading || csrfLoading} disabled={csrfLoading || !csrfToken}>
           {user ? 'Update User' : 'Create User'}
         </Button>
       </div>
