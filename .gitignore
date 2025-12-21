@@ -52,4 +52,7 @@ clear-database.ps1
 # claude
 /.claude/
 
+# todo
+todo.md
+
 
