@@ -53,6 +53,11 @@ model User {
   authProvider AuthProvider @default(local)
   isBootstrapAdmin Boolean @default(false)
   teamId       String?
+  // Account security fields
+  failedLoginAttempts Int @default(0)
+  isLocked Boolean @default(false)
+  lockedAt DateTime?
+  lastFailedLoginAt DateTime?
   createdAt    DateTime  @default(now())
   team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
   tasksCreated Task[]    @relation("TasksCreated")
@@ -312,7 +317,31 @@ model SystemConfig {
   
   // Variable Configuration
   supportEmail     String?
-  
+
+  // Branding & Reports
+  orgLogo          String?
+  reportFooterText String?
+
+  // Localization & Time
+  timezone         String? @default("UTC")
+  dateFormat       String? @default("DD/MM/YYYY")
+  timeFormat       String? @default("24h")
+
+  // Collaboration & Content
+  enableAttachments      Boolean @default(true)
+  maxAttachmentSizeMb    Int?    @default(10)
+  enableComments         Boolean @default(true)
+  enableMentions         Boolean @default(true)
+
+  // Security & Authentication
+  sessionTimeoutHours        Int? @default(24)
+  maxFailedLoginAttempts     Int? @default(5)
+  lockUserAfterFailedLogins  Boolean @default(true)
+  passwordPolicyLevel        String? @default("strong")
+
+  // Audit & Retention
+  auditRetentionDays Int? @default(365)
+
   updatedAt DateTime @updatedAt
   updatedBy String?
 }

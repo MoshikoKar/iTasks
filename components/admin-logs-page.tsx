@@ -101,7 +101,7 @@ export function AdminLogsPage({ recentActivity }: AdminLogsPageProps) {
                 setActivityPage(1);
               }}
               placeholder="Search by task, user, action..."
-              className="input-base h-9 w-100"
+              className="input-base h-9 w-56"
             />
             <select
               value={activityActionFilter}

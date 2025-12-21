@@ -50,7 +50,51 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    // Check if this is a FormData request (for file uploads) or JSON
+    const contentType = request.headers.get('content-type') || '';
+    let body: any;
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData (file upload)
+      const formData = await request.formData();
+      body = {
+        smtpHost: formData.get('smtpHost'),
+        smtpPort: formData.get('smtpPort'),
+        smtpFrom: formData.get('smtpFrom'),
+        smtpSecure: formData.get('smtpSecure'),
+        smtpUser: formData.get('smtpUser'),
+        smtpPassword: formData.get('smtpPassword'),
+        slaLowHours: formData.get('slaLowHours'),
+        slaMediumHours: formData.get('slaMediumHours'),
+        slaHighHours: formData.get('slaHighHours'),
+        slaCriticalHours: formData.get('slaCriticalHours'),
+        supportEmail: formData.get('supportEmail'),
+        // Branding & Reports
+        orgLogo: formData.get('orgLogo'),
+        orgLogoFile: formData.get('orgLogoFile') as File | null,
+        reportFooterText: formData.get('reportFooterText'),
+        // Localization & Time
+        timezone: formData.get('timezone'),
+        dateFormat: formData.get('dateFormat'),
+        timeFormat: formData.get('timeFormat'),
+        // Collaboration & Content
+        enableAttachments: formData.get('enableAttachments'),
+        maxAttachmentSizeMb: formData.get('maxAttachmentSizeMb'),
+        enableComments: formData.get('enableComments'),
+        enableMentions: formData.get('enableMentions'),
+        // Security & Authentication
+        sessionTimeoutHours: formData.get('sessionTimeoutHours'),
+        maxFailedLoginAttempts: formData.get('maxFailedLoginAttempts'),
+        lockUserAfterFailedLogins: formData.get('lockUserAfterFailedLogins'),
+        passwordPolicyLevel: formData.get('passwordPolicyLevel'),
+        // Audit & Retention
+        auditRetentionDays: formData.get('auditRetentionDays'),
+      };
+    } else {
+      // Handle JSON
+      body = await request.json();
+    }
+
     const {
       smtpHost,
       smtpPort,
@@ -63,6 +107,26 @@ export async function PATCH(request: NextRequest) {
       slaHighHours,
       slaCriticalHours,
       supportEmail,
+      // Branding & Reports
+      orgLogo,
+      orgLogoFile,
+      reportFooterText,
+      // Localization & Time
+      timezone,
+      dateFormat,
+      timeFormat,
+      // Collaboration & Content
+      enableAttachments,
+      maxAttachmentSizeMb,
+      enableComments,
+      enableMentions,
+      // Security & Authentication
+      sessionTimeoutHours,
+      maxFailedLoginAttempts,
+      lockUserAfterFailedLogins,
+      passwordPolicyLevel,
+      // Audit & Retention
+      auditRetentionDays,
     } = body;
 
     // Fetch old config BEFORE upsert for change tracking
@@ -70,11 +134,14 @@ export async function PATCH(request: NextRequest) {
 
     const updateData: any = {};
 
-    if (smtpHost !== undefined) updateData.smtpHost = smtpHost;
-    if (smtpPort !== undefined) updateData.smtpPort = smtpPort;
-    if (smtpFrom !== undefined) updateData.smtpFrom = smtpFrom;
-    if (smtpSecure !== undefined) updateData.smtpSecure = smtpSecure;
-    if (smtpUser !== undefined) updateData.smtpUser = smtpUser;
+    // Helper to check if a value was actually provided (not undefined and not null from FormData)
+    const isProvided = (val: unknown) => val !== undefined && val !== null;
+
+    if (isProvided(smtpHost)) updateData.smtpHost = smtpHost;
+    if (isProvided(smtpPort)) updateData.smtpPort = typeof smtpPort === 'string' ? parseInt(smtpPort, 10) : smtpPort;
+    if (isProvided(smtpFrom)) updateData.smtpFrom = smtpFrom;
+    if (isProvided(smtpSecure)) updateData.smtpSecure = smtpSecure === true || smtpSecure === 'true';
+    if (isProvided(smtpUser)) updateData.smtpUser = smtpUser;
     // Only encrypt and update password if it's provided and not empty/null
     // Password is optional even when username is set (e.g., port 25 without auth)
     // If password is null or empty, we don't update it (keeps existing password or allows no password)
@@ -93,11 +160,77 @@ export async function PATCH(request: NextRequest) {
     }
     // If smtpPassword is null or empty string, we don't add it to updateData
     // This means the existing password (if any) will be preserved, or no password will be used
-    if (slaLowHours !== undefined) updateData.slaLowHours = slaLowHours;
-    if (slaMediumHours !== undefined) updateData.slaMediumHours = slaMediumHours;
-    if (slaHighHours !== undefined) updateData.slaHighHours = slaHighHours;
-    if (slaCriticalHours !== undefined) updateData.slaCriticalHours = slaCriticalHours;
-    if (supportEmail !== undefined) updateData.supportEmail = supportEmail;
+    if (isProvided(slaLowHours)) updateData.slaLowHours = typeof slaLowHours === 'string' ? parseInt(slaLowHours, 10) : slaLowHours;
+    if (isProvided(slaMediumHours)) updateData.slaMediumHours = typeof slaMediumHours === 'string' ? parseInt(slaMediumHours, 10) : slaMediumHours;
+    if (isProvided(slaHighHours)) updateData.slaHighHours = typeof slaHighHours === 'string' ? parseInt(slaHighHours, 10) : slaHighHours;
+    if (isProvided(slaCriticalHours)) updateData.slaCriticalHours = typeof slaCriticalHours === 'string' ? parseInt(slaCriticalHours, 10) : slaCriticalHours;
+    if (isProvided(supportEmail)) updateData.supportEmail = supportEmail || null;
+
+    // Branding & Reports
+    if (orgLogo !== undefined) updateData.orgLogo = orgLogo;
+    // reportFooterText can be explicitly set to null (to clear it), so check for undefined
+    if (reportFooterText !== undefined) {
+      // Convert empty strings to null to ensure proper handling
+      const trimmedFooter = typeof reportFooterText === 'string' ? reportFooterText.trim() : reportFooterText;
+      updateData.reportFooterText = trimmedFooter && trimmedFooter.length > 0 ? trimmedFooter : null;
+    }
+
+    // Localization & Time
+    if (isProvided(timezone)) updateData.timezone = timezone;
+    if (isProvided(dateFormat)) updateData.dateFormat = dateFormat;
+    if (isProvided(timeFormat)) updateData.timeFormat = timeFormat;
+
+    // Collaboration & Content
+    if (isProvided(enableAttachments)) updateData.enableAttachments = enableAttachments === true || enableAttachments === 'true';
+    if (isProvided(maxAttachmentSizeMb)) updateData.maxAttachmentSizeMb = typeof maxAttachmentSizeMb === 'string' ? parseInt(maxAttachmentSizeMb, 10) : maxAttachmentSizeMb;
+    if (isProvided(enableComments)) updateData.enableComments = enableComments === true || enableComments === 'true';
+    if (isProvided(enableMentions)) updateData.enableMentions = enableMentions === true || enableMentions === 'true';
+
+    // Security & Authentication
+    if (isProvided(sessionTimeoutHours)) updateData.sessionTimeoutHours = typeof sessionTimeoutHours === 'string' ? parseInt(sessionTimeoutHours, 10) : sessionTimeoutHours;
+    if (isProvided(maxFailedLoginAttempts)) updateData.maxFailedLoginAttempts = typeof maxFailedLoginAttempts === 'string' ? parseInt(maxFailedLoginAttempts, 10) : maxFailedLoginAttempts;
+    if (isProvided(lockUserAfterFailedLogins)) updateData.lockUserAfterFailedLogins = lockUserAfterFailedLogins === true || lockUserAfterFailedLogins === 'true';
+    if (isProvided(passwordPolicyLevel)) updateData.passwordPolicyLevel = passwordPolicyLevel;
+
+    // Audit & Retention
+    if (isProvided(auditRetentionDays)) updateData.auditRetentionDays = typeof auditRetentionDays === 'string' ? parseInt(auditRetentionDays, 10) : auditRetentionDays;
+
+    // Handle logo file upload
+    if (orgLogoFile && orgLogoFile instanceof File) {
+      try {
+        // Create uploads directory if it doesn't exist
+        const fs = require('fs').promises;
+        const path = require('path');
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'logos');
+
+        try {
+          await fs.access(uploadDir);
+        } catch {
+          await fs.mkdir(uploadDir, { recursive: true });
+        }
+
+        // Generate unique filename
+        const fileExt = path.extname(orgLogoFile.name) || '.png';
+        const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(2)}${fileExt}`;
+        const filePath = path.join(uploadDir, fileName);
+
+        // Save the file
+        const buffer = Buffer.from(await orgLogoFile.arrayBuffer());
+        await fs.writeFile(filePath, buffer);
+
+        // Store the public URL
+        updateData.orgLogo = `/uploads/logos/${fileName}`;
+      } catch (fileError: any) {
+        logger.error("Error uploading logo file", fileError);
+        return NextResponse.json(
+          { error: "Failed to upload logo file" },
+          { status: 500 }
+        );
+      }
+    } else if (orgLogo !== undefined) {
+      // Handle URL-based logo
+      updateData.orgLogo = orgLogo;
+    }
 
     const config = await db.systemConfig.upsert({
       where: { id: "system" },
@@ -165,24 +298,48 @@ export async function PATCH(request: NextRequest) {
   } catch (error: any) {
     logger.error("Error updating system config", error);
     
-    // Provide more specific error messages
-    let errorMessage = "Failed to update system configuration";
-    if (error.message) {
+    // Provide human-readable error messages
+    let errorMessage = "Failed to update system configuration. Please try again.";
+    
+    if (error.code) {
+      // Prisma error codes - provide friendly messages
+      switch (error.code) {
+        case 'P2002':
+          errorMessage = "A configuration with this value already exists. Please use a different value.";
+          break;
+        case 'P2003':
+          errorMessage = "Invalid reference. One of the selected values does not exist.";
+          break;
+        case 'P2025':
+          errorMessage = "Configuration record not found. It may have been deleted.";
+          break;
+        case 'P2006':
+          // Extract field name from error if possible
+          const fieldMatch = error.message?.match(/Argument `(\w+)`/);
+          const fieldName = fieldMatch ? fieldMatch[1] : 'field';
+          errorMessage = `Invalid value for '${fieldName}'. Please check the input and try again.`;
+          break;
+        case 'P2011':
+          const nullFieldMatch = error.message?.match(/Argument `(\w+)` must not be null/);
+          const nullField = nullFieldMatch ? nullFieldMatch[1] : 'A required field';
+          errorMessage = `${nullField} is required and cannot be empty.`;
+          break;
+        default:
+          if (error.code.startsWith('P2')) {
+            errorMessage = "Database validation error. Please check your inputs and try again.";
+          }
+      }
+    } else if (error.message) {
       if (error.message.includes('ENCRYPTION_KEY')) {
-        errorMessage = "Encryption key is not configured. Please set ENCRYPTION_KEY environment variable.";
-      } else if (error.message.includes('Unique constraint')) {
-        errorMessage = "Configuration conflict. Please try again.";
+        errorMessage = "Server encryption is not configured. Please contact your administrator.";
+      } else if (error.message.includes('must not be null')) {
+        const nullFieldMatch = error.message.match(/Argument `(\w+)` must not be null/);
+        const nullField = nullFieldMatch ? nullFieldMatch[1] : 'A required field';
+        errorMessage = `${nullField} is required and cannot be empty.`;
       } else if (error.message.includes('Invalid')) {
-        errorMessage = `Invalid configuration: ${error.message}`;
-      } else if (error.code === 'P2002') {
-        errorMessage = "Configuration conflict. Please try again.";
-      } else if (error.code === 'P2003') {
-        errorMessage = "Invalid reference in configuration.";
-      } else {
-        // In development, include more details
-        if (process.env.NODE_ENV !== 'production') {
-          errorMessage = `Failed to update system configuration: ${error.message}`;
-        }
+        // Clean up the Prisma invocation path from error messages
+        const cleanMessage = error.message.replace(/`[^`]+`\s+invocation in[\s\S]*?→\s*\d+\s+/g, '');
+        errorMessage = `Invalid configuration: ${cleanMessage.split('\n')[0]}`;
       }
     }
     

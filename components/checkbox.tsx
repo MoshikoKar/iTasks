@@ -8,13 +8,14 @@ interface CheckboxProps {
   value?: string;
   checked?: boolean;
   defaultChecked?: boolean;
+  disabled?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
 }
 
-export function Checkbox({ id, name, value, checked, defaultChecked, onChange, className = '' }: CheckboxProps) {
+export function Checkbox({ id, name, value, checked, defaultChecked, disabled, onChange, className = '' }: CheckboxProps) {
   return (
-    <span className={`container ${className}`} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', lineHeight: 1, margin: 0, padding: 0 }}>
+    <span className={`container ${className}`} style={{ cursor: disabled ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', lineHeight: 1, margin: 0, padding: 0, opacity: disabled ? 0.5 : 1 }}>
       <input
         type="checkbox"
         id={id}
@@ -22,6 +23,7 @@ export function Checkbox({ id, name, value, checked, defaultChecked, onChange, c
         value={value}
         checked={checked}
         defaultChecked={defaultChecked}
+        disabled={disabled}
         onChange={onChange}
         style={{
           display: 'none',

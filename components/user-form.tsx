@@ -6,6 +6,7 @@ import { Button } from './button';
 import { AlertCircle } from 'lucide-react';
 import { ErrorAlert } from './ui/error-alert';
 import { useCSRF } from '@/hooks/useCSRF';
+import { getPasswordPolicyHint, getPasswordMinLength } from '@/lib/constants';
 
 interface Team {
   id: string;
@@ -21,15 +22,19 @@ interface UserFormProps {
     teamId?: string | null;
   };
   onSuccess?: () => void;
+  passwordPolicyLevel?: string;
 }
 
-export function UserForm({ user, onSuccess }: UserFormProps) {
+export function UserForm({ user, onSuccess, passwordPolicyLevel = 'strong' }: UserFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [teams, setTeams] = useState<Team[]>([]);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
+
+  const passwordHint = getPasswordPolicyHint(passwordPolicyLevel);
+  const passwordMinLength = getPasswordMinLength(passwordPolicyLevel);
 
   useEffect(() => {
     // Fetch teams for the dropdown
@@ -209,10 +214,10 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             className="input-base"
             placeholder={user ? "Leave blank to keep current password" : "Enter password"}
-            minLength={6}
+            minLength={passwordMinLength}
           />
           {!user && (
-            <p className="mt-1.5 text-xs text-muted-foreground">Minimum 6 characters</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{passwordHint}</p>
           )}
         </div>
 
@@ -230,7 +235,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="input-base"
             placeholder={user ? "Leave blank to keep current password" : "Confirm password"}
-            minLength={6}
+            minLength={passwordMinLength}
           />
           {password && confirmPassword && password !== confirmPassword && (
             <p className="mt-1.5 text-xs text-destructive">Passwords do not match</p>

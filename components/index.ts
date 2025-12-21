@@ -33,6 +33,7 @@ export { UserForm } from './user-form';
 export { RecurringTaskForm } from './recurring-task-form';
 export { SLAConfigForm } from './sla-config-form';
 export { SMTPConfigForm } from './smtp-config-form';
+export { SystemConfigForm } from './system-config-form';
 
 // Search
 export { UserSearch } from './UserSearch';

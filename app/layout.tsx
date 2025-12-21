@@ -23,7 +23,12 @@ const getCachedSystemConfig = unstable_cache(
   async () => {
     return await db.systemConfig.findUnique({
       where: { id: "system" },
-      select: { supportEmail: true },
+      select: { 
+        supportEmail: true,
+        timezone: true,
+        dateFormat: true,
+        timeFormat: true,
+      },
     });
   },
   ['system-config'],
@@ -36,13 +41,19 @@ const getCachedSystemConfig = unstable_cache(
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
   
-  // Fetch support email from system config (cached)
+  // Fetch system config settings (cached)
   let supportEmail: string | null = null;
+  let timezone: string | null = null;
+  let dateFormat: string | null = null;
+  let timeFormat: string | null = null;
   try {
     const config = await getCachedSystemConfig();
     supportEmail = config?.supportEmail || null;
+    timezone = config?.timezone || null;
+    dateFormat = config?.dateFormat || null;
+    timeFormat = config?.timeFormat || null;
   } catch (error) {
-    console.error("Failed to fetch support email:", error);
+    console.error("Failed to fetch system config:", error);
   }
 
   return (
@@ -65,14 +76,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                     <div className="flex-1 p-6">
                       {children}
                     </div>
-                    <Footer supportEmail={supportEmail} />
+                    <Footer 
+                      supportEmail={supportEmail} 
+                      timezone={timezone}
+                      dateFormat={dateFormat}
+                      timeFormat={timeFormat}
+                    />
                   </main>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col min-h-screen">
                 <main id="main-content" className="flex-1 p-6">{children}</main>
-                <Footer supportEmail={supportEmail} />
+                <Footer 
+                  supportEmail={supportEmail}
+                  timezone={timezone}
+                  dateFormat={dateFormat}
+                  timeFormat={timeFormat}
+                />
               </div>
             )}
           </ClientWrapper>

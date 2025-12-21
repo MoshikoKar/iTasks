@@ -9,6 +9,7 @@ import { Button } from './button';
 import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
 import { ErrorAlert } from './ui/error-alert';
+import { useCSRF } from '@/hooks/useCSRF';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -44,10 +45,12 @@ interface AdminUsersPageProps {
   users: User[];
   teams: Team[];
   stats: { role: Role; _count: number }[];
+  passwordPolicyLevel?: string;
 }
 
-export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
+export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'strong' }: AdminUsersPageProps) {
   const router = useRouter();
+  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -75,11 +78,20 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
   const confirmDelete = async () => {
     if (!selectedUser) return;
 
+    if (csrfLoading || !csrfToken) {
+      setDeleteError('CSRF token not ready. Please wait and try again.');
+      return;
+    }
+
     setIsDeleting(true);
     setDeleteError('');
     try {
       const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'DELETE',
+        headers: {
+          ...getHeaders(),
+        },
+        credentials: 'same-origin',
       });
 
       if (!response.ok) {
@@ -366,6 +378,7 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
             setIsAddModalOpen(false);
             router.refresh();
           }}
+          passwordPolicyLevel={passwordPolicyLevel}
         />
       </Modal>
 
@@ -387,6 +400,7 @@ export function AdminUsersPage({ users, teams, stats }: AdminUsersPageProps) {
               setSelectedUser(null);
               router.refresh();
             }}
+            passwordPolicyLevel={passwordPolicyLevel}
           />
         )}
       </Modal>

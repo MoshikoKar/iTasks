@@ -7,6 +7,7 @@ import { logUserCreated } from "@/lib/logging/system-logger";
 import { logger } from "@/lib/logger";
 import { createUserSchema } from "@/lib/validation/userSchema";
 import { validateCSRFHeader } from "@/lib/csrf";
+import { validatePassword } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -125,6 +126,20 @@ export async function POST(request: NextRequest) {
     // Check if this is the first user in the system
     const userCount = await db.user.count();
     const isFirstUser = userCount === 0;
+
+    // Validate password against system policy (except for bootstrap admin)
+    if (!isFirstUser) {
+      const systemConfig = await db.systemConfig.findUnique({ where: { id: "system" } });
+      const passwordPolicyLevel = systemConfig?.passwordPolicyLevel || 'strong';
+
+      const passwordValidation = validatePassword(validatedData.password, passwordPolicyLevel);
+      if (!passwordValidation.isValid) {
+        return NextResponse.json(
+          { error: `Password does not meet requirements: ${passwordValidation.errors.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create user
     const user = await db.user.create({

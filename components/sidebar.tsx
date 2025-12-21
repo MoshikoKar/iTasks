@@ -5,6 +5,7 @@ import { Sidebar as SidebarUI, SidebarBody, SidebarLink } from "./ui/sidebar";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { Role } from "@prisma/client";
+import Image from "next/image";
 import {
   LayoutDashboard,
   CheckSquare,
@@ -184,23 +185,34 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
 
 export const Logo = () => {
   return (
-    <div className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-400 dark:to-blue-500" />
-      <motion.span
+    <div className="relative z-20 flex items-center py-1 w-full">
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="whitespace-pre font-medium text-black dark:text-white"
+        className="flex items-center"
       >
-        iTasks
-      </motion.span>
+        <img
+          src="/itasks_logo.png"
+          alt="iTasks"
+          className="h-10 w-auto object-contain"
+          style={{ maxWidth: '140px' }}
+        />
+      </motion.div>
     </div>
   );
 };
 
 export const LogoIcon = () => {
   return (
-    <div className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-400 dark:to-blue-500" />
+    <div className="relative z-20 flex items-center justify-center py-1">
+      <Image
+        src="/favicon.png"
+        alt="iTasks"
+        width={32}
+        height={32}
+        className="h-8 w-8 object-contain"
+        priority
+      />
     </div>
   );
 };

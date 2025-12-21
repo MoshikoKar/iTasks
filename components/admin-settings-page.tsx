@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Mail, Activity, Sliders } from 'lucide-react';
+import { Settings, Mail, Activity } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from './button';
 import { useRouter } from 'next/navigation';
@@ -19,7 +19,7 @@ const SLAConfigForm = dynamic(() => import('./sla-config-form').then(mod => ({ d
 const LDAPConfigForm = dynamic(() => import('./ldap-config-form').then(mod => ({ default: mod.LDAPConfigForm })), {
   ssr: false,
 });
-const VariableConfigForm = dynamic(() => import('./variable-config-form').then(mod => ({ default: mod.VariableConfigForm })), {
+const SystemConfigForm = dynamic(() => import('./system-config-form').then(mod => ({ default: mod.SystemConfigForm })), {
   ssr: false,
 });
 
@@ -28,7 +28,7 @@ export function AdminSettingsPage() {
   const [isSMTPModalOpen, setIsSMTPModalOpen] = useState(false);
   const [isSLAModalOpen, setIsSLAModalOpen] = useState(false);
   const [isLDAPModalOpen, setIsLDAPModalOpen] = useState(false);
-  const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -107,20 +107,20 @@ export function AdminSettingsPage() {
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Sliders size={20} className="text-primary" />
+                <Settings size={20} className="text-primary" />
               </div>
               <div>
                 <div className="font-medium text-foreground flex items-center gap-2">
-                  Variable Configuration
-                  <Tooltip content="Manage application-wide configuration variables like support email address" />
+                  System Configuration
+                  <Tooltip content="Configure branding, localization, collaboration features, security settings, audit retention, and application variables" />
                 </div>
-                <div className="text-sm text-muted-foreground">Application-wide variables (support email, etc.)</div>
+                <div className="text-sm text-muted-foreground">Branding, localization, security, collaboration settings, and variables</div>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-primary"
-              onClick={() => setIsVariableModalOpen(true)}
+              onClick={() => setIsSystemModalOpen(true)}
             >
               Configure
             </Button>
@@ -176,19 +176,19 @@ export function AdminSettingsPage() {
         />
       </Modal>
 
-      {/* Variable Configuration Modal */}
+      {/* System Configuration Modal */}
       <Modal
-        isOpen={isVariableModalOpen}
-        onClose={() => setIsVariableModalOpen(false)}
-        title="Configure Variables"
-        size="md"
+        isOpen={isSystemModalOpen}
+        onClose={() => setIsSystemModalOpen(false)}
+        title="Configure System Settings"
+        size="xl"
       >
-        <VariableConfigForm
+        <SystemConfigForm
           onSuccess={() => {
-            setIsVariableModalOpen(false);
+            setIsSystemModalOpen(false);
             router.refresh();
           }}
-          onCancel={() => setIsVariableModalOpen(false)}
+          onCancel={() => setIsSystemModalOpen(false)}
         />
       </Modal>
     </div>

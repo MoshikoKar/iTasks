@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { formatDateTimeStable } from '@/lib/utils/date';
 import { ErrorAlert } from './ui/error-alert';
 import { CopyButton } from './ui/copy-button';
+import { useCSRF } from '@/hooks/useCSRF';
 
 const Modal = dynamic(() => import('./modal').then(mod => ({ default: mod.Modal })), {
   ssr: false,
@@ -68,10 +69,12 @@ interface AdminPageWrapperProps {
   teams: Team[];
   stats: { role: Role; _count: number }[];
   recentActivity: RecentActivity[];
+  passwordPolicyLevel?: string;
 }
 
-export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminPageWrapperProps) {
+export function AdminPageWrapper({ users, teams, stats, recentActivity, passwordPolicyLevel = 'strong' }: AdminPageWrapperProps) {
   const router = useRouter();
+  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -108,11 +111,20 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
   const confirmDelete = async () => {
     if (!selectedUser) return;
 
+    if (csrfLoading || !csrfToken) {
+      setDeleteError('CSRF token not ready. Please wait and try again.');
+      return;
+    }
+
     setIsDeleting(true);
     setDeleteError('');
     try {
       const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'DELETE',
+        headers: {
+          ...getHeaders(),
+        },
+        credentials: 'same-origin',
       });
 
       if (!response.ok) {
@@ -643,6 +655,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
             setIsAddModalOpen(false);
             router.refresh();
           }}
+          passwordPolicyLevel={passwordPolicyLevel}
         />
       </Modal>
 
@@ -664,6 +677,7 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity }: AdminP
               setSelectedUser(null);
               router.refresh();
             }}
+            passwordPolicyLevel={passwordPolicyLevel}
           />
         )}
       </Modal>
