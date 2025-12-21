@@ -50,7 +50,7 @@ interface AdminUsersPageProps {
 
 export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'strong' }: AdminUsersPageProps) {
   const router = useRouter();
-  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
+  const { csrfToken, loading: csrfLoading, getHeaders, refreshToken } = useCSRF();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -78,27 +78,60 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
   const confirmDelete = async () => {
     if (!selectedUser) return;
 
-    if (csrfLoading || !csrfToken) {
-      setDeleteError('CSRF token not ready. Please wait and try again.');
-      return;
-    }
-
     setIsDeleting(true);
     setDeleteError('');
+    
     try {
+      // Refresh CSRF token before making the request to ensure it's valid
+      let token = csrfToken;
+      if (!token || csrfLoading) {
+        token = await refreshToken();
+        if (!token) {
+          setDeleteError('CSRF token not ready. Please wait and try again.');
+          setIsDeleting(false);
+          return;
+        }
+      }
+
       const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'DELETE',
         headers: {
-          ...getHeaders(),
+          'X-CSRF-Token': token,
         },
         credentials: 'same-origin',
       });
 
       if (!response.ok) {
         const error = await response.json();
-        setDeleteError(error.error || 'Failed to delete user');
-        setIsDeleting(false);
-        return;
+        
+        // If CSRF error, try refreshing token and retry once
+        if (response.status === 403 && error.error?.includes('CSRF')) {
+          const newToken = await refreshToken();
+          if (newToken) {
+            const retryResponse = await fetch(`/api/users/${selectedUser.id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-Token': newToken,
+              },
+              credentials: 'same-origin',
+            });
+
+            if (!retryResponse.ok) {
+              const retryError = await retryResponse.json();
+              setDeleteError(retryError.error || 'Failed to delete user');
+              setIsDeleting(false);
+              return;
+            }
+          } else {
+            setDeleteError('CSRF token validation failed. Please refresh the page.');
+            setIsDeleting(false);
+            return;
+          }
+        } else {
+          setDeleteError(error.error || 'Failed to delete user');
+          setIsDeleting(false);
+          return;
+        }
       }
 
       setIsDeleteModalOpen(false);
