@@ -68,12 +68,14 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
 }
 
 
-export async function getDashboardStats(userId: string) {
-  // Check cache first
+export async function getDashboardStats(userId: string, forceRefresh: boolean = false) {
+  // Check cache first (unless force refresh is requested)
   const cacheKey = cacheKeys.dashboardStats(userId);
-  const cachedStats = cache.get(cacheKey);
-  if (cachedStats) {
-    return cachedStats;
+  if (!forceRefresh) {
+    const cachedStats = cache.get(cacheKey);
+    if (cachedStats) {
+      return cachedStats;
+    }
   }
 
   const now = new Date();

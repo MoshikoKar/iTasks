@@ -58,4 +58,7 @@ scripts/mock-data.ts
 scripts/mock-data.ps1
 scripts/remove-mock-data.ts
 scripts/remove-mock-data.ps1
-
+add-mock-data.ps1
+remove-mock-data.ps1
+add-mock-data.ts
+remove-mock-data.ts
