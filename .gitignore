@@ -49,3 +49,7 @@ clear-database.ps1
 # uploads
 /public/uploads
 
+# claude
+/.claude/
+
+
