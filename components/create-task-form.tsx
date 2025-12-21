@@ -6,6 +6,7 @@ import { Button } from './button';
 import { TaskPriority, User } from '@prisma/client';
 import { Paperclip, X } from 'lucide-react';
 import { ErrorAlert } from './ui/error-alert';
+import { useCSRF } from '@/hooks/useCSRF';
 
 interface CreateTaskFormProps {
   currentUserId: string;
@@ -15,6 +16,7 @@ interface CreateTaskFormProps {
 
 export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFormProps) {
   const router = useRouter();
+  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
@@ -57,9 +59,21 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
     };
 
     try {
+      if (csrfLoading || !csrfToken) {
+        setError('Please wait while security token loads...');
+        setIsLoading(false);
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        ...getHeaders(),
+      };
+
       const response = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'same-origin',
         body: JSON.stringify(data),
       });
 
@@ -76,8 +90,12 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           formData.append('taskId', task.id);
           formData.append('file', file);
           
+          const uploadHeaders = getHeaders();
+          
           const uploadResponse = await fetch('/api/attachments', {
             method: 'POST',
+            headers: uploadHeaders,
+            credentials: 'same-origin',
             body: formData,
           });
 

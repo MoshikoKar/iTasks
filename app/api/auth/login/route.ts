@@ -6,6 +6,7 @@ import { authenticateLDAP, getLDAPConfig } from "@/lib/ldap";
 import { AuthProvider, LogActionType, LogEntityType } from "@prisma/client";
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
+import { authRateLimiter } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -19,8 +20,26 @@ function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
-export async function POST(request: NextRequest) {
+async function loginHandler(request: NextRequest) {
   try {
+    // Rate limiting for authentication
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     request.headers.get('x-real-ip') ||
+                     request.headers.get('x-client-ip') ||
+                     'unknown';
+    const rateLimitResult = authRateLimiter.check(clientIP);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many login attempts' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const { email, password } = await request.json();
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
@@ -47,11 +66,23 @@ export async function POST(request: NextRequest) {
           },
         });
 
+        // Create session token
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        await db.session.create({
+          data: {
+            token: sessionToken,
+            userId: user.id,
+            expiresAt: sessionExpiresAt,
+          },
+        });
+
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
-        response.cookies.set(SESSION_COOKIE, user.id, {
+        response.cookies.set(SESSION_COOKIE, sessionToken, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          secure: true, // Always secure, even in development
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
         });
@@ -140,11 +171,23 @@ export async function POST(request: NextRequest) {
           },
         });
 
+        // Create session token
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const sessionExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        await db.session.create({
+          data: {
+            token: sessionToken,
+            userId: user.id,
+            expiresAt: sessionExpiresAt,
+          },
+        });
+
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
-        response.cookies.set(SESSION_COOKIE, user.id, {
+        response.cookies.set(SESSION_COOKIE, sessionToken, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          secure: true, // Always secure, even in development
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
         });
@@ -159,3 +202,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to login" }, { status: 500 });
   }
 }
+
+export const POST = loginHandler;

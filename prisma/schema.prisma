@@ -65,6 +65,7 @@ model User {
   auditLogs    AuditLog[]
   systemLogs   SystemLog[]
   mentions     Mention[] @relation("UserMentions")
+  sessions     Session[]
 
   @@index([teamId])
 }
@@ -265,6 +266,19 @@ model SystemLog {
   @@index([createdAt])
   @@index([entityType, actionType])
   @@index([createdAt, entityType])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model SystemConfig {

@@ -9,6 +9,7 @@ import {
 } from "@/lib/logging/system-logger";
 import { updateRecurringTaskSchema } from "@/lib/validation/recurringTaskSchema";
 import { logger } from "@/lib/logger";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
@@ -57,6 +58,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const body = await request.json();
     const { id } = await params;
@@ -223,6 +230,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const { id } = await params;
 

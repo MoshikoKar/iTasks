@@ -13,6 +13,7 @@ import {
 import { requireAuth } from "@/lib/auth";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation/taskSchema";
 import { logger } from "@/lib/logger";
+import { clearDashboardCache } from "./dashboard";
 
 async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Promise<Date | null> {
   try {
@@ -110,42 +111,47 @@ export async function createTask(data: {
     slaDeadline = await calculateSLADeadline(priority, createdAt);
   }
 
-  const task = await db.task.create({
-    data: {
-      title: validatedData.title,
-      description: validatedData.description,
-      dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
-      slaDeadline,
-      priority: validatedData.priority,
-      branch: validatedData.branch || null,
-      type: validatedData.type || TaskType.Standard,
-      tags: validatedData.tags || [],
-      creatorId, // ✅ Always use authenticated user's ID
-      assigneeId,
-      context: validatedData.context
-        ? {
-            create: {
-              serverName: validatedData.context.serverName,
-              application: validatedData.context.application,
-              workstationId: validatedData.context.workstationId,
-              adUser: validatedData.context.adUser,
-              environment: validatedData.context.environment,
-              ipAddress: validatedData.context.ipAddress,
-              manufacturer: validatedData.context.manufacturer,
-              version: validatedData.context.version,
-            },
-          }
-        : undefined,
-    },
-  });
+  // Create task and audit log in a transaction
+  const task = await db.$transaction(async (tx) => {
+    const createdTask = await tx.task.create({
+      data: {
+        title: validatedData.title,
+        description: validatedData.description,
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+        slaDeadline,
+        priority: validatedData.priority,
+        branch: validatedData.branch || null,
+        type: validatedData.type || TaskType.Standard,
+        tags: validatedData.tags || [],
+        creatorId, // ✅ Always use authenticated user's ID
+        assigneeId,
+        context: validatedData.context
+          ? {
+              create: {
+                serverName: validatedData.context.serverName,
+                application: validatedData.context.application,
+                workstationId: validatedData.context.workstationId,
+                adUser: validatedData.context.adUser,
+                environment: validatedData.context.environment,
+                ipAddress: validatedData.context.ipAddress,
+                manufacturer: validatedData.context.manufacturer,
+                version: validatedData.context.version,
+              },
+            }
+          : undefined,
+      },
+    });
 
-  await db.auditLog.create({
-    data: {
-      taskId: task.id,
-      actorId: creatorId, // ✅ Use authenticated user's ID
-      action: "create",
-      newValue: task,
-    },
+    await tx.auditLog.create({
+      data: {
+        taskId: createdTask.id,
+        actorId: creatorId, // ✅ Use authenticated user's ID
+        action: "create",
+        newValue: createdTask,
+      },
+    });
+
+    return createdTask;
   });
 
   const [assignee, creator] = await Promise.all([
@@ -186,6 +192,13 @@ export async function createTask(data: {
 
   revalidatePath("/"); // dashboard
   revalidatePath("/tasks");
+
+  // Clear dashboard cache for assignee and creator
+  clearDashboardCache(task.assigneeId);
+  if (task.creatorId !== task.assigneeId) {
+    clearDashboardCache(task.creatorId);
+  }
+
   return task;
 }
 
@@ -238,36 +251,53 @@ export async function updateTask(
     throw new Error("Forbidden: You don't have permission to edit this task");
   }
 
-  const updated = await db.task.update({
-    where: { id },
-    data: {
-      title: validatedData.title ?? existing.title,
-      description: validatedData.description ?? existing.description,
-      dueDate: validatedData.dueDate === undefined ? existing.dueDate : validatedData.dueDate ? new Date(validatedData.dueDate) : null,
-      slaDeadline:
-        validatedData.slaDeadline === undefined ? existing.slaDeadline : validatedData.slaDeadline ? new Date(validatedData.slaDeadline) : null,
-      status: validatedData.status ?? existing.status,
-      priority: validatedData.priority ?? existing.priority,
-      branch: validatedData.branch === undefined ? existing.branch : validatedData.branch,
-      assigneeId: validatedData.assigneeId ?? existing.assigneeId,
-      tags: validatedData.tags ?? existing.tags,
-    },
+  // Update task and create audit log in a transaction
+  const result = await db.$transaction(async (tx) => {
+    // Determine new priority and check if it changed
+    const newPriority = validatedData.priority ?? existing.priority;
+    const priorityChanged = validatedData.priority !== undefined && validatedData.priority !== existing.priority;
+
+    // Recalculate SLA deadline if priority changed and no explicit SLA was provided
+    let newSlaDeadline = validatedData.slaDeadline === undefined ? existing.slaDeadline : validatedData.slaDeadline ? new Date(validatedData.slaDeadline) : null;
+    if (priorityChanged && validatedData.slaDeadline === undefined) {
+      // Only recalculate if SLA deadline wasn't explicitly provided
+      newSlaDeadline = await calculateSLADeadline(newPriority, existing.createdAt);
+    }
+
+    const updated = await tx.task.update({
+      where: { id },
+      data: {
+        title: validatedData.title ?? existing.title,
+        description: validatedData.description ?? existing.description,
+        dueDate: validatedData.dueDate === undefined ? existing.dueDate : validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+        slaDeadline: newSlaDeadline,
+        status: validatedData.status ?? existing.status,
+        priority: newPriority,
+        branch: validatedData.branch === undefined ? existing.branch : validatedData.branch,
+        assigneeId: validatedData.assigneeId ?? existing.assigneeId,
+        tags: validatedData.tags ?? existing.tags,
+      },
+    });
+
+    const breached =
+      updated.slaDeadline && updated.status !== TaskStatus.Resolved && updated.status !== TaskStatus.Closed
+        ? new Date() > updated.slaDeadline
+        : false;
+
+    await tx.auditLog.create({
+      data: {
+        taskId: id,
+        actorId,
+        action: "update",
+        oldValue: existing,
+        newValue: updated,
+      },
+    });
+
+    return { updated, breached };
   });
 
-  const breached =
-    updated.slaDeadline && updated.status !== TaskStatus.Resolved && updated.status !== TaskStatus.Closed
-      ? new Date() > updated.slaDeadline
-      : false;
-
-  await db.auditLog.create({
-    data: {
-      taskId: id,
-      actorId,
-      action: "update",
-      oldValue: existing,
-      newValue: updated,
-    },
-  });
+  const { updated, breached } = result;
 
   // Collect all unique user IDs to fetch in a single query
   const userIdsToFetch = new Set<string>();
@@ -421,6 +451,18 @@ export async function updateTask(
 
   revalidatePath("/");
   revalidatePath("/tasks");
+
+  // Clear dashboard cache for assignee and creator
+  clearDashboardCache(updated.assigneeId);
+  if (updated.creatorId !== updated.assigneeId) {
+    clearDashboardCache(updated.creatorId);
+  }
+
+  // If assignee changed, also clear cache for old assignee
+  if (existing.assigneeId !== updated.assigneeId) {
+    clearDashboardCache(existing.assigneeId);
+  }
+
   return updated;
 }
 

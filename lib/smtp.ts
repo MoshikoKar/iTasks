@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { db } from "./db";
+import { decryptSecret } from "./ldap";
 
 let cachedConfig: {
   host: string;
@@ -24,13 +25,24 @@ async function getSMTPConfig() {
     });
 
     if (config) {
+      // Decrypt SMTP password if present
+      let smtpPassword: string | undefined = undefined;
+      if (config.smtpPassword) {
+        try {
+          smtpPassword = decryptSecret(config.smtpPassword);
+        } catch (error) {
+          console.error('Failed to decrypt SMTP password:', error);
+          // Continue without password - will fail to send emails but won't crash
+        }
+      }
+
       cachedConfig = {
         host: config.smtpHost || process.env.SMTP_HOST || "localhost",
         port: config.smtpPort ?? Number(process.env.SMTP_PORT || 25),
         secure: config.smtpSecure ?? false,
         from: config.smtpFrom || process.env.SMTP_FROM || "no-reply@local",
         user: config.smtpUser || undefined,
-        password: config.smtpPassword || undefined,
+        password: smtpPassword,
       };
     } else {
       cachedConfig = {

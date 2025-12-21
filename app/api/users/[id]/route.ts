@@ -9,6 +9,7 @@ import {
   logPermissionChange,
 } from "@/lib/logging/system-logger";
 import { logger } from "@/lib/logger";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,12 @@ function hashPassword(password: string): string {
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const { id } = await params;
 
@@ -165,6 +172,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const { id } = await params;
 

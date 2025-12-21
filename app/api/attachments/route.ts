@@ -7,6 +7,8 @@ import { requireAuth } from "@/lib/auth";
 import { logAttachmentUploaded } from "@/lib/logging/system-logger";
 import { logger } from "@/lib/logger";
 import path from "path";
+import { uploadRateLimiter } from "@/lib/rate-limit";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 // SECURITY: File upload constraints
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -30,8 +32,32 @@ const ALLOWED_FILE_TYPES = [
   'application/vnd.ms-powerpoint', // .ppt
 ];
 
-export async function POST(request: NextRequest) {
+async function uploadAttachmentHandler(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     request.headers.get('x-real-ip') ||
+                     request.headers.get('x-client-ip') ||
+                     'unknown';
+    const rateLimitResult = uploadRateLimiter.check(clientIP);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const user = await requireAuth();
     const formData = await request.formData();
     
@@ -156,7 +182,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+async function getAttachmentsHandler(request: NextRequest) {
   try {
     await requireAuth();
     const { searchParams } = new URL(request.url);
@@ -191,3 +217,6 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export const POST = uploadAttachmentHandler;
+export const GET = getAttachmentsHandler;

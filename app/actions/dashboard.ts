@@ -1,5 +1,29 @@
 import { db } from "@/lib/db";
 import { TaskStatus, TaskPriority, Role } from "@prisma/client";
+import { cache, cacheKeys, CACHE_TTL } from "@/lib/cache";
+
+/**
+ * Clear dashboard cache for a specific user
+ */
+export function clearDashboardCache(userId: string) {
+  const cacheKey = cacheKeys.dashboardStats(userId);
+  cache.delete(cacheKey);
+}
+
+/**
+ * Clear dashboard cache for all users in a team (when team data changes)
+ */
+export async function clearTeamDashboardCache(teamId: string) {
+  // Find all users in the team and clear their cache
+  const teamUsers = await db.user.findMany({
+    where: { teamId },
+    select: { id: true },
+  });
+
+  for (const user of teamUsers) {
+    clearDashboardCache(user.id);
+  }
+}
 
 /**
  * Helper function to build task query filters based on user role (RBAC)
@@ -45,6 +69,13 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
 
 
 export async function getDashboardStats(userId: string) {
+  // Check cache first
+  const cacheKey = cacheKeys.dashboardStats(userId);
+  const cachedStats = cache.get(cacheKey);
+  if (cachedStats) {
+    return cachedStats;
+  }
+
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -228,7 +259,7 @@ export async function getDashboardStats(userId: string) {
     },
   });
 
-  return {
+  const result = {
     open,
     overdue,
     slaBreaches,
@@ -241,5 +272,10 @@ export async function getDashboardStats(userId: string) {
     userDistribution,
     staleTasks,
   };
+
+  // Cache the result
+  cache.set(cacheKey, result, CACHE_TTL.DASHBOARD_STATS);
+
+  return result;
 }
 

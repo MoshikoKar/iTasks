@@ -4,6 +4,7 @@ import { requireRole, getCurrentUser } from "@/lib/auth";
 import { Role, LogEntityType, LogActionType } from "@prisma/client";
 import { clearSMTPCache } from "@/lib/smtp";
 import { createSystemLog } from "@/lib/logging/system-logger";
+import { encryptSecret } from "@/lib/ldap";
 import { logger } from "@/lib/logger";
 
 export async function GET() {
@@ -72,7 +73,7 @@ export async function PATCH(request: NextRequest) {
     if (smtpSecure !== undefined) updateData.smtpSecure = smtpSecure;
     if (smtpUser !== undefined) updateData.smtpUser = smtpUser;
     if (smtpPassword !== undefined && smtpPassword !== "") {
-      updateData.smtpPassword = smtpPassword;
+      updateData.smtpPassword = encryptSecret(smtpPassword);
     }
     if (slaLowHours !== undefined) updateData.slaLowHours = slaLowHours;
     if (slaMediumHours !== undefined) updateData.slaMediumHours = slaMediumHours;

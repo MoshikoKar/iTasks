@@ -6,6 +6,7 @@ import { Button } from './button';
 import { TaskPriority, User, Role } from '@prisma/client';
 import { Calendar, User as UserIcon, AlertCircle } from 'lucide-react';
 import { ErrorAlert } from './ui/error-alert';
+import { useCSRF } from '@/hooks/useCSRF';
 
 interface RecurringTaskFormProps {
   users: Pick<User, 'id' | 'name'>[];
@@ -60,6 +61,7 @@ const cronPresets = [
 
 export function RecurringTaskForm({ users, currentUser, config, onSuccess }: RecurringTaskFormProps) {
   const router = useRouter();
+  const { csrfToken, loading: csrfLoading, getHeaders } = useCSRF();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
@@ -121,12 +123,24 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
     };
 
     try {
+      if (csrfLoading || !csrfToken) {
+        setError('Please wait while security token loads...');
+        setIsLoading(false);
+        return;
+      }
+
       const url = config ? `/api/recurring/${config.id}` : '/api/recurring';
       const method = config ? 'PUT' : 'POST';
 
+      const headers = {
+        'Content-Type': 'application/json',
+        ...getHeaders(),
+      };
+
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'same-origin',
         body: JSON.stringify(data),
       });
 
@@ -348,7 +362,12 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
 
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-6 border-t border-border">
-        <Button type="submit" variant="primary" isLoading={isLoading}>
+        <Button 
+          type="submit" 
+          variant="primary" 
+          isLoading={isLoading || csrfLoading}
+          disabled={csrfLoading || !csrfToken}
+        >
           {config ? 'Update Recurring Task' : 'Create Recurring Task'}
         </Button>
       </div>

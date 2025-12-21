@@ -4,6 +4,8 @@ import { createTask } from "@/app/actions/tasks";
 import { requireAuth } from "@/lib/auth";
 import { Role } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { apiRateLimiter } from "@/lib/rate-limit";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
@@ -42,11 +44,31 @@ function buildTaskFilter(user: { id: string; role: Role; teamId: string | null }
   }
 }
 
-export async function GET(request: NextRequest) {
+async function getTasksHandler(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     request.headers.get('x-real-ip') ||
+                     request.headers.get('x-client-ip') ||
+                     'unknown';
+    const rateLimitResult = apiRateLimiter.check(clientIP);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const currentUser = await requireAuth();
     const searchParams = request.nextUrl.searchParams;
     const assigneeId = searchParams.get("assigneeId");
+    const cursor = searchParams.get("cursor");
+    const limit = searchParams.get("limit");
 
     // Build RBAC filter
     const rbacFilter = buildTaskFilter(currentUser);
@@ -56,16 +78,49 @@ export async function GET(request: NextRequest) {
       ? { AND: [rbacFilter, { assigneeId }] }
       : rbacFilter;
 
-    const tasks = await db.task.findMany({
-      where,
-      include: {
-        assignee: { select: { id: true, name: true } },
-        context: { select: { serverName: true, application: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    // Check if pagination parameters are provided
+    const usePagination = cursor !== null || limit !== null;
 
-    return NextResponse.json(tasks);
+    if (usePagination) {
+      // Use cursor-based pagination
+      const limitNum = Math.min(parseInt(limit || "50"), 100); // Max 100 items per page
+
+      const tasks = await db.task.findMany({
+        where,
+        include: {
+          assignee: { select: { id: true, name: true } },
+          context: { select: { serverName: true, application: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limitNum + 1, // Take one extra to check if there's a next page
+        ...(cursor && { cursor: { id: cursor }, skip: 1 }), // Skip the cursor itself
+      });
+
+      const hasNextPage = tasks.length > limitNum;
+      const tasksToReturn = hasNextPage ? tasks.slice(0, -1) : tasks;
+      const nextCursor = hasNextPage ? tasksToReturn[tasksToReturn.length - 1]?.id : null;
+
+      return NextResponse.json({
+        tasks: tasksToReturn,
+        pagination: {
+          hasNextPage,
+          nextCursor,
+          limit: limitNum,
+        },
+      });
+    } else {
+      // Backward compatibility: return all tasks as array
+      const tasks = await db.task.findMany({
+        where,
+        include: {
+          assignee: { select: { id: true, name: true } },
+          context: { select: { serverName: true, application: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return NextResponse.json(tasks);
+    }
   } catch (error) {
     logger.error("Error fetching tasks", error);
     return NextResponse.json(
@@ -75,8 +130,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createTaskHandler(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     request.headers.get('x-real-ip') ||
+                     request.headers.get('x-client-ip') ||
+                     'unknown';
+    const rateLimitResult = apiRateLimiter.check(clientIP);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const body = await request.json();
 
@@ -148,4 +227,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = getTasksHandler;
+export const POST = createTaskHandler;
 

@@ -6,11 +6,18 @@ import { requireAuth } from "@/lib/auth";
 import { logRecurringTaskCreated } from "@/lib/logging/system-logger";
 import { createRecurringTaskSchema } from "@/lib/validation/recurringTaskSchema";
 import { logger } from "@/lib/logger";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
     const body = await request.json();
 

@@ -18,9 +18,25 @@ export function verifyPassword(storedHash: string, candidate: string) {
 
 export async function getCurrentUser() {
   const cookieStore = await cookies();
-  const session = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!session) return null;
-  return db.user.findUnique({ where: { id: session } });
+  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!sessionToken) return null;
+
+  // Find valid session and include user data
+  const session = await db.session.findUnique({
+    where: { token: sessionToken },
+    include: { user: true },
+  });
+
+  // Check if session exists and is not expired
+  if (!session || session.expiresAt < new Date()) {
+    // Clean up expired session
+    if (session) {
+      await db.session.delete({ where: { id: session.id } });
+    }
+    return null;
+  }
+
+  return session.user;
 }
 
 export async function requireAuth() {
@@ -49,6 +65,27 @@ export async function getCurrentUserClient() {
   } catch (error) {
     console.error("Failed to get current user:", error);
     return null;
+  }
+}
+
+/**
+ * Clean up expired sessions from the database
+ * This should be called periodically (e.g., via cron job)
+ */
+export async function cleanupExpiredSessions() {
+  try {
+    const result = await db.session.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+    console.log(`Cleaned up ${result.count} expired sessions`);
+    return result.count;
+  } catch (error) {
+    console.error("Failed to cleanup expired sessions:", error);
+    return 0;
   }
 }
 

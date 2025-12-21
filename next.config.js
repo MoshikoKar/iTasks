@@ -69,9 +69,9 @@ const nextConfig = {
     return config;
   },
 
-  // Skip type checking and linting during development
+  // Enable type checking in production builds
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Disable development indicators completely

@@ -11,10 +11,12 @@ interface UseFormSubmissionReturn<T> {
  * Custom hook for form submission with loading and error handling
  * @param onSubmit - Async function to handle form submission
  * @param onSuccess - Optional callback on successful submission
+ * @param csrfToken - Optional CSRF token for secure requests
  */
 export function useFormSubmission<T>(
   onSubmit: (data: T) => Promise<void>,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  csrfToken?: string
 ): UseFormSubmissionReturn<T> {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

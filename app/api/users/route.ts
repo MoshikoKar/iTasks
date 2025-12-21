@@ -5,6 +5,8 @@ import { requireAuth } from "@/lib/auth";
 import crypto from "crypto";
 import { logUserCreated } from "@/lib/logging/system-logger";
 import { logger } from "@/lib/logger";
+import { createUserSchema } from "@/lib/validation/userSchema";
+import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
@@ -62,6 +64,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token for state-changing operation
+    const isValidCSRF = await validateCSRFHeader(request);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+    }
+
     const currentUser = await requireAuth();
 
     // Only Admin can create users
@@ -74,25 +82,23 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.name || !body.email || !body.password || !body.role) {
+    // Validate input with Zod schema
+    const validationResult = createUserSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.issues
+        .map(issue => issue.message)
+        .join(", ");
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: `Validation failed: ${errorMessages}` },
         { status: 400 }
       );
     }
 
-    // Validate role
-    if (!Object.values(Role).includes(body.role)) {
-      return NextResponse.json(
-        { error: "Invalid role" },
-        { status: 400 }
-      );
-    }
+    const validatedData = validationResult.data;
 
     // Check if email already exists
     const existingUser = await db.user.findUnique({
-      where: { email: body.email },
+      where: { email: validatedData.email },
     });
 
     if (existingUser) {
@@ -103,9 +109,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate team if provided
-    if (body.teamId) {
+    if (validatedData.teamId) {
       const team = await db.team.findUnique({
-        where: { id: body.teamId },
+        where: { id: validatedData.teamId },
       });
 
       if (!team) {
@@ -123,11 +129,11 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await db.user.create({
       data: {
-        name: body.name,
-        email: body.email,
-        role: isFirstUser ? Role.Admin : (body.role as Role), // First user is always Admin
-        passwordHash: hashPassword(body.password),
-        teamId: body.teamId || null,
+        name: validatedData.name,
+        email: validatedData.email,
+        role: isFirstUser ? Role.Admin : validatedData.role, // First user is always Admin
+        passwordHash: hashPassword(validatedData.password),
+        teamId: validatedData.teamId || null,
         authProvider: 'local',
         isBootstrapAdmin: isFirstUser, // Mark first user as bootstrap admin
       },

@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { validateEnvironmentOrExit } from "./env-validation";
+
+// Validate environment variables on startup
+validateEnvironmentOrExit();
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 

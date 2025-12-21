@@ -2,8 +2,16 @@ import { Client } from 'ldapts';
 import { db } from './db';
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-key-change-in-production-32';
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 const ENCRYPTION_ALGORITHM = 'aes-256-cbc';
+
+// Validate encryption key on startup
+if (!ENCRYPTION_KEY) {
+  throw new Error('ENCRYPTION_KEY environment variable is required for LDAP password encryption');
+}
+if (ENCRYPTION_KEY.length < 32) {
+  throw new Error('ENCRYPTION_KEY must be at least 32 characters long for AES-256 security');
+}
 
 /**
  * Encrypt sensitive data for storage

@@ -5,6 +5,7 @@ import { sendMail } from "@/lib/smtp";
 import { createSystemLog } from "@/lib/logging/system-logger";
 import { LogEntityType, LogActionType } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { contactSchema } from "@/lib/validation/contactSchema";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +15,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { subject, message, userEmail, userName } = body;
 
-    if (!subject || !message) {
+    // Validate input with Zod schema
+    const validationResult = contactSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.issues
+        .map(issue => issue.message)
+        .join(", ");
       return NextResponse.json(
-        { error: "Subject and message are required" },
+        { error: `Validation failed: ${errorMessages}` },
         { status: 400 }
       );
     }
+
+    const { subject, message, userEmail, userName } = validationResult.data;
 
     // Get support email from system config
     const config = await db.systemConfig.findUnique({

@@ -3,6 +3,47 @@
 import { Component, ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 
+/**
+ * Error tracking service interface
+ */
+interface ErrorTracker {
+  captureException(error: Error, context?: Record<string, any>): void;
+  captureMessage(message: string, level?: 'error' | 'warning' | 'info'): void;
+}
+
+/**
+ * Basic error tracker implementation
+ * In production, replace with Sentry, LogRocket, or similar service
+ */
+class BasicErrorTracker implements ErrorTracker {
+  captureException(error: Error, context?: Record<string, any>) {
+    console.error('[ErrorTracker] Exception captured:', {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+    });
+
+    // In production, send to external service here
+    // Example: Sentry.captureException(error, { contexts: { custom: context } });
+  }
+
+  captureMessage(message: string, level: 'error' | 'warning' | 'info' = 'error') {
+    console[level]('[ErrorTracker] Message:', message, {
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+    });
+
+    // In production, send to external service here
+    // Example: Sentry.captureMessage(message, level);
+  }
+}
+
+// Global error tracker instance
+const errorTracker = new BasicErrorTracker();
+
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
@@ -24,6 +65,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Track the error with context
+    errorTracker.captureException(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: 'ErrorBoundary',
+      errorInfo,
+    });
+
+    // Also log to console for development
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
@@ -55,13 +104,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </pre>
               </details>
             )}
-            <button
-              onClick={() => window.location.reload()}
-              className="neu-button mt-4 inline-flex items-center justify-center gap-2 text-sm font-medium"
-              style={{ fontSize: '14px', padding: '8px 20px' }}
-            >
-              Refresh Page
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => window.location.reload()}
+                className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+                style={{ fontSize: '14px', padding: '8px 20px' }}
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={() => {
+                  errorTracker.captureMessage('User reported error from ErrorBoundary', 'info');
+                  alert('Error report sent. Thank you for helping us improve!');
+                }}
+                className="neu-button-secondary inline-flex items-center justify-center gap-2 text-sm font-medium"
+                style={{ fontSize: '14px', padding: '8px 20px' }}
+              >
+                Report Error
+              </button>
+            </div>
           </div>
         </div>
       );
