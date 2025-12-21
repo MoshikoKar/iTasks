@@ -265,7 +265,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               <TrendingUp size={20} className="text-primary" />
               Tasks by Branch
             </h2>
-            {stats.branchDistribution.length > 5 && (
+            {stats.branchDistribution.length > 10 && (
               <button
                 onClick={() => openModal("branches")}
                 className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer"
@@ -281,19 +281,19 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               <p className="text-sm text-muted-foreground">No branch-specific tasks yet</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {stats.branchDistribution.slice(0, 5).map((item) => (
+            <div className="space-y-0.5">
+              {stats.branchDistribution.slice(0, 10).map((item) => (
                   <Link
                     key={item.branch}
                     href={`/tasks?branch=${encodeURIComponent(item.branch)}&status=Open`}
-                    className="block p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                    className="block py-0.5 px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
                   >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <span className="font-medium text-foreground">{item.branch}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                      <span className="font-medium text-foreground text-xs">{item.branch}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0">
                       {item.count}
                     </span>
                   </div>
@@ -311,7 +311,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
                 <ListTodo size={20} className="text-primary" />
                 Tasks per Technician
               </h2>
-              {stats.userDistribution && stats.userDistribution.length > 5 && (
+              {stats.userDistribution && stats.userDistribution.length > 10 && (
                 <button
                   onClick={() => openModal("technicians")}
                   className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer"
@@ -327,19 +327,19 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
                 <p className="text-sm text-muted-foreground">No active task assignments</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {stats.userDistribution.slice(0, 5).map((item) => (
+              <div className="space-y-0.5">
+                {stats.userDistribution.slice(0, 10).map((item) => (
                   <Link
                     key={item.user}
                     href={`/tasks?assignee=${encodeURIComponent(item.user)}&status=Open`}
-                    className="block p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                    className="block py-0.5 px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-primary"></div>
-                        <span className="font-medium text-foreground truncate">{item.user}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></div>
+                        <span className="font-medium text-foreground truncate text-xs">{item.user}</span>
                       </div>
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                      <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0">
                         {item.count}
                       </span>
                     </div>
