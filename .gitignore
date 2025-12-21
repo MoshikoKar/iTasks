@@ -53,3 +53,9 @@ clear-database.ps1
 todo.md
 .cursorignore
 
+# mock data scripts
+scripts/mock-data.ts
+scripts/mock-data.ps1
+scripts/remove-mock-data.ts
+scripts/remove-mock-data.ps1
+

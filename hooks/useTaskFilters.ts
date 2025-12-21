@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { TaskStatus, TaskPriority } from '@prisma/client';
 import { useLocalStorage } from './useLocalStorage';
 
@@ -34,17 +34,20 @@ interface UseTaskFiltersReturn<T extends Task> {
  * @returns Filtered tasks and filter controls
  */
 export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn<T> {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const statusParam = searchParams.get('status');
   const priorityParam = searchParams.get('priority');
+  const branchParam = searchParams.get('branch');
+  const assigneeParam = searchParams.get('assignee');
   const overdueParam = searchParams.get('overdue');
   const slaBreachParam = searchParams.get('slaBreach');
 
   // Use localStorage to persist filter preferences
   const [statusFilter, setStatusFilter] = useLocalStorage<string>('task-filter-status', statusParam || 'all');
   const [priorityFilter, setPriorityFilter] = useLocalStorage<string>('task-filter-priority', priorityParam || 'all');
-  const [branchFilter, setBranchFilter] = useLocalStorage<string>('task-filter-branch', 'all');
-  const [assigneeFilter, setAssigneeFilter] = useLocalStorage<string>('task-filter-assignee', 'all');
+  const [branchFilter, setBranchFilter] = useLocalStorage<string>('task-filter-branch', branchParam || 'all');
+  const [assigneeFilter, setAssigneeFilter] = useLocalStorage<string>('task-filter-assignee', assigneeParam || 'all');
 
   // Update filters when URL params change (URL params take precedence)
   useEffect(() => {
@@ -54,7 +57,17 @@ export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn
     if (priorityParam) {
       setPriorityFilter(priorityParam);
     }
-  }, [statusParam, priorityParam, setStatusFilter, setPriorityFilter]);
+    if (branchParam) {
+      setBranchFilter(branchParam);
+      // Clear assignee filter when branch filter is set from URL
+      setAssigneeFilter('all');
+    }
+    if (assigneeParam) {
+      setAssigneeFilter(assigneeParam);
+      // Clear branch filter when assignee filter is set from URL
+      setBranchFilter('all');
+    }
+  }, [statusParam, priorityParam, branchParam, assigneeParam, setStatusFilter, setPriorityFilter, setBranchFilter, setAssigneeFilter]);
 
   // Extract unique assignees
   const uniqueAssignees = useMemo(() => 
@@ -102,12 +115,19 @@ export function useTaskFilters<T extends Task>(tasks: T[]): UseTaskFiltersReturn
     });
   }, [tasks, statusFilter, priorityFilter, branchFilter, assigneeFilter, overdueParam, slaBreachParam]);
 
-  const resetFilters = () => {
-    setStatusFilter('all');
-    setPriorityFilter('all');
-    setBranchFilter('all');
-    setAssigneeFilter('all');
-  };
+  const resetFilters = useCallback(() => {
+    // Clear localStorage filter keys
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('task-filter-status');
+      localStorage.removeItem('task-filter-priority');
+      localStorage.removeItem('task-filter-branch');
+      localStorage.removeItem('task-filter-assignee');
+      
+      // Always do a full page reload to ensure complete reset
+      // This guarantees localStorage is cleared, state is fresh, and URL is clean
+      window.location.href = '/tasks';
+    }
+  }, []);
 
   return {
     filteredTasks,

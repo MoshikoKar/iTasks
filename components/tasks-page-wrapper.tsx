@@ -26,10 +26,10 @@ interface TasksPageWrapperProps {
   totalCount?: number;
 }
 
-export function TasksPageWrapper({ 
-  tasks, 
-  currentUser, 
-  users, 
+export function TasksPageWrapper({
+  tasks,
+  currentUser,
+  users,
   showFilters = true,
   currentPage = 1,
   totalPages = 1,

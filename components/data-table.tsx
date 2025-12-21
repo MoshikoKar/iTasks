@@ -4,7 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TaskStatus, TaskPriority } from "@prisma/client";
-import { Filter, Search, UserPlus, RefreshCw, ChevronDown } from "lucide-react";
+import { Filter, Search, UserPlus, RefreshCw, ChevronDown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { formatDate } from "@/lib/utils/date";
@@ -151,7 +151,11 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
     setAssigneeFilter,
     uniqueAssignees,
     uniqueBranches,
+    resetFilters,
   } = useTaskFilters(localTasks);
+
+  // Check if any filters are active
+  const hasActiveFilters = statusFilter !== 'all' || priorityFilter !== 'all' || branchFilter !== 'all' || assigneeFilter !== 'all';
 
   // Persist filter panel open/closed state
   const [isFilterOpen, setIsFilterOpen] = useLocalStorage<boolean>('task-filter-panel-open', false);
@@ -186,9 +190,24 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
           <summary className="cursor-pointer flex items-center gap-2 p-5 font-semibold text-foreground list-none">
             <Filter size={18} className="text-primary" />
             <span>Filters</span>
-            <span className="ml-auto text-xs text-muted-foreground font-normal">
-              ({filteredTasks.length} of {isMounted ? localTasks.length : tasks.length} tasks)
-            </span>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="text-xs text-muted-foreground font-normal">
+                ({filteredTasks.length} of {isMounted ? localTasks.length : tasks.length} tasks)
+              </span>
+              {hasActiveFilters && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    resetFilters();
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-destructive hover:text-destructive/80 bg-destructive/10 hover:bg-destructive/20 rounded-md transition-colors"
+                >
+                  <X size={14} />
+                  Clear Filters
+                </button>
+              )}
+            </div>
           </summary>
           <div className="px-5 pb-5">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

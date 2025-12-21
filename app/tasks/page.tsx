@@ -60,14 +60,42 @@ export default async function TasksPage({
     const resolvedSearchParams = await searchParams;
     const pageParam = resolvedSearchParams?.page ? parseInt(resolvedSearchParams.page as string, 10) : 1;
     const page = pageParam > 0 ? pageParam : 1; // Ensure page is at least 1
-    const pageSize = 50;
-    const skip = (page - 1) * pageSize;
+
+    // Check for direct filtering parameters from URL (from dashboard clicks)
+    const branchParam = resolvedSearchParams?.branch as string;
+    const assigneeParam = resolvedSearchParams?.assignee as string;
+
+    // If we have direct filters, don't paginate (show all results)
+    const hasDirectFilters = branchParam || assigneeParam;
+    const pageSize = hasDirectFilters ? 1000 : 50; // Large page size for filtered results
+    const skip = hasDirectFilters ? 0 : (page - 1) * 50; // No skip for filtered results
 
     const taskFilter = buildTaskFilter(currentUser);
 
+    // Add direct filters to the database query if present
+    const additionalFilters: any = {};
+    if (branchParam) {
+      additionalFilters.branch = branchParam;
+    }
+    if (assigneeParam) {
+      // Find user by name to get ID
+      const assigneeUser = await db.user.findFirst({
+        where: { name: assigneeParam },
+        select: { id: true },
+      });
+      if (assigneeUser) {
+        additionalFilters.assigneeId = assigneeUser.id;
+      }
+    }
+
+    const queryFilter = {
+      ...taskFilter,
+      ...additionalFilters,
+    };
+
     const [tasks, totalCount, users] = await Promise.all([
       db.task.findMany({
-        where: taskFilter,
+        where: queryFilter,
         include: {
           assignee: { select: { id: true, name: true } },
           context: { select: { serverName: true, application: true } },
@@ -77,7 +105,7 @@ export default async function TasksPage({
         take: pageSize,
       }),
       db.task.count({
-        where: taskFilter,
+        where: queryFilter,
       }),
       // Filter users based on permission level - no one can assign to users above their level
       currentUser.role === Role.Admin
@@ -104,7 +132,7 @@ export default async function TasksPage({
           }),
     ]);
 
-    const totalPages = Math.ceil(totalCount / pageSize);
+    const totalPages = hasDirectFilters ? 1 : Math.ceil(totalCount / 50);
 
     return (
       <Suspense fallback={<div className="space-y-4"><h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1><div className="text-slate-600 dark:text-neutral-400">Loading...</div></div>}>
@@ -113,7 +141,7 @@ export default async function TasksPage({
           currentUser={{ id: currentUser.id, name: currentUser.name }}
           users={users}
           showFilters={true}
-          currentPage={page}
+          currentPage={hasDirectFilters ? 1 : page}
           totalPages={totalPages}
           totalCount={totalCount}
         />
