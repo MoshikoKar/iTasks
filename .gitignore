@@ -54,4 +54,6 @@ clear-database.ps1
 # todo
 todo.md
 
+# cursor
+.cursorignore
 
