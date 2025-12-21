@@ -164,7 +164,12 @@ export async function PATCH(request: NextRequest) {
     if (isProvided(slaMediumHours)) updateData.slaMediumHours = typeof slaMediumHours === 'string' ? parseInt(slaMediumHours, 10) : slaMediumHours;
     if (isProvided(slaHighHours)) updateData.slaHighHours = typeof slaHighHours === 'string' ? parseInt(slaHighHours, 10) : slaHighHours;
     if (isProvided(slaCriticalHours)) updateData.slaCriticalHours = typeof slaCriticalHours === 'string' ? parseInt(slaCriticalHours, 10) : slaCriticalHours;
-    if (isProvided(supportEmail)) updateData.supportEmail = supportEmail || null;
+    // supportEmail can be explicitly set to null (to clear it), so check for undefined
+    if (supportEmail !== undefined) {
+      // Convert empty strings to null to ensure proper handling
+      const trimmedEmail = typeof supportEmail === 'string' ? supportEmail.trim() : supportEmail;
+      updateData.supportEmail = trimmedEmail && trimmedEmail.length > 0 ? trimmedEmail : null;
+    }
 
     // Branding & Reports
     if (orgLogo !== undefined) updateData.orgLogo = orgLogo;

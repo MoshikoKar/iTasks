@@ -203,7 +203,8 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
       data.append('lockUserAfterFailedLogins', lockUserAfterFailedLogins.toString());
       data.append('passwordPolicyLevel', passwordPolicyLevel);
       data.append('auditRetentionDays', auditRetentionDays.toString());
-      data.append('supportEmail', supportEmail.trim() || '');
+      // Send empty string explicitly (backend will convert to null)
+      data.append('supportEmail', supportEmail.trim());
 
       // Add the logo file
       data.append('orgLogoFile', logoFile);
@@ -232,6 +233,8 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
       // If empty after trimming, send null explicitly
       const trimmedFooter = reportFooterText.trim();
       const filteredFooterText = trimmedFooter ? filterSupportedCharacters(trimmedFooter) : '';
+      // If empty after trimming, send null explicitly
+      const trimmedEmail = supportEmail.trim();
       
       requestBody = JSON.stringify({
         // Branding & Reports
@@ -254,7 +257,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
         // Audit & Retention
         auditRetentionDays,
         // Variables
-        supportEmail: supportEmail.trim() || null,
+        supportEmail: trimmedEmail && trimmedEmail.length > 0 ? trimmedEmail : null,
       });
       headers = { 'Content-Type': 'application/json' };
     }
