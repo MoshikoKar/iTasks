@@ -473,11 +473,17 @@ This is an internal enterprise tool. For contributions, please follow the existi
 
 ## License
 
-MIT License
+Non-Commercial License
 
 Copyright (c) 2025 iTasks Contributors
 
-See [LICENSE](LICENSE) file for details.
+This software is licensed under a Non-Commercial License that:
+- ✅ Allows modification and private use
+- ✅ Requires sharing changes with the community
+- ❌ Prohibits commercial use
+- ⚠️ No warranty or liability
+
+See [LICENSE](LICENSE) file for full terms and conditions.
 
 ## Links
 

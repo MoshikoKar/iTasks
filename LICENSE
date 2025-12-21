@@ -1,21 +1,43 @@
-MIT License
+Non-Commercial License
 
 Copyright (c) 2025 iTasks Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, publish, and distribute the Software and any modifications
+or derivative works, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. PRIVATE USE: The Software may be used privately for non-commercial purposes.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. MODIFICATION: The Software may be modified and derivative works may be created.
+
+3. SHARE CHANGES: If you modify the Software or create derivative works, you
+   MUST share your changes with the community. This includes:
+   - Making source code of modifications publicly available
+   - Contributing improvements back to the original project when possible
+   - Clearly documenting any changes made
+
+4. NON-COMMERCIAL USE ONLY: The Software and any derivative works may NOT be
+   used for commercial purposes. Commercial use includes, but is not limited to:
+   - Selling the Software or derivative works
+   - Using the Software in a commercial product or service
+   - Using the Software to generate revenue
+   - Using the Software in any business or commercial context
+
+5. REDISTRIBUTION: You may redistribute the Software and derivative works,
+   provided that:
+   - You include this license and copyright notice
+   - You make source code available
+   - You clearly indicate any modifications made
+   - The redistribution is for non-commercial purposes only
+
+6. NO WARRANTY: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+7. NO LIABILITY: IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For commercial licensing inquiries, please contact the copyright holders.
