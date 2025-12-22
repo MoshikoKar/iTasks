@@ -240,33 +240,35 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       </div>
 
       {/* Analytics Widgets - 3 or 4 columns row based on role */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${user.role === 'Technician' || user.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
+      <div className={`grid items-start grid-cols-1 md:grid-cols-2 ${user.role === 'Technician' || user.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
         {/* Weekly Ticket Volume */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <BarChart3 size={20} className="text-primary" />
               Weekly Ticket Volume
             </h2>
           </div>
-          <BarChart data={stats.weeklyVolume} />
+          <div className="flex-1">
+            <BarChart data={stats.weeklyVolume} />
+          </div>
         </section>
 
         {/* Tasks by Priority */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <PieChart size={20} className="text-primary" />
               Tasks by Priority
             </h2>
           </div>
-          <div className="w-full">
+          <div className="w-full flex-1">
             <DonutChart data={stats.priorityDistribution} />
           </div>
         </section>
 
         {/* Tasks by Branch */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <TrendingUp size={20} className="text-primary" />
@@ -282,13 +284,13 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
             )}
           </div>
           {stats.branchDistribution.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
+            <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
               <PieChart size={40} className="mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-foreground font-semibold mb-1">All locations covered</p>
               <p className="text-sm text-muted-foreground">No branch-specific tasks yet</p>
             </div>
           ) : (
-            <div className="space-y-0.5">
+            <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
               {stats.branchDistribution.slice(0, 10).map((item) => (
                   <Link
                     key={item.branch}
@@ -312,7 +314,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
 
         {/* Tasks per Technician - Only visible for Admin and TeamLead */}
         {(user.role === 'Admin' || user.role === 'TeamLead') && (
-          <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                 <ListTodo size={20} className="text-primary" />
@@ -328,14 +330,14 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               )}
             </div>
             {!stats.userDistribution || stats.userDistribution.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
+              <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
                 <ListTodo size={40} className="mx-auto text-muted-foreground/50 mb-2" />
                 <p className="text-foreground font-semibold mb-1">Workload balanced</p>
                 <p className="text-sm text-muted-foreground">No active task assignments</p>
               </div>
             ) : (
-              <div className="space-y-0.5">
-                {stats.userDistribution.slice(0, 10).map((item) => (
+              <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
+                {stats.userDistribution.map((item) => (
                   <Link
                     key={item.user}
                     href={`/tasks?assignee=${encodeURIComponent(item.user)}&status=Open`}
