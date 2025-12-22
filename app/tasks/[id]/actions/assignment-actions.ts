@@ -5,6 +5,7 @@ import { updateTask } from "@/app/actions/tasks";
 import { requireAuth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { Role } from "@prisma/client";
+import { createAddedAsSubscriberNotification } from "@/lib/notifications";
 
 /**
  * Assign a task to a user
@@ -39,6 +40,9 @@ export async function addTechnician(taskId: string, technicianId: string) {
       },
     },
   });
+
+  // Create UI notification for the added subscriber
+  await createAddedAsSubscriberNotification(taskId, technicianId, user.id);
 
   revalidatePath(`/tasks/${taskId}`);
 }

@@ -187,7 +187,9 @@ export async function createTask(data: {
       slaDeadline: task.slaDeadline,
     },
     assignee?.email,
-    creator?.email
+    creator?.email,
+    assignee?.id,
+    task.id
   );
 
   revalidatePath("/"); // dashboard
@@ -437,7 +439,10 @@ export async function updateTask(
       title: existing.title,
       assigneeName: existing.assignee?.name,
     },
-    actorUser?.email
+    actorUser?.email,
+    assignee?.id,
+    updated.id,
+    actorUser?.id
   );
 
   if (breached) {

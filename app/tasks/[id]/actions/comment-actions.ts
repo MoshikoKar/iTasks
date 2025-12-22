@@ -75,9 +75,9 @@ export async function addComment(
     }
   );
 
-  const [assignee, creator, mentionedUsers, previousCommentersRaw] = await Promise.all([
-    db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true } }),
-    db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true } }),
+  const [assignee, creator, mentionedUsers, previousCommentersRaw, subscribers] = await Promise.all([
+    db.user.findUnique({ where: { id: task.assigneeId }, select: { email: true, name: true, id: true } }),
+    db.user.findUnique({ where: { id: task.creatorId }, select: { email: true, name: true, id: true } }),
     db.user.findMany({
       where: { id: { in: validatedData.mentionedUserIds } },
       select: { email: true, name: true }
@@ -85,6 +85,14 @@ export async function addComment(
     db.comment.groupBy({
       by: ['userId'],
       where: { taskId: task.id, userId: { not: user.id } }
+    }),
+    db.task.findUnique({
+      where: { id: task.id },
+      select: {
+        subscribers: {
+          select: { id: true }
+        }
+      }
     })
   ]);
 
@@ -136,7 +144,11 @@ export async function addComment(
       assignee?.email && assignee.email !== user.email ? assignee.email : undefined,
       creator?.email && creator.email !== user.email ? creator.email : undefined,
       undefined,
-      previousCommenterEmails
+      previousCommenterEmails,
+      assignee?.id,
+      task.id,
+      user.id,
+      subscribers?.subscribers.map(s => s.id).filter(id => id !== assignee?.id)
     );
   }
 

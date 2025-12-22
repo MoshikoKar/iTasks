@@ -62,3 +62,9 @@ add-mock-data.ps1
 remove-mock-data.ps1
 add-mock-data.ts
 remove-mock-data.ts
+
+# test users script
+scripts/create-test-users.ts
+scripts/remove-test-users.ts
+create-test-users.ps1
+remove-test-users.ps1

@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 import { Sidebar } from "@/components/sidebar";
+import { Header } from "@/components/header";
 import { getCurrentUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -70,14 +71,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <ClientWrapper>
             {user ? (
               <div className="flex h-screen w-full overflow-hidden flex-col">
+                <Header userId={user.id} />
                 <div className="flex flex-1 overflow-hidden">
                   <Sidebar userRole={user.role} userName={user.name} />
                   <main id="main-content" className="flex flex-1 flex-col overflow-y-auto bg-white dark:bg-neutral-900">
                     <div className="flex-1 p-6">
                       {children}
                     </div>
-                    <Footer 
-                      supportEmail={supportEmail} 
+                    <Footer
+                      supportEmail={supportEmail}
                       timezone={timezone}
                       dateFormat={dateFormat}
                       timeFormat={timeFormat}

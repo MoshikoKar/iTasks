@@ -1,6 +1,7 @@
 import { sendMail } from "./smtp";
-import { TaskStatus, TaskPriority } from "@prisma/client";
+import { TaskStatus, TaskPriority, NotificationType } from "@prisma/client";
 import { formatDateTime } from "./utils/date";
+import { db } from "./db";
 
 interface TaskNotificationData {
   taskId: string;
@@ -241,11 +242,16 @@ function generateTaskEmailHTML(data: TaskNotificationData, type: "created" | "up
   `.trim();
 }
 
-export async function notifyTaskCreated(data: TaskNotificationData, assigneeEmail?: string, creatorEmail?: string) {
+export async function notifyTaskCreated(data: TaskNotificationData, assigneeEmail?: string, creatorEmail?: string, assigneeId?: string, taskId?: string) {
   const recipients: string[] = [];
-  
+
   if (assigneeEmail) recipients.push(assigneeEmail);
   if (creatorEmail && creatorEmail !== assigneeEmail) recipients.push(creatorEmail);
+
+  // Create UI notification for assignee
+  if (assigneeId && taskId) {
+    await createTaskAssignedNotification(taskId, assigneeId);
+  }
 
   if (recipients.length === 0) return;
 
@@ -262,13 +268,28 @@ export async function notifyTaskCreated(data: TaskNotificationData, assigneeEmai
   });
 }
 
-export async function notifyTaskUpdated(data: TaskNotificationData, assigneeEmail?: string, creatorEmail?: string, oldData?: Partial<TaskNotificationData>, actorEmail?: string) {
+export async function notifyTaskUpdated(data: TaskNotificationData, assigneeEmail?: string, creatorEmail?: string, oldData?: Partial<TaskNotificationData>, actorEmail?: string, assigneeId?: string, taskId?: string, actorId?: string) {
   const recipients: string[] = [];
-  
+
   if (assigneeEmail) recipients.push(assigneeEmail);
   if (creatorEmail && creatorEmail !== assigneeEmail) recipients.push(creatorEmail);
   if (actorEmail && !recipients.includes(actorEmail)) {
     recipients.push(actorEmail);
+  }
+
+  // Create UI notifications for status changes, assignee changes, and task closure
+  if (assigneeId && taskId && oldData) {
+    if (oldData.status && oldData.status !== data.status) {
+      await createTaskStatusChangedNotification(taskId, assigneeId, oldData.status, data.status, actorId);
+    }
+    if (oldData.status !== TaskStatus.Closed && data.status === TaskStatus.Closed) {
+      await createTaskClosedNotification(taskId, assigneeId, actorId);
+    }
+  }
+
+  // Create UI notification for assignee changes
+  if (assigneeId && taskId && oldData && oldData.assigneeName !== data.assigneeName) {
+    await createTaskAssignedNotification(taskId, assigneeId, actorId);
   }
 
   if (recipients.length === 0) return;
@@ -302,21 +323,45 @@ export async function notifyTaskUpdated(data: TaskNotificationData, assigneeEmai
   });
 }
 
-export async function notifyTaskCommented(data: TaskNotificationData, assigneeEmail?: string, creatorEmail?: string, commentAuthorEmail?: string, additionalRecipients?: string[]) {
+export async function notifyTaskCommented(
+  data: TaskNotificationData,
+  assigneeEmail?: string,
+  creatorEmail?: string,
+  commentAuthorEmail?: string,
+  additionalRecipients?: string[],
+  assigneeId?: string,
+  taskId?: string,
+  commentAuthorId?: string,
+  subscriberIds?: string[]
+) {
   if (!data.commentContent) return;
 
   const recipients: string[] = [];
-  
+
   if (assigneeEmail) recipients.push(assigneeEmail);
   if (creatorEmail && creatorEmail !== assigneeEmail) recipients.push(creatorEmail);
   if (commentAuthorEmail && !recipients.includes(commentAuthorEmail)) {
     recipients.push(commentAuthorEmail);
   }
-  
+
   if (additionalRecipients) {
     for (const email of additionalRecipients) {
       if (email && !recipients.includes(email)) {
         recipients.push(email);
+      }
+    }
+  }
+
+  // Create UI notifications for assignee and subscribers
+  if (taskId && commentAuthorId) {
+    if (assigneeId) {
+      await createCommentAddedNotification(taskId, assigneeId, commentAuthorId, data.commentContent);
+    }
+    if (subscriberIds) {
+      for (const subscriberId of subscriberIds) {
+        if (subscriberId !== assigneeId) {
+          await createCommentAddedNotification(taskId, subscriberId, commentAuthorId, data.commentContent);
+        }
       }
     }
   }
@@ -350,4 +395,117 @@ export async function notifyUserMentioned(data: TaskNotificationData, mentionedU
   }).catch((err) => {
     console.error("Failed to send mention notification:", err);
   });
+}
+
+// UI Notification creation functions
+async function createUINotification(
+  userId: string,
+  taskId: string,
+  type: NotificationType,
+  title: string,
+  actorId?: string,
+  content?: string
+) {
+  try {
+    await db.notification.create({
+      data: {
+        userId,
+        taskId,
+        type,
+        title,
+        content,
+        actorId,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to create UI notification:", error);
+  }
+}
+
+export async function createTaskAssignedNotification(taskId: string, assigneeId: string, actorId?: string) {
+  const actorName = actorId ? await getUserName(actorId) : "A teammate";
+  const title = actorId ? `${actorName} assigned you a task` : "A teammate assigned you a task";
+
+  await createUINotification(assigneeId, taskId, NotificationType.TaskAssigned, title, actorId);
+}
+
+export async function createTaskStatusChangedNotification(
+  taskId: string,
+  assigneeId: string,
+  oldStatus: TaskStatus,
+  newStatus: TaskStatus,
+  actorId?: string
+) {
+  const taskTitle = await getTaskTitle(taskId);
+  const actorName = actorId ? await getUserName(actorId) : "A teammate";
+  const title = `The status of '${taskTitle}' was changed to ${newStatus}`;
+
+  await createUINotification(
+    assigneeId,
+    taskId,
+    NotificationType.TaskStatusChanged,
+    title,
+    actorId,
+    `Status changed from ${oldStatus} to ${newStatus}`
+  );
+}
+
+export async function createTaskClosedNotification(taskId: string, assigneeId: string, actorId?: string) {
+  const actorName = actorId ? await getUserName(actorId) : "A teammate";
+  const title = "A task you're assigned to was closed";
+
+  await createUINotification(assigneeId, taskId, NotificationType.TaskClosed, title, actorId);
+}
+
+export async function createAddedAsSubscriberNotification(taskId: string, subscriberId: string, actorId?: string) {
+  const actorName = actorId ? await getUserName(actorId) : "A teammate";
+  const title = `${actorName} added you as a subscriber to a task`;
+
+  await createUINotification(subscriberId, taskId, NotificationType.AddedAsSubscriber, title, actorId);
+}
+
+export async function createCommentAddedNotification(
+  taskId: string,
+  userId: string,
+  commentAuthorId: string,
+  commentContent: string
+) {
+  const commentAuthorName = await getUserName(commentAuthorId);
+  const title = `${commentAuthorName} added a comment to a task you're assigned to`;
+
+  await createUINotification(
+    userId,
+    taskId,
+    NotificationType.CommentAdded,
+    title,
+    commentAuthorId,
+    commentContent
+  );
+}
+
+// Helper functions
+async function getUserName(userId: string): Promise<string> {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    return user?.name || "A teammate";
+  } catch (error) {
+    console.error("Failed to get user name:", error);
+    return "A teammate";
+  }
+}
+
+async function getTaskTitle(taskId: string): Promise<string> {
+  try {
+    const task = await db.task.findUnique({
+      where: { id: taskId },
+      select: { title: true },
+    });
+    return task?.title || "Unknown Task";
+  } catch (error) {
+    console.error("Failed to get task title:", error);
+    return "Unknown Task";
+  }
 }

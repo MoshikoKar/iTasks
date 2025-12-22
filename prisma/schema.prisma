@@ -35,6 +35,14 @@ enum TaskPriority {
   Critical
 }
 
+enum NotificationType {
+  TaskAssigned
+  TaskStatusChanged
+  TaskClosed
+  AddedAsSubscriber
+  CommentAdded
+}
+
 model Team {
   id          String   @id @default(uuid())
   name        String   @unique
@@ -71,6 +79,8 @@ model User {
   systemLogs   SystemLog[]
   mentions     Mention[] @relation("UserMentions")
   sessions     Session[]
+  notificationsSent     Notification[] @relation("NotificationActor")
+  notificationsReceived Notification[] @relation("NotificationRecipient")
 
   @@index([teamId])
 }
@@ -103,6 +113,7 @@ model Task {
   auditLogs      AuditLog[]
   systemLogs     SystemLog[]
   subscribers    User[]            @relation("TaskSubscribers")
+  notifications  Notification[]
 
   @@index([assigneeId])
   @@index([creatorId])
@@ -333,5 +344,28 @@ model SystemConfig {
 
   updatedAt DateTime @updatedAt
   updatedBy String?
+}
+
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  actorId   String?
+  taskId    String
+  type      NotificationType
+  title     String
+  content   String?
+  isRead    Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user      User              @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  task      Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([taskId])
+  @@index([createdAt])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
