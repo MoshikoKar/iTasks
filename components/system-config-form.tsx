@@ -97,7 +97,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
   const [passwordPolicyLevel, setPasswordPolicyLevel] = useState('strong');
   const [auditRetentionDays, setAuditRetentionDays] = useState(365);
   const [supportEmail, setSupportEmail] = useState('');
-  const [logoUploadType, setLogoUploadType] = useState<'url' | 'file'>('url');
+  const [logoUploadType, setLogoUploadType] = useState<'url' | 'file' | 'none'>('url');
 
   useEffect(() => {
     fetch('/api/system-config')
@@ -126,8 +126,10 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
         const logoUrl = data.orgLogo || '';
         setOrgLogo(logoUrl);
         // If orgLogo is a relative path starting with /uploads/logos/, it's an uploaded file
+        // If no logo, default to 'none'
         const isUploadedFile = logoUrl && logoUrl.startsWith('/uploads/logos/');
-        setLogoUploadType(isUploadedFile ? 'file' : 'url');
+        const hasUrl = logoUrl && !logoUrl.startsWith('/uploads/logos/');
+        setLogoUploadType(isUploadedFile ? 'file' : hasUrl ? 'url' : 'none');
         // Filter out emojis/unsupported chars from existing value
         // If null, undefined, or empty string, set to empty string (which will use default in PDF)
         const footerTextValue = data.reportFooterText && data.reportFooterText.trim() 
@@ -215,10 +217,13 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
       // Use JSON for URL-based logo or to preserve existing uploaded file
       // If in file mode but no new file selected, preserve the original uploaded file path
       let logoValue: string | null = orgLogo || null;
-      if (logoUploadType === 'file' && !logoFile) {
+      if (logoUploadType === 'none') {
+        // No logo selected
+        logoValue = null;
+      } else if (logoUploadType === 'file' && !logoFile) {
         // In file mode with no new file - preserve existing uploaded file if it exists
-        logoValue = config.orgLogo && config.orgLogo.startsWith('/uploads/logos/') 
-          ? config.orgLogo 
+        logoValue = config.orgLogo && config.orgLogo.startsWith('/uploads/logos/')
+          ? config.orgLogo
           : null;
       } else if (logoUploadType === 'url') {
         // In URL mode - use the URL value (but not blob URLs or uploaded file paths)
@@ -330,6 +335,23 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
                 <input
                   type="radio"
                   name="logoUploadType"
+                  value="none"
+                  checked={logoUploadType === 'none'}
+                  onChange={(e) => {
+                    setLogoUploadType('none');
+                    // Clear any existing logo when switching to none mode
+                    if (orgLogo && orgLogo.startsWith('blob:')) {
+                      URL.revokeObjectURL(orgLogo);
+                    }
+                    setOrgLogo('');
+                  }}
+                />
+                <span className="text-sm text-foreground">No Logo</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="logoUploadType"
                   value="url"
                   checked={logoUploadType === 'url'}
                   onChange={(e) => {
@@ -371,7 +393,11 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
               </label>
             </div>
 
-            {logoUploadType === 'url' ? (
+            {logoUploadType === 'none' ? (
+              <p className="text-xs text-muted-foreground">
+                No logo will be displayed. The default iTasks branding will be used.
+              </p>
+            ) : logoUploadType === 'url' ? (
               <>
                 <input
                   type="text"
@@ -419,7 +445,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
               </>
             )}
 
-            {orgLogo && (
+            {orgLogo && logoUploadType !== 'none' && (
               <div className="mt-2">
                 <p className="text-xs text-muted-foreground mb-1">Preview:</p>
                 <img
