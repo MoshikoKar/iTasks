@@ -22,6 +22,7 @@ import { formatDateTime, formatDate } from "@/lib/utils/date";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { FullListModal } from "@/components/dashboard/full-list-modal";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface DashboardContentProps {
   stats: any;
@@ -82,6 +83,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           icon={<CheckCircle2 size={24} />}
           color="blue"
           href="/tasks?status=Open"
+          tooltip="Total number of tasks currently in Open status"
         />
         <StatCard
           label="Overdue"
@@ -90,6 +92,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           color="red"
           highlight
           href="/tasks?status=Open&overdue=1"
+          tooltip="Tasks that have passed their due date and are still open"
         />
         <StatCard
           label="SLA Breaches"
@@ -98,6 +101,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           color="orange"
           highlight
           href="/tasks?status=Open&slaBreach=1"
+          tooltip="Tasks that have exceeded their Service Level Agreement deadline"
         />
         <StatCard
           label="Critical"
@@ -105,6 +109,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           icon={<AlertCircle size={24} />}
           color="purple"
           href="/tasks?priority=Critical"
+          tooltip="Tasks with Critical priority level"
         />
         <StatCard
           label="Stale Tasks"
@@ -112,6 +117,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           icon={<AlertOctagon size={24} />}
           color="orange"
           href="/tasks?status=Open&stale=1"
+          tooltip="Open tasks that haven't been updated in a while"
         />
       </div>
 
@@ -120,10 +126,12 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         {/* My Open Tasks Section */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <ListTodo size={18} className="text-primary" />
-              My Open Tasks
-            </h2>
+            <Tooltip content="Tasks assigned to you that are currently open" showIcon={false}>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <ListTodo size={18} className="text-primary" />
+                My Open Tasks
+              </h2>
+            </Tooltip>
             <Link href="/tasks/my" className="text-xs text-primary hover:text-primary/80 font-medium">
               View all →
             </Link>
@@ -157,7 +165,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {stats.myOpenTasks.slice(0, 5).map((task) => (
+                  {stats.myOpenTasks.slice(0, 5).map((task: { id: string; title: string; slaDeadline: Date | null; priority: TaskPriority }) => (
                       <tr key={task.id} className="hover:bg-muted/50 transition-colors">
                         <td className="px-4 py-2">
                           <Link
@@ -184,10 +192,12 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         {/* My Day Section */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp size={18} className="text-primary" />
-              My Day
-            </h2>
+            <Tooltip content="Tasks scheduled for today that are assigned to you" showIcon={false}>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp size={18} className="text-primary" />
+                My Day
+              </h2>
+            </Tooltip>
             <Link href="/tasks/my" className="text-xs text-primary hover:text-primary/80 font-medium">
               View all →
             </Link>
@@ -214,7 +224,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {stats.myDay.slice(0, 5).map((task) => (
+                  {stats.myDay.slice(0, 5).map((task: { id: string; title: string; dueDate: Date | null; priority: TaskPriority }) => (
                       <tr key={task.id} className="hover:bg-muted/50 transition-colors">
                         <td className="px-4 py-2">
                           <Link
@@ -242,14 +252,16 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       {/* Analytics Widgets - 3 or 4 columns row based on role */}
       <div className={`grid items-start grid-cols-1 md:grid-cols-2 ${user.role === 'Technician' || user.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
         {/* Weekly Ticket Volume */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
+        <section className="rounded-xl border border-border bg-card pt-6 px-6 pb-2 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <BarChart3 size={20} className="text-primary" />
-              Weekly Ticket Volume
-            </h2>
+            <Tooltip content="Number of tasks created each day over the past week" showIcon={false}>
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <BarChart3 size={20} className="text-primary" />
+                Weekly Ticket Volume
+              </h2>
+            </Tooltip>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 mt-8">
             <BarChart data={stats.weeklyVolume} />
           </div>
         </section>
@@ -257,10 +269,12 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         {/* Tasks by Priority */}
         <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <PieChart size={20} className="text-primary" />
-              Tasks by Priority
-            </h2>
+            <Tooltip content="Distribution of tasks across different priority levels" showIcon={false}>
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <PieChart size={20} className="text-primary" />
+                Tasks by Priority
+              </h2>
+            </Tooltip>
           </div>
           <div className="w-full flex-1">
             <DonutChart data={stats.priorityDistribution} />
@@ -270,10 +284,12 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         {/* Tasks by Branch */}
         <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp size={20} className="text-primary" />
-              Tasks by Branch
-            </h2>
+            <Tooltip content="Number of open tasks grouped by branch location" showIcon={false}>
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp size={20} className="text-primary" />
+                Tasks by Branch
+              </h2>
+            </Tooltip>
             {stats.branchDistribution.length > 10 && (
               <button
                 onClick={() => openModal("branches")}
@@ -291,7 +307,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
-              {stats.branchDistribution.slice(0, 10).map((item) => (
+              {stats.branchDistribution.slice(0, 10).map((item: { branch: string; count: number }) => (
                   <Link
                     key={item.branch}
                     href={`/tasks?branch=${encodeURIComponent(item.branch)}&status=Open`}
@@ -316,10 +332,12 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         {(user.role === 'Admin' || user.role === 'TeamLead') && (
           <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <ListTodo size={20} className="text-primary" />
-                Tasks per Technician
-              </h2>
+              <Tooltip content="Number of open tasks assigned to each technician" showIcon={false}>
+                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                  <ListTodo size={20} className="text-primary" />
+                  Tasks per Technician
+                </h2>
+              </Tooltip>
               {stats.userDistribution && stats.userDistribution.length > 10 && (
                 <button
                   onClick={() => openModal("technicians")}
@@ -337,7 +355,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
-                {stats.userDistribution.map((item) => (
+                {stats.userDistribution.map((item: { user: string; count: number }) => (
                   <Link
                     key={item.user}
                     href={`/tasks?assignee=${encodeURIComponent(item.user)}&status=Open`}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface StatCardProps {
   label: string;
@@ -12,6 +13,7 @@ interface StatCardProps {
   color: "blue" | "red" | "orange" | "purple";
   highlight?: boolean;
   href?: string;
+  tooltip?: string;
 }
 
 export function StatCard({
@@ -21,6 +23,7 @@ export function StatCard({
   color,
   highlight,
   href,
+  tooltip,
 }: StatCardProps) {
   const { resolvedTheme } = useTheme();
   // Use a neutral shadow initially to prevent hydration mismatch
@@ -59,7 +62,15 @@ export function StatCard({
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="text-sm font-medium text-muted-foreground mb-1">{label}</div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">
+            {tooltip ? (
+              <Tooltip content={tooltip} showIcon={false}>
+                <span>{label}</span>
+              </Tooltip>
+            ) : (
+              label
+            )}
+          </div>
           <div className={`text-4xl font-bold ${highlight ? "text-destructive" : "text-foreground"} transition-all`}>
             {value}
           </div>
