@@ -123,7 +123,7 @@ export default async function SLAPage() {
                           </td>
                           <td className={`px-4 py-2 font-semibold ${isOverdue ? "text-destructive" : hoursRemaining && hoursRemaining < 24 ? "text-warning" : "text-foreground"}`}>
                             <Tooltip
-                              content={
+                              description={
                                 isOverdue
                                   ? "SLA deadline has passed - task is overdue"
                                   : hoursRemaining !== null

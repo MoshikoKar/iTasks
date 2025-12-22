@@ -106,7 +106,7 @@ export function Badge({ variant = 'status', value, className, enableHighlight = 
 
   if (showTooltip) {
     return (
-      <Tooltip content={config.tooltip} showIcon={false}>
+      <Tooltip description={config.tooltip} showIcon={false}>
         {badge}
       </Tooltip>
     );

@@ -49,7 +49,7 @@ export function AdminSettingsPage() {
               <div>
                 <div className="font-medium text-foreground flex items-center gap-2">
                   SMTP Server
-                  <Tooltip content="Configure email server settings for sending notifications and alerts" />
+                  <Tooltip description="Configure email server settings for sending notifications and alerts" />
                 </div>
                 <div className="text-sm text-muted-foreground">Local LAN, Port 25</div>
               </div>
@@ -70,7 +70,7 @@ export function AdminSettingsPage() {
               <div>
                 <div className="font-medium text-foreground flex items-center gap-2">
                   SLA Defaults
-                  <Tooltip content="Set default Service Level Agreement deadlines based on task priority" />
+                  <Tooltip description="Set default Service Level Agreement deadlines based on task priority" />
                 </div>
                 <div className="text-sm text-muted-foreground">Configure default SLA deadlines</div>
               </div>
@@ -91,7 +91,7 @@ export function AdminSettingsPage() {
               <div>
                 <div className="font-medium text-foreground flex items-center gap-2">
                   LDAP / LDAPS Authentication
-                  <Tooltip content="Integrate with Active Directory or LDAP for enterprise user authentication" />
+                  <Tooltip description="Integrate with Active Directory or LDAP for enterprise user authentication" />
                 </div>
                 <div className="text-sm text-muted-foreground">Enterprise authentication integration</div>
               </div>
@@ -112,7 +112,7 @@ export function AdminSettingsPage() {
               <div>
                 <div className="font-medium text-foreground flex items-center gap-2">
                   System Configuration
-                  <Tooltip content="Configure branding, localization, collaboration features, security settings, audit retention, and application variables" />
+                  <Tooltip description="Configure branding, localization, collaboration features, security settings, audit retention, and application variables" />
                 </div>
                 <div className="text-sm text-muted-foreground">Branding, localization, security, collaboration settings, and variables</div>
               </div>
