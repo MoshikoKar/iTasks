@@ -141,10 +141,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Extract first name from full name for display purposes
+    const getFirstName = (fullName: string) => {
+      return fullName.trim().split(' ')[0];
+    };
+
+    const displayName = getFirstName(validatedData.name);
+
     // Create user
     const user = await db.user.create({
       data: {
-        name: validatedData.name,
+        name: displayName,
         email: validatedData.email,
         role: isFirstUser ? Role.Admin : validatedData.role, // First user is always Admin
         passwordHash: hashPassword(validatedData.password),

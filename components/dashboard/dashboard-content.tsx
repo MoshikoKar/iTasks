@@ -43,6 +43,23 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
     setModalState({ isOpen: false, type: null });
   };
 
+  // Get personalized greeting based on time of day
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { greeting: "Good morning", emoji: "🌅" };
+    if (hour < 17) return { greeting: "Good afternoon", emoji: "☀️" };
+    return { greeting: "Good evening", emoji: "🌙" };
+  };
+
+  // Extract first name from user's display name and capitalize it
+  const getFirstName = (fullName: string) => {
+    const firstName = fullName.split(' ')[0];
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  };
+
+  const { greeting, emoji } = getTimeBasedGreeting();
+  const firstName = getFirstName(user.name || 'User');
+
   const getModalData = () => {
     if (modalState.type === "branches") {
       return {
@@ -70,7 +87,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground">Welcome back! Here's your overview.</p>
+          <p className="mt-1 text-muted-foreground">{greeting}, {firstName}! {emoji} Here's your overview.</p>
         </div>
         <DashboardClient />
       </div>
