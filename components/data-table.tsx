@@ -304,7 +304,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                     </p>
                     <p className="text-sm text-muted-foreground mb-4">
                       {(isMounted ? localTasks.length : tasks.length) === 0
-                        ? "No incidents right now - nice work! Ready to create a task?"
+                        ? "All tasks are under control - nice work! Ready to create a task?"
                         : "Try adjusting your filters to see more tasks"}
                     </p>
                     {(isMounted ? localTasks.length : tasks.length) === 0 && (

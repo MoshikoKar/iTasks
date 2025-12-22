@@ -1,10 +1,12 @@
 # iTasks
 
-A comprehensive IT task management system built with Next.js, TypeScript, Prisma, and PostgreSQL. Designed for IT teams to manage ongoing tasks, recurring maintenance, and incidents with role-based access control, detailed audit logging, SLA tracking, and enterprise authentication.
+A comprehensive IT task management system built with Next.js, TypeScript, Prisma, and PostgreSQL. Designed for IT teams to manage ongoing tasks and recurring maintenance with role-based access control, detailed audit logging, SLA tracking, and enterprise authentication.
 
 ## Overview
 
 iTasks is an internal enterprise tool for IT task management. The system supports task creation, assignment, tracking, and reporting with comprehensive audit trails, SLA monitoring, and automated recurring task generation. The application is production-ready with enterprise-grade security controls.
+
+![Dashboard](docs/image_examples/dashboard.png)
 
 ## Architecture
 
@@ -33,7 +35,7 @@ iTasks is an internal enterprise tool for IT task management. The system support
 
 ### Task Management
 
-- **Task Types**: Standard, Recurring Instance, Incident
+- **Task Types**: Standard, Recurring Instance
 - **Statuses**: Open, In Progress, Pending Vendor, Pending User, Resolved, Closed
 - **Priority Levels**: Low, Medium, High, Critical
 - **SLA Tracking**: Automatic deadline calculation based on priority with breach detection
@@ -195,7 +197,6 @@ Notifications are sent for:
 │   │       ├── actions/  # Task-specific server actions
 │   │       └── page.tsx
 │   ├── sla/              # SLA & Exceptions page
-│   ├── incidents/        # Incidents page
 │   ├── recurring/        # Recurring tasks page
 │   ├── reports/          # Reports page
 │   ├── admin/            # Admin pages (users, teams, settings, logs)
@@ -376,7 +377,6 @@ Key models:
 - **Task**: Core task entity with status, priority, SLA, assignment
 - **TaskContext**: IT asset linking (servers, applications, workstations, etc.)
 - **RecurringTaskConfig**: Templates for automated task generation
-- **Incident**: Incident tracking linked to tasks
 - **Comment**: Task comments with mention support
 - **Attachment**: File attachments with metadata
 - **AuditLog**: Task-level change history

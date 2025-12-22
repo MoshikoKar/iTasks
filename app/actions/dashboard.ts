@@ -94,8 +94,12 @@ export async function getDashboardStats(userId: string, forceRefresh: boolean = 
 
   const taskFilter = buildTaskFilter(currentUser);
 
+  // Calculate 7 days ago for stale tasks
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
   // Top stat cards with RBAC - Parallelized for performance
-  const [open, overdue, slaBreaches, critical] = await Promise.all([
+  const [open, overdue, slaBreaches, critical, stale] = await Promise.all([
     db.task.count({
       where: { ...taskFilter, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
     }),
@@ -115,6 +119,13 @@ export async function getDashboardStats(userId: string, forceRefresh: boolean = 
     }),
     db.task.count({
       where: { ...taskFilter, priority: TaskPriority.Critical },
+    }),
+    db.task.count({
+      where: {
+        ...taskFilter,
+        updatedAt: { lt: sevenDaysAgo },
+        status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] },
+      },
     }),
   ]);
 
@@ -158,8 +169,6 @@ export async function getDashboardStats(userId: string, forceRefresh: boolean = 
   });
 
   // Weekly Ticket Volume (last 7 days) with RBAC
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const weeklyTasks = await db.task.findMany({
     where: {
@@ -266,6 +275,7 @@ export async function getDashboardStats(userId: string, forceRefresh: boolean = 
     overdue,
     slaBreaches,
     critical,
+    stale,
     myDay,
     myOpenTasks: sortedMyOpenTasks,
     weeklyVolume,

@@ -103,7 +103,6 @@ model Task {
   auditLogs      AuditLog[]
   systemLogs     SystemLog[]
   subscribers    User[]            @relation("TaskSubscribers")
-  incident       Incident?
 
   @@index([assigneeId])
   @@index([creatorId])
@@ -119,7 +118,6 @@ model Task {
 enum TaskType {
   Standard
   Recurring_Instance
-  Incident
 }
 
 model TaskContext {
@@ -158,15 +156,6 @@ model RecurringTaskConfig {
   creator         User?      @relation("RecurringTaskCreator", fields: [creatorId], references: [id])
 
   @@index([nextGenerationAt])
-}
-
-model Incident {
-  id          String    @id @default(uuid())
-  taskId      String    @unique
-  severity    TaskPriority
-  startedAt   DateTime  @default(now())
-  resolvedAt  DateTime?
-  task        Task      @relation(fields: [taskId], references: [id])
 }
 
 model Comment {

@@ -75,7 +75,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Open Tasks"
           value={stats.open}
@@ -105,6 +105,13 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           icon={<AlertCircle size={24} />}
           color="purple"
           href="/tasks?priority=Critical"
+        />
+        <StatCard
+          label="Stale Tasks"
+          value={stats.stale}
+          icon={<AlertOctagon size={24} />}
+          color="orange"
+          href="/tasks?status=Open&stale=1"
         />
       </div>
 
@@ -350,52 +357,6 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           </section>
         )}
       </div>
-
-      {/* Stale Tasks */}
-      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-            <AlertOctagon size={20} className="text-warning" />
-            Stale Tasks
-          </h2>
-        </div>
-        <div className="text-xs text-muted-foreground mb-3">No updates for more than 7 days</div>
-        {stats.staleTasks.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
-            <p className="text-foreground font-semibold mb-1">Everything's moving!</p>
-            <p className="text-sm text-muted-foreground">No stale tasks - great job keeping things updated</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {stats.staleTasks.map((task) => (
-              <Link
-                key={task.id}
-                href={`/tasks/${task.id}`}
-                className="block p-3 rounded-lg border border-border hover:border-warning/50 hover:bg-warning/5 transition-all"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-foreground text-sm truncate">{task.title}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <AuditPreview
-                        lastUpdated={task.updatedAt}
-                        updatedBy={task.assignee?.name}
-                        change="Task updated"
-                      >
-                        <span className="text-xs text-muted-foreground cursor-help">
-                          Last update: {formatDate(task.updatedAt)}
-                        </span>
-                      </AuditPreview>
-                      <Badge variant="priority" value={task.priority} />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* Full List Modal */}
       {modalData && (

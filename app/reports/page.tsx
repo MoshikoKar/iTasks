@@ -17,7 +17,6 @@ export default async function ReportsPage() {
       assignee: { select: { name: true, role: true, team: { select: { name: true } } } },
       creator: { select: { name: true } },
       context: { select: { serverName: true, application: true, environment: true } },
-      incident: { select: { severity: true, startedAt: true, resolvedAt: true } },
     },
   });
 

@@ -29,11 +29,6 @@ interface Task {
     application?: string | null;
     environment?: string | null;
   } | null;
-  incident?: {
-    severity: TaskPriority;
-    startedAt: Date;
-    resolvedAt?: Date | null;
-  } | null;
 }
 
 interface Team {
