@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "next/navigation";
 import { Particles } from "@/components/particles";
 import Image from "next/image";
 
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const { resolvedTheme } = useTheme();
   const [color, setColor] = useState("#ffffff");
   const [customLogo, setCustomLogo] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setColor(resolvedTheme === "dark" ? "#ffffff" : "#000000");
@@ -53,7 +55,8 @@ export default function LoginPage() {
         return;
       }
       // Use full page reload to ensure server-side layout re-renders with auth state
-      window.location.href = "/";
+      const redirectTo = searchParams.get("from") || "/";
+      window.location.href = redirectTo;
     } catch {
       setError("Login failed");
       setLoading(false);
