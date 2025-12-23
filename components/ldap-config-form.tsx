@@ -97,6 +97,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     ldapUsernameAttribute: 'uid',
     ldapEnforced: false,
   });
+  const [ldapEnabled, setLdapEnabled] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [ldapPassword, setLdapPassword] = useState('');
   const [useAutoDiscovery, setUseAutoDiscovery] = useState(true);
@@ -176,6 +177,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           ldapUsernameAttribute: data.ldapUsernameAttribute || 'uid',
           ldapEnforced: data.ldapEnforced || false,
         });
+        setLdapEnabled(data.ldapEnabled || false);
 
         // Set controlled state variables
         setLdapHost(data.ldapHost || '');
@@ -364,6 +366,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     setTestResult(null);
 
     const formData = new FormData(e.currentTarget);
+    const ldapEnabled = formData.get('ldapEnabled') === 'true';
     
     // Parse username and domain if using auto-discovery
     let username = formData.get('ldapUsername') as string;
@@ -391,38 +394,41 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
     const baseDn = discoveredBaseDn || formData.get('ldapBaseDn') as string;
     const bindDn = discoveredBindDn || formData.get('ldapBindDn') as string;
     
-    // Validation: If using auto-discovery mode, Bind DN must be discovered
-    if (useAutoDiscovery && !bindDn) {
-      setError('Please click "Test Connection" first to auto-discover the Bind DN before saving.');
-      setIsLoading(false);
-      return;
-    }
-    
-    // Validation: Bind DN is required
-    if (!bindDn || bindDn.trim() === '') {
-      setError('Bind DN is required. Please use auto-discovery or enter it manually.');
-      setIsLoading(false);
-      return;
-    }
-    
-    // Validation: If using auto-discovery, username and domain are required
-    if (useAutoDiscovery && (!username || !domain)) {
-      setError('Please enter service account in format: domain\\username or username@domain.com');
-      setIsLoading(false);
-      return;
+    // Only validate LDAP fields if LDAP is enabled
+    if (ldapEnabled) {
+      // Validation: If using auto-discovery mode, Bind DN must be discovered
+      if (useAutoDiscovery && !bindDn) {
+        setError('Please click "Test Connection" first to auto-discover the Bind DN before saving.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Validation: Bind DN is required
+      if (!bindDn || bindDn.trim() === '') {
+        setError('Bind DN is required. Please use auto-discovery or enter it manually.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Validation: If using auto-discovery, username and domain are required
+      if (useAutoDiscovery && (!username || !domain)) {
+        setError('Please enter service account in format: domain\\username or username@domain.com');
+        setIsLoading(false);
+        return;
+      }
     }
     
     const data = {
-      ldapEnabled: formData.get('ldapEnabled') === 'true',
-      ldapHost: ldapHost,
-      ldapPort: ldapPort,
-      ldapBaseDn: baseDn,
-      ldapBindDn: bindDn,
-      ldapBindPassword: formData.get('ldapBindPassword') as string || null,
-      ldapUseTls: ldapUseTls,
-      ldapUserSearchFilter: formData.get('ldapUserSearchFilter') as string,
-      ldapUsernameAttribute: formData.get('ldapUsernameAttribute') as string,
-      ldapEnforced: formData.get('ldapEnforced') === 'true',
+      ldapEnabled: ldapEnabled,
+      ldapHost: ldapEnabled ? ldapHost : null,
+      ldapPort: ldapEnabled ? ldapPort : null,
+      ldapBaseDn: ldapEnabled ? baseDn : null,
+      ldapBindDn: ldapEnabled ? bindDn : null,
+      ldapBindPassword: ldapEnabled ? (formData.get('ldapBindPassword') as string || null) : null,
+      ldapUseTls: ldapEnabled ? ldapUseTls : false,
+      ldapUserSearchFilter: ldapEnabled ? (formData.get('ldapUserSearchFilter') as string) : null,
+      ldapUsernameAttribute: ldapEnabled ? (formData.get('ldapUsernameAttribute') as string) : null,
+      ldapEnforced: ldapEnabled ? (formData.get('ldapEnforced') === 'true') : false,
     };
 
     try {
@@ -516,7 +522,8 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               id="ldapEnabled"
               name="ldapEnabled"
               value="true"
-              defaultChecked={config.ldapEnabled}
+              checked={ldapEnabled}
+              onChange={(e) => setLdapEnabled(e.target.checked)}
             />
             <span className="text-sm font-semibold text-foreground whitespace-nowrap">
               Enable LDAP Authentication
@@ -527,13 +534,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label htmlFor="ldapHost" className="block text-xs font-medium text-foreground mb-1">
-              LDAP Host <span className="text-destructive">*</span>
+              LDAP Host {ldapEnabled && <span className="text-destructive">*</span>}
             </label>
             <input
               type="text"
               id="ldapHost"
               name="ldapHost"
-              required
+              required={ldapEnabled}
               value={ldapHost}
               onChange={(e) => setLdapHost(handleHostChange(e.target.value))}
               className="input-base"
@@ -544,13 +551,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
           <div>
             <label htmlFor="ldapPort" className="block text-xs font-medium text-foreground mb-1">
-              Port <span className="text-destructive">*</span>
+              Port {ldapEnabled && <span className="text-destructive">*</span>}
             </label>
             <input
               type="number"
               id="ldapPort"
               name="ldapPort"
-              required
+              required={ldapEnabled}
               min="1"
               max="65535"
               value={ldapPort}
@@ -600,13 +607,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label htmlFor="ldapUsername" className="flex items-center whitespace-nowrap text-xs font-medium text-foreground mb-1 h-5">
-                  Service Account <span className="text-destructive">*</span>
+                  Service Account {ldapEnabled && <span className="text-destructive">*</span>}
                 </label>
                 <input
                   type="text"
                   id="ldapUsername"
                   name="ldapUsername"
-                  required={useAutoDiscovery}
+                  required={ldapEnabled && useAutoDiscovery}
                   value={
                     ldapUsername.includes('\\') || ldapUsername.includes('@')
                       ? ldapUsername
@@ -650,14 +657,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
               <div>
                 <label htmlFor="ldapBindPassword" className="flex items-center whitespace-nowrap text-xs font-medium text-foreground mb-1 h-5">
-                  Password <span className="text-destructive">*</span>
+                  Password {ldapEnabled && <span className="text-destructive">*</span>}
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="ldapBindPassword"
                     name="ldapBindPassword"
-                    required
+                    required={ldapEnabled}
                     value={ldapPassword}
                     onChange={(e) => setLdapPassword(e.target.value)}
                     className="input-base pr-20"
@@ -700,13 +707,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
             {!ldapUsername.includes('\\') && !ldapUsername.includes('@') && (
               <div>
                 <label htmlFor="ldapDomain" className="block text-xs font-medium text-foreground mb-1">
-                  Domain <span className="text-destructive">*</span>
+                  Domain {ldapEnabled && <span className="text-destructive">*</span>}
                 </label>
                 <input
                   type="text"
                   id="ldapDomain"
                   name="ldapDomain"
-                  required={useAutoDiscovery && !ldapUsername.includes('\\') && !ldapUsername.includes('@')}
+                  required={ldapEnabled && useAutoDiscovery && !ldapUsername.includes('\\') && !ldapUsername.includes('@')}
                   value={ldapDomain}
                   onChange={(e) => setLdapDomain(e.target.value)}
                   className="input-base"
@@ -744,13 +751,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
           <>
             <div>
               <label htmlFor="ldapBaseDn" className="block text-xs font-medium text-foreground mb-1">
-                Base DN <span className="text-destructive">*</span>
+                Base DN {ldapEnabled && <span className="text-destructive">*</span>}
               </label>
               <input
                 type="text"
                 id="ldapBaseDn"
                 name="ldapBaseDn"
-                required={!useAutoDiscovery}
+                required={ldapEnabled && !useAutoDiscovery}
                 defaultValue={config.ldapBaseDn}
                 className="input-base"
                 placeholder="dc=example,dc=com"
@@ -760,13 +767,13 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
 
             <div>
               <label htmlFor="ldapBindDn" className="block text-xs font-medium text-foreground mb-1">
-                Bind DN <span className="text-destructive">*</span>
+                Bind DN {ldapEnabled && <span className="text-destructive">*</span>}
               </label>
               <input
                 type="text"
                 id="ldapBindDn"
                 name="ldapBindDn"
-                required={!useAutoDiscovery}
+                required={ldapEnabled && !useAutoDiscovery}
                 defaultValue={config.ldapBindDn}
                 className="input-base"
                 placeholder="cn=admin,dc=example,dc=com"
@@ -779,14 +786,14 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
         {!useAutoDiscovery && (
           <div>
             <label htmlFor="ldapBindPassword" className="block text-xs font-medium text-foreground mb-1">
-              Password <span className="text-destructive">*</span>
+              Password {ldapEnabled && <span className="text-destructive">*</span>}
             </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="ldapBindPassword"
                 name="ldapBindPassword"
-                required
+                required={ldapEnabled}
                 value={ldapPassword}
                 onChange={(e) => setLdapPassword(e.target.value)}
                 className="input-base pr-20"

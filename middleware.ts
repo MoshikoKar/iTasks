@@ -43,7 +43,7 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
 
   // Cross-Origin Resource Policy
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
 }
 
 export async function middleware(request: NextRequest) {

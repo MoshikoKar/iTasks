@@ -25,9 +25,9 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState('');
   const [config, setConfig] = useState<SMTPConfig>({
-    smtpHost: 'localhost',
-    smtpPort: 25,
-    smtpFrom: 'no-reply@local',
+    smtpHost: null,
+    smtpPort: null,
+    smtpFrom: null,
     smtpSecure: false,
     smtpUser: null,
     smtpPassword: null,
@@ -35,10 +35,10 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   // Controlled state for dynamic form fields
-  const [smtpHost, setSmtpHost] = useState('localhost');
-  const [smtpPort, setSmtpPort] = useState(25);
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState<number | null>(null);
   const [smtpSecure, setSmtpSecure] = useState(false);
-  const [smtpFrom, setSmtpFrom] = useState('no-reply@local');
+  const [smtpFrom, setSmtpFrom] = useState('');
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPassword, setSmtpPassword] = useState('');
 
@@ -46,7 +46,7 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
   useEffect(() => {
     if (smtpSecure) {
       // If switching to secure and port is still plain SMTP port, change to secure SMTP
-      if (smtpPort === 25) {
+      if (smtpPort === 25 || smtpPort === null) {
         setSmtpPort(587); // SMTP with STARTTLS (most common)
       }
     } else {
@@ -78,14 +78,14 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
 
   // Auto-suggest from email based on username/domain patterns
   useEffect(() => {
-    if (smtpUser && !smtpFrom.includes('@') && smtpFrom === 'no-reply@local') {
+    if (smtpUser && (!smtpFrom || smtpFrom === '' || smtpFrom === 'no-reply@local')) {
       // If user entered a username that looks like an email
       if (smtpUser.includes('@')) {
         const domain = smtpUser.split('@')[1];
         setSmtpFrom(`noreply@${domain}`);
       }
       // If user entered just a username, try to create a reasonable from address
-      else if (smtpUser.length > 0 && smtpHost !== 'localhost') {
+      else if (smtpUser.length > 0 && smtpHost && smtpHost !== '' && smtpHost !== 'localhost') {
         const domain = smtpHost.includes('.') ? smtpHost.split('.').slice(-2).join('.') : smtpHost;
         setSmtpFrom(`noreply@${domain}`);
       }
@@ -98,18 +98,18 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
       .then((data) => {
         if (data.error) throw new Error(data.error);
         setConfig({
-          smtpHost: data.smtpHost || 'localhost',
-          smtpPort: data.smtpPort ?? 25,
-          smtpFrom: data.smtpFrom || 'no-reply@local',
+          smtpHost: data.smtpHost || null,
+          smtpPort: data.smtpPort ?? null,
+          smtpFrom: data.smtpFrom || null,
           smtpSecure: data.smtpSecure ?? false,
           smtpUser: data.smtpUser || null,
           smtpPassword: null,
         });
 
         // Set controlled state variables
-        setSmtpHost(data.smtpHost || 'localhost');
-        setSmtpPort(data.smtpPort ?? 25);
-        setSmtpFrom(data.smtpFrom || 'no-reply@local');
+        setSmtpHost(data.smtpHost || '');
+        setSmtpPort(data.smtpPort ?? null);
+        setSmtpFrom(data.smtpFrom || '');
         setSmtpSecure(data.smtpSecure ?? false);
         setSmtpUser(data.smtpUser || '');
         setSmtpPassword('');
@@ -128,11 +128,11 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
     setError('');
 
     const data = {
-      smtpHost: smtpHost,
-      smtpPort: smtpPort,
-      smtpFrom: smtpFrom,
+      smtpHost: smtpHost && smtpHost.trim() !== '' ? smtpHost : null,
+      smtpPort: smtpPort ? smtpPort : null,
+      smtpFrom: smtpFrom && smtpFrom.trim() !== '' ? smtpFrom : null,
       smtpSecure: smtpSecure,
-      smtpUser: smtpUser || null,
+      smtpUser: smtpUser && smtpUser.trim() !== '' ? smtpUser : null,
       smtpPassword: smtpPassword && smtpPassword.trim() !== '' ? smtpPassword : null,
     };
 
@@ -175,33 +175,32 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="smtpHost" className="block text-xs font-medium text-foreground mb-1">
-              SMTP Host <span className="text-destructive">*</span>
+              SMTP Host
             </label>
             <input
               type="text"
               id="smtpHost"
               name="smtpHost"
-              required
               value={smtpHost}
               onChange={(e) => setSmtpHost(handleHostChange(e.target.value))}
               className="input-base"
               placeholder="localhost or smtp://mail.example.com"
             />
+            <p className="mt-1 text-xs text-muted-foreground">Leave empty to disable SMTP</p>
           </div>
 
           <div>
             <label htmlFor="smtpPort" className="block text-xs font-medium text-foreground mb-1">
-              SMTP Port <span className="text-destructive">*</span>
+              SMTP Port
             </label>
             <input
               type="number"
               id="smtpPort"
               name="smtpPort"
-              required
               min="1"
               max="65535"
-              value={smtpPort}
-              onChange={(e) => setSmtpPort(parseInt(e.target.value, 10) || 25)}
+              value={smtpPort ?? ''}
+              onChange={(e) => setSmtpPort(e.target.value ? parseInt(e.target.value, 10) : null)}
               className="input-base"
             />
             <p className="mt-1 text-xs text-muted-foreground">
@@ -215,18 +214,18 @@ export function SMTPConfigForm({ onSuccess, onCancel }: SMTPConfigFormProps) {
         {/* From Email Address */}
         <div>
           <label htmlFor="smtpFrom" className="block text-xs font-medium text-foreground mb-1">
-            From Email Address <span className="text-destructive">*</span>
+            From Email Address
           </label>
           <input
             type="email"
             id="smtpFrom"
             name="smtpFrom"
-            required
             value={smtpFrom}
             onChange={(e) => setSmtpFrom(e.target.value)}
             className="input-base"
             placeholder="no-reply@local"
           />
+          <p className="mt-1 text-xs text-muted-foreground">Leave empty to disable SMTP</p>
         </div>
 
         {/* Use secure connection */}
