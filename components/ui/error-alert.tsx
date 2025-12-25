@@ -30,9 +30,9 @@ export function ErrorAlert({ message, onDismiss, className }: ErrorAlertProps) {
       role="alert"
       aria-live="assertive"
     >
-      <AlertCircle size={20} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
+      <AlertCircle size={20} className="flex-shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
       <div className="flex-1 min-w-0">
-        <p className="font-medium">{message}</p>
+        <p className="font-medium whitespace-pre-line text-destructive">{message}</p>
       </div>
       {onDismiss && (
         <button

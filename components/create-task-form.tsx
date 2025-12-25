@@ -31,12 +31,140 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
       .catch(() => setBranches([]));
   }, []);
 
+  // File validation constants
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_FILE_TYPES = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'text/plain',
+    'text/csv',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/msword',
+    'application/vnd.ms-excel',
+    'application/vnd.ms-powerpoint',
+  ];
+
+  const validateFiles = (files: File[]): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    files.forEach((file) => {
+      if (file.size > MAX_FILE_SIZE) {
+        errors.push(`${file.name}: File size exceeds 10MB`);
+      }
+      
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        errors.push(`${file.name}: File type "${file.type}" is not allowed. Allowed types: PDF, images, text files, and Office documents.`);
+      }
+    });
+    
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  };
+
+  const validateFormData = (formData: FormData): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    // Title validation
+    const title = (formData.get('title') as string)?.trim() || '';
+    if (!title) {
+      errors.push('Title is required');
+    } else if (title.length > 255) {
+      errors.push('Title must be less than 255 characters');
+    }
+    
+    // Description validation
+    const description = (formData.get('description') as string)?.trim() || '';
+    if (!description) {
+      errors.push('Description is required');
+    }
+    
+    // Priority validation
+    const priority = formData.get('priority') as string;
+    const validPriorities = ['Low', 'Medium', 'High', 'Critical'];
+    if (priority && !validPriorities.includes(priority)) {
+      errors.push('Invalid priority selected');
+    }
+    
+    // AssigneeId validation (must be valid UUID if provided)
+    const assigneeId = formData.get('assigneeId') as string;
+    if (assigneeId) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(assigneeId)) {
+        errors.push('Invalid assignee selected');
+      }
+    }
+    
+    // DueDate validation (must be valid date if provided)
+    const dueDate = formData.get('dueDate') as string;
+    if (dueDate) {
+      const date = new Date(dueDate);
+      if (isNaN(date.getTime())) {
+        errors.push('Invalid due date');
+      }
+    }
+    
+    // SLA Deadline validation (must be valid date if provided)
+    const slaDeadline = formData.get('slaDeadline') as string;
+    if (slaDeadline) {
+      const date = new Date(slaDeadline);
+      if (isNaN(date.getTime())) {
+        errors.push('Invalid SLA deadline');
+      }
+    }
+    
+    // Date logic validation: SLA deadline should be after due date if both are provided
+    if (dueDate && slaDeadline) {
+      const due = new Date(dueDate);
+      const sla = new Date(slaDeadline);
+      if (sla < due) {
+        errors.push('SLA deadline cannot be before due date');
+      }
+    }
+    
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Prevent double submission
+    if (isLoading) {
+      return;
+    }
+    
     setIsLoading(true);
     setError('');
 
     const formData = new FormData(e.currentTarget);
+
+    // Validate all form fields BEFORE creating the task
+    const formValidation = validateFormData(formData);
+    if (!formValidation.valid) {
+      setError(`Please fix the following errors:\n${formValidation.errors.join('\n')}`);
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate all files BEFORE creating the task
+    if (selectedFiles.length > 0) {
+      const fileValidation = validateFiles(selectedFiles);
+      if (!fileValidation.valid) {
+        setError(`Cannot create task with invalid files:\n${fileValidation.errors.join('\n')}`);
+        setIsLoading(false);
+        return;
+      }
+    }
     const data = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
@@ -83,28 +211,54 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
 
       const task = await response.json();
 
-      // Upload files if any
+      // Upload files if any (all files are already validated at this point)
       if (selectedFiles.length > 0 && task.id) {
-        const uploadPromises = selectedFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append('taskId', task.id);
-          formData.append('file', file);
-          
-          const uploadHeaders = getHeaders();
-          
-          const uploadResponse = await fetch('/api/attachments', {
-            method: 'POST',
-            headers: uploadHeaders,
-            credentials: 'same-origin',
-            body: formData,
-          });
+        // Re-validate files one more time before upload as a safety check
+        const finalValidation = validateFiles(selectedFiles);
+        if (!finalValidation.valid) {
+          // This should never happen, but if it does, we need to handle it
+          throw new Error(`Invalid files detected before upload:\n${finalValidation.errors.join('\n')}`);
+        }
 
-          if (!uploadResponse.ok) {
-            throw new Error(`Failed to upload ${file.name}`);
-          }
-        });
+        const uploadResults = await Promise.allSettled(
+          selectedFiles.map(async (file) => {
+            const formData = new FormData();
+            formData.append('taskId', task.id);
+            formData.append('file', file);
+            
+            const uploadHeaders = getHeaders();
+            
+            const uploadResponse = await fetch('/api/attachments', {
+              method: 'POST',
+              headers: uploadHeaders,
+              credentials: 'same-origin',
+              body: formData,
+            });
 
-        await Promise.all(uploadPromises);
+            if (!uploadResponse.ok) {
+              const errorData = await uploadResponse.json().catch(() => ({ error: 'Unknown error' }));
+              throw new Error(`${file.name}: ${errorData.error || 'Upload failed'}`);
+            }
+          })
+        );
+
+        // Check for failed uploads
+        const failedUploads = uploadResults
+          .map((result, index) => {
+            if (result.status === 'rejected') {
+              const error = result.reason instanceof Error ? result.reason : new Error(String(result.reason));
+              return { file: selectedFiles[index], error };
+            }
+            return null;
+          })
+          .filter((item): item is { file: File; error: Error } => item !== null);
+
+        if (failedUploads.length > 0) {
+          const errorMessages = failedUploads.map(({ file, error }) => 
+            error.message || `Failed to upload ${file.name}`
+          );
+          throw new Error(`Task created but some files failed to upload:\n${errorMessages.join('\n')}`);
+        }
       }
 
       router.refresh();
@@ -118,7 +272,27 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setSelectedFiles((prev) => [...prev, ...files]);
+    
+    // Client-side file validation using the same validation function
+    const validation = validateFiles(files);
+    
+    if (!validation.valid) {
+      setError(validation.errors.join('\n'));
+    }
+    
+    // Only add valid files
+    const validFiles = files.filter((file) => {
+      return file.size <= MAX_FILE_SIZE && ALLOWED_FILE_TYPES.includes(file.type);
+    });
+    
+    if (validFiles.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
+    }
+    
+    // Reset file input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const removeFile = (index: number) => {

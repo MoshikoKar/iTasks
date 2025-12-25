@@ -503,3 +503,40 @@ button svg.text-destructive {
   stroke-width: 2 !important;
 }
 
+/* Force red color for error alert text - ensure all text in error alerts is red */
+[role="alert"].text-destructive,
+[role="alert"][class*="text-destructive"] {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+[role="alert"].text-destructive *,
+[role="alert"][class*="text-destructive"] * {
+  color: hsl(0 84.2% 60.2%) !important;
+}
+
+.dark [role="alert"].text-destructive,
+.dark [role="alert"][class*="text-destructive"] {
+  color: hsl(0 62.8% 50%) !important;
+}
+
+.dark [role="alert"].text-destructive *,
+.dark [role="alert"][class*="text-destructive"] * {
+  color: hsl(0 62.8% 50%) !important;
+}
+
+[role="alert"].text-destructive svg,
+[role="alert"][class*="text-destructive"] svg {
+  color: hsl(0 84.2% 60.2%) !important;
+  fill: none !important;
+  stroke: hsl(0 84.2% 60.2%) !important;
+  stroke-width: 2 !important;
+}
+
+.dark [role="alert"].text-destructive svg,
+.dark [role="alert"][class*="text-destructive"] svg {
+  color: hsl(0 62.8% 50%) !important;
+  fill: none !important;
+  stroke: hsl(0 62.8% 50%) !important;
+  stroke-width: 2 !important;
+}
+
