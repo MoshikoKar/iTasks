@@ -36,14 +36,8 @@ function addSecurityHeaders(response: NextResponse) {
   // Permissions-Policy (formerly Feature-Policy)
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-  // Cross-Origin Embedder Policy
-  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
-
   // Cross-Origin Opener Policy
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-
-  // Cross-Origin Resource Policy
-  response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
 }
 
 export async function middleware(request: NextRequest) {

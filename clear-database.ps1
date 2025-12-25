@@ -76,17 +76,20 @@ const prisma = new PrismaClient({ adapter });
     await prisma.mention.deleteMany({});
     console.log("Deleted all mentions");
     
+    await prisma.notification.deleteMany({});
+    console.log("Deleted all notifications");
+    
     await prisma.auditLog.deleteMany({});
     console.log("Deleted all audit logs");
+    
+    await prisma.systemLog.deleteMany({});
+    console.log("Deleted all system logs");
     
     await prisma.attachment.deleteMany({});
     console.log("Deleted all attachments");
     
     await prisma.comment.deleteMany({});
     console.log("Deleted all comments");
-    
-    await prisma.incident.deleteMany({});
-    console.log("Deleted all incidents");
     
     await prisma.taskContext.deleteMany({});
     console.log("Deleted all task contexts");
@@ -97,9 +100,6 @@ const prisma = new PrismaClient({ adapter });
     await prisma.recurringTaskConfig.deleteMany({});
     console.log("Deleted all recurring task configs");
     
-    await prisma.systemLog.deleteMany({});
-    console.log("Deleted all system logs");
-    
     await prisma.session.deleteMany({});
     console.log("Deleted all sessions");
     
@@ -108,6 +108,53 @@ const prisma = new PrismaClient({ adapter });
     
     await prisma.team.deleteMany({});
     console.log("Deleted all teams");
+    
+    // Reset SystemConfig to defaults (preserve the record but reset values)
+    await prisma.systemConfig.upsert({
+      where: { id: "system" },
+      update: {
+        smtpHost: "localhost",
+        smtpPort: 25,
+        smtpFrom: "no-reply@local",
+        smtpSecure: false,
+        smtpUser: null,
+        smtpPassword: null,
+        slaLowHours: 120,
+        slaMediumHours: 48,
+        slaHighHours: 24,
+        slaCriticalHours: 4,
+        ldapEnabled: false,
+        ldapHost: null,
+        ldapPort: 389,
+        ldapBaseDn: null,
+        ldapBindDn: null,
+        ldapBindPassword: null,
+        ldapUseTls: false,
+        ldapUserSearchFilter: "(uid={{username}})",
+        ldapUsernameAttribute: "uid",
+        ldapEnforced: false,
+        supportEmail: null,
+        orgLogo: null,
+        reportFooterText: null,
+        timezone: "UTC",
+        dateFormat: "DD/MM/YYYY",
+        timeFormat: "24h",
+        enableAttachments: true,
+        maxAttachmentSizeMb: 10,
+        enableComments: true,
+        enableMentions: true,
+        sessionTimeoutHours: 24,
+        maxFailedLoginAttempts: 5,
+        lockUserAfterFailedLogins: true,
+        passwordPolicyLevel: "strong",
+        auditRetentionDays: 365,
+        updatedBy: null
+      },
+      create: {
+        id: "system"
+      }
+    });
+    console.log("Reset system config to defaults");
     
     console.log("Database cleared successfully.");
   } catch (error) {
