@@ -79,10 +79,12 @@ async function loginHandler(request: NextRequest) {
         });
 
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+        // In development, use lax sameSite and allow insecure cookies for local network access
+        const isDevelopment = process.env.NODE_ENV === 'development';
         response.cookies.set(SESSION_COOKIE, sessionToken, {
           httpOnly: true,
-          sameSite: "strict",
-          secure: true, // Always secure, even in development
+          sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
+          secure: !isDevelopment, // Allow insecure cookies in development for local network
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
         });
@@ -184,10 +186,12 @@ async function loginHandler(request: NextRequest) {
         });
 
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+        // In development, use lax sameSite and allow insecure cookies for local network access
+        const isDevelopment = process.env.NODE_ENV === 'development';
         response.cookies.set(SESSION_COOKIE, sessionToken, {
           httpOnly: true,
-          sameSite: "strict",
-          secure: true, // Always secure, even in development
+          sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
+          secure: !isDevelopment, // Allow insecure cookies in development for local network
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
         });

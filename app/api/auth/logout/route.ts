@@ -17,11 +17,14 @@ export async function POST() {
       });
     }
 
+    // In development, use lax sameSite and allow insecure cookies for local network access
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     const response = NextResponse.json({ success: true });
     response.cookies.set(SESSION_COOKIE, "", {
       httpOnly: true,
-      sameSite: "strict",
-      secure: true, // Always secure
+      sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
+      secure: !isDevelopment, // Allow insecure cookies in development for local network
       path: "/",
       maxAge: 0
     });
@@ -29,11 +32,12 @@ export async function POST() {
   } catch (error) {
     console.error("Logout error:", error);
     // Still clear the cookie even if database operation fails
+    const isDevelopment = process.env.NODE_ENV === 'development';
     const response = NextResponse.json({ success: true });
     response.cookies.set(SESSION_COOKIE, "", {
       httpOnly: true,
-      sameSite: "strict",
-      secure: true,
+      sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
+      secure: !isDevelopment, // Allow insecure cookies in development for local network
       path: "/",
       maxAge: 0
     });

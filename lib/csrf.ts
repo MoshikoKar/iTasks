@@ -20,11 +20,14 @@ export async function setCSRFToken(): Promise<string> {
   const cookieStore = await cookies();
   const { token, secret } = generateCSRFToken();
 
+  // In development, use lax sameSite and allow insecure cookies for local network access
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
   // Set the token (what client sees)
   cookieStore.set(CSRF_TOKEN_COOKIE, token, {
     httpOnly: false, // Client needs to read this for forms
-    secure: true,
-    sameSite: 'strict',
+    secure: !isDevelopment, // Allow insecure cookies in development for local network
+    sameSite: isDevelopment ? 'lax' : 'strict', // lax allows cross-site requests in dev
     path: '/',
     maxAge: 60 * 60, // 1 hour
   });
@@ -32,8 +35,8 @@ export async function setCSRFToken(): Promise<string> {
   // Set the secret (server validation)
   cookieStore.set(CSRF_SECRET_COOKIE, secret, {
     httpOnly: true, // Server only
-    secure: true,
-    sameSite: 'strict',
+    secure: !isDevelopment, // Allow insecure cookies in development for local network
+    sameSite: isDevelopment ? 'lax' : 'strict', // lax allows cross-site requests in dev
     path: '/',
     maxAge: 60 * 60, // 1 hour
   });

@@ -85,13 +85,11 @@ const nextConfig = {
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://0.0.0.0:3000',
-    // Add your server's local IP address here (e.g., http://192.168.69.50:3000)
-    // You can find it by running: ipconfig (Windows) or ifconfig (Linux/Mac)
-    // Common local network IPs - uncomment and modify as needed:
-    // 'http://192.168.0.1:3000',
-    // 'http://192.168.1.1:3000',
-    // 'http://192.168.69.1:3000',
-    // 'http://192.168.69.50:3000', // Example: replace with your server's IP
+    // Server's local IP address (found via ipconfig)
+    'http://192.168.69.102:3000',
+    // Add more IPs if you have multiple network interfaces
+    'http://172.22.0.1:3000',
+    'http://172.17.80.1:3000',
   ],
 
   // Optimize output
