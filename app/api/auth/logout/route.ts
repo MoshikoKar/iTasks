@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE } from "@/lib/constants";
+import { SESSION_COOKIE, getCookieOptions } from "@/lib/constants";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 
@@ -17,29 +17,20 @@ export async function POST() {
       });
     }
 
-    // In development, use lax sameSite and allow insecure cookies for local network access
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
     const response = NextResponse.json({ success: true });
+    // Cookie options: lax/insecure in dev (for local network), strict/secure in production
     response.cookies.set(SESSION_COOKIE, "", {
-      httpOnly: true,
-      sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
-      secure: !isDevelopment, // Allow insecure cookies in development for local network
-      path: "/",
-      maxAge: 0
+      ...getCookieOptions(),
+      maxAge: 0, // Delete cookie
     });
     return response;
   } catch (error) {
     console.error("Logout error:", error);
     // Still clear the cookie even if database operation fails
-    const isDevelopment = process.env.NODE_ENV === 'development';
     const response = NextResponse.json({ success: true });
     response.cookies.set(SESSION_COOKIE, "", {
-      httpOnly: true,
-      sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
-      secure: !isDevelopment, // Allow insecure cookies in development for local network
-      path: "/",
-      maxAge: 0
+      ...getCookieOptions(),
+      maxAge: 0, // Delete cookie
     });
     return response;
   }

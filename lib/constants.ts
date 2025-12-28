@@ -1,5 +1,33 @@
 export const SESSION_COOKIE = "it_session";
 
+/**
+ * Get cookie options based on environment
+ * In development: Allows insecure cookies and lax sameSite for local network access
+ * In production: Uses secure cookies and strict sameSite for security
+ */
+export function getCookieOptions() {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return {
+    httpOnly: true,
+    sameSite: (isDevelopment ? "lax" : "strict") as "lax" | "strict" | "none",
+    secure: !isDevelopment, // true in production (requires HTTPS), false in dev (allows HTTP)
+    path: "/",
+  };
+}
+
+/**
+ * Get cookie options for CSRF token (client-readable)
+ */
+export function getCSRFCookieOptions() {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return {
+    httpOnly: false, // Client needs to read this for forms
+    sameSite: (isDevelopment ? "lax" : "strict") as "lax" | "strict" | "none",
+    secure: !isDevelopment, // true in production (requires HTTPS), false in dev (allows HTTP)
+    path: "/",
+  };
+}
+
 // Timezone options (common IANA timezones)
 export const TIMEZONE_OPTIONS = [
   { value: "UTC", label: "UTC (Coordinated Universal Time)" },

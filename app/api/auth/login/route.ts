@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { SESSION_COOKIE } from "@/lib/constants";
+import { SESSION_COOKIE, getCookieOptions } from "@/lib/constants";
 import { authenticateLDAP, getLDAPConfig } from "@/lib/ldap";
 import { AuthProvider, LogActionType, LogEntityType } from "@prisma/client";
 import crypto from "crypto";
@@ -79,14 +79,10 @@ async function loginHandler(request: NextRequest) {
         });
 
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
-        // In development, use lax sameSite and allow insecure cookies for local network access
-        const isDevelopment = process.env.NODE_ENV === 'development';
+        // Cookie options: lax/insecure in dev (for local network), strict/secure in production
         response.cookies.set(SESSION_COOKIE, sessionToken, {
-          httpOnly: true,
-          sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
-          secure: !isDevelopment, // Allow insecure cookies in development for local network
-          path: "/",
-          maxAge: 60 * 60 * 24 * 7,
+          ...getCookieOptions(),
+          maxAge: 60 * 60 * 24 * 7, // 7 days
         });
         return response;
       }
@@ -186,14 +182,10 @@ async function loginHandler(request: NextRequest) {
         });
 
         const response = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
-        // In development, use lax sameSite and allow insecure cookies for local network access
-        const isDevelopment = process.env.NODE_ENV === 'development';
+        // Cookie options: lax/insecure in dev (for local network), strict/secure in production
         response.cookies.set(SESSION_COOKIE, sessionToken, {
-          httpOnly: true,
-          sameSite: isDevelopment ? "lax" : "strict", // lax allows cross-site requests in dev
-          secure: !isDevelopment, // Allow insecure cookies in development for local network
-          path: "/",
-          maxAge: 60 * 60 * 24 * 7,
+          ...getCookieOptions(),
+          maxAge: 60 * 60 * 24 * 7, // 7 days
         });
         return response;
       }

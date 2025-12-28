@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
+import { getCSRFCookieOptions, getCookieOptions } from './constants';
 
 const CSRF_TOKEN_COOKIE = 'csrf_token';
 const CSRF_SECRET_COOKIE = 'csrf_secret';
@@ -20,24 +21,15 @@ export async function setCSRFToken(): Promise<string> {
   const cookieStore = await cookies();
   const { token, secret } = generateCSRFToken();
 
-  // In development, use lax sameSite and allow insecure cookies for local network access
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  // Set the token (what client sees)
+  // Set the token (what client sees) - uses getCSRFCookieOptions for consistent settings
   cookieStore.set(CSRF_TOKEN_COOKIE, token, {
-    httpOnly: false, // Client needs to read this for forms
-    secure: !isDevelopment, // Allow insecure cookies in development for local network
-    sameSite: isDevelopment ? 'lax' : 'strict', // lax allows cross-site requests in dev
-    path: '/',
+    ...getCSRFCookieOptions(),
     maxAge: 60 * 60, // 1 hour
   });
 
-  // Set the secret (server validation)
+  // Set the secret (server validation) - uses getCookieOptions (httpOnly: true)
   cookieStore.set(CSRF_SECRET_COOKIE, secret, {
-    httpOnly: true, // Server only
-    secure: !isDevelopment, // Allow insecure cookies in development for local network
-    sameSite: isDevelopment ? 'lax' : 'strict', // lax allows cross-site requests in dev
-    path: '/',
+    ...getCookieOptions(),
     maxAge: 60 * 60, // 1 hour
   });
 
