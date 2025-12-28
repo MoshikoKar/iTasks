@@ -89,7 +89,7 @@ function QuickStatusChange({
   return (
     <button
       onClick={handleStatusChange}
-      className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+      className="p-1.5 md:p-1.5 max-md:p-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
       title={`Click to change to: ${nextStatus}`}
       aria-label={`Change status to ${nextStatus}`}
       disabled={isChanging}
@@ -276,7 +276,131 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
         </details>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      {/* Mobile Card Layout (320px-480px) */}
+      <div className="block md:hidden">
+        <div className="space-y-2 sm:space-y-3">
+          {filteredTasks.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card shadow-sm p-8 text-center">
+              <Search size={48} className="mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-foreground font-semibold mb-2">
+                {(isMounted ? localTasks.length : tasks.length) === 0
+                  ? "All tasks are under control"
+                  : "No matching tasks"}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {(isMounted ? localTasks.length : tasks.length) === 0
+                  ? "All tasks are under control - nice work! Ready to create a task?"
+                  : "Try adjusting your filters to see more tasks"}
+              </p>
+              {(isMounted ? localTasks.length : tasks.length) === 0 && (
+                <Link
+                  href="/tasks?create=1"
+                  className="neu-button inline-flex items-center justify-center gap-2 text-sm font-medium"
+                  style={{ fontSize: '14px', padding: '8px 20px' }}
+                >
+                  Create New Task
+                </Link>
+              )}
+            </div>
+          ) : (
+            filteredTasks.map((task) => (
+              <div
+                key={task.id}
+                onClick={() => router.push(`/tasks/${task.id}`)}
+                className="rounded-xl border border-border bg-card shadow-sm p-3 sm:p-4 cursor-pointer transition-colors hover:bg-primary/5 active:bg-primary/10"
+              >
+                {/* Title and Copy Button */}
+                <div className="flex items-start justify-between mb-2 sm:mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base text-foreground mb-1 leading-tight">
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">ID:</span>
+                      <span className="text-xs text-muted-foreground font-mono">{task.id.slice(0, 8)}...</span>
+                      <CopyButton text={task.id} label="Copy task ID" iconSize={14} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status and Priority */}
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <Badge variant="status" value={task.status} enableHighlight showTooltip />
+                  <Badge variant="priority" value={task.priority} enableHighlight showTooltip />
+                </div>
+
+                {/* Key Details Grid */}
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-2 sm:mb-3 text-sm">
+                  <div>
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Branch</span>
+                    <div className="mt-1">
+                      {task.branch ? (
+                        <span className="inline-flex rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary border border-primary/20">
+                          {task.branch}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Assignee</span>
+                    <div className="mt-1 font-medium text-foreground">{task.assignee.name}</div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Due Date</span>
+                    <div className="mt-1 text-muted-foreground">
+                      {task.dueDate ? formatDate(task.dueDate) : "-"}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">SLA</span>
+                    <div className="mt-1 text-muted-foreground">
+                      {task.slaDeadline ? formatDate(task.slaDeadline) : "-"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Server/App Context */}
+                {(task.context?.serverName || task.context?.application) && (
+                  <div className="mb-3">
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Server/App</span>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {task.context.serverName || task.context.application}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-2 sm:pt-2 border-t border-border">
+                  <QuickStatusChange
+                    taskId={task.id}
+                    currentStatus={task.status}
+                    onStatusChange={(newStatus) => handleStatusChange(task.id, newStatus)}
+                    onRefresh={() => router.refresh()}
+                  />
+                  {currentUserId && task.assigneeId !== currentUserId && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.info('Assign to me - Navigate to task detail to assign');
+                      }}
+                      className="p-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                      title="Assign to me"
+                      aria-label="Assign task to me"
+                    >
+                      <UserPlus size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Table Layout (481px+) */}
+      <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-muted border-b border-border">
@@ -359,7 +483,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                     </td>
                     <td className="px-6 py-4 text-muted-foreground font-medium">{task.assignee.name}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1 md:gap-1 max-md:gap-2">
                         <QuickStatusChange
                           taskId={task.id}
                           currentStatus={task.status}
@@ -372,7 +496,7 @@ export function DataTable({ tasks, showFilters = true, currentUserId }: DataTabl
                               e.stopPropagation();
                               toast.info('Assign to me - Navigate to task detail to assign');
                             }}
-                            className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="p-1.5 md:p-1.5 max-md:p-2 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors opacity-0 md:group-hover:opacity-100 max-md:opacity-100 transition-opacity"
                             title="Assign to me"
                             aria-label="Assign task to me"
                           >

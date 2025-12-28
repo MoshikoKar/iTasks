@@ -67,31 +67,34 @@ export function TasksPageWrapper({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1>
+    <div className="space-y-3 sm:space-y-4 overflow-x-hidden">
+      {/* Header - Responsive Layout */}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-neutral-100">All Tasks</h1>
           {totalCount > 0 && (
             <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1">
               Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} tasks
             </p>
           )}
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="gap-2"
-          style={{ padding: '10px 20px' }}
-        >
-          <Plus size={20} />
-          Create Task
-        </Button>
+        <div className="flex-shrink-0 w-full sm:w-auto">
+          <Button
+            variant="primary"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full gap-2"
+            style={{ padding: '10px 20px' }}
+          >
+            <Plus size={20} />
+            Create Task
+          </Button>
+        </div>
       </div>
 
       <DataTable tasks={tasks} showFilters={showFilters} currentUserId={currentUser.id} />
 
       {totalPages > 1 && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-4 px-4 md:px-0">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

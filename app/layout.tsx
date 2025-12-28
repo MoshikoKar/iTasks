@@ -75,7 +75,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <div className="flex flex-1 overflow-hidden">
                   <Sidebar userRole={user.role} userName={user.name} />
                   <main id="main-content" className="flex flex-1 flex-col overflow-y-auto bg-white dark:bg-neutral-900">
-                    <div className="flex-1 p-6">
+                    <div className="flex-1 p-4 overflow-x-hidden">
                       {children}
                     </div>
                     <Footer
@@ -88,8 +88,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col h-screen overflow-hidden">
-                <main id="main-content" className="flex-1 p-6 overflow-y-auto">{children}</main>
+              <div className="flex flex-col min-h-screen overflow-hidden">
+                <main id="main-content" className="flex-1 p-4 overflow-y-auto overflow-x-hidden">{children}</main>
                 <Footer 
                   supportEmail={supportEmail}
                   timezone={timezone}
@@ -99,7 +99,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               </div>
             )}
           </ClientWrapper>
-          <Toaster position="top-right" richColors />
+          {/* Desktop Toaster */}
+          <div className="hidden md:block">
+            <Toaster position="top-right" richColors />
+          </div>
+          {/* Mobile Toaster */}
+          <div className="block md:hidden">
+            <Toaster position="top-center" richColors />
+          </div>
         </ThemeProvider>
       </body>
     </html>

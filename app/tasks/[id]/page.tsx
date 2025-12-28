@@ -108,11 +108,11 @@ export default async function TaskDetail({
 
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-y-auto">
-      <div className="space-y-4 pb-6">
-      {/* Breadcrumb + Actions - Fixed Height */}
-      <div className="flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="min-h-screen overflow-y-auto overflow-x-hidden">
+      <div className="space-y-3 sm:space-y-4 pb-4 px-4 sm:px-0">
+      {/* Breadcrumb + Actions - Responsive Layout */}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 gap-4 shrink-0">
+        <div className="flex items-center gap-2 text-sm md:text-sm max-md:text-base text-muted-foreground">
           <Link href="/tasks" className="hover:text-primary transition-colors">Tasks</Link>
           <span>/</span>
           <span className="text-foreground font-medium">{task.title}</span>
@@ -162,13 +162,13 @@ export default async function TaskDetail({
         )}
       </div>
 
-      {/* Main Grid Layout: 2fr 1fr 1fr (50% | 25% | 25%) */}
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr] h-[calc(100vh-8rem)]">
+      {/* Main Grid Layout: Responsive - Single column on mobile/tablet, 2fr 1fr 1fr on desktop */}
+      <div className="grid gap-4 xl:grid-cols-[2fr_1fr_1fr] xl:h-[calc(100vh-8rem)] max-xl:h-auto">
         {/* Left Column (50% / 2fr) */}
-        <div className="flex flex-col h-full min-h-0 gap-4">
+        <div className="flex flex-col md:h-full max-md:h-auto min-h-0 gap-4">
           {/* Task Details Card */}
-          <div className="card-base flex flex-col h-full min-h-0 overflow-hidden">
-            <div className="p-6 flex flex-col h-full min-h-0">
+          <div className="card-base flex flex-col md:h-full max-md:h-auto min-h-0 overflow-hidden">
+            <div className="p-6 flex flex-col md:h-full max-md:h-auto min-h-0">
             {/* Header - Fixed */}
             <div className="flex items-start gap-3 mb-4 shrink-0">
               <div className="rounded-lg bg-primary/10 p-2">
@@ -176,12 +176,12 @@ export default async function TaskDetail({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Task Details</div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">{task.title}</h1>
+                <h1 className="text-3xl md:text-3xl max-md:text-2xl font-bold text-foreground mb-2">{task.title}</h1>
               </div>
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+            <div className="flex-1 md:min-h-0 max-md:min-h-0 overflow-y-auto md:pr-2 max-md:pr-0">
               {isEditMode && canManageTask && (
                 <div className="mb-4 rounded-lg border-2 border-primary/50 bg-primary/5 p-3">
                   <p className="text-sm font-medium text-primary">

@@ -55,7 +55,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="flex h-10 min-w-10 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 text-base font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="flex h-10 min-w-10 md:h-10 md:min-w-10 max-md:h-11 max-md:min-w-11 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 md:px-2 max-md:px-3 text-base font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <svg
               width="20"
@@ -76,14 +76,14 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             {page === '...' ? (
               <button
                 disabled
-                className="flex h-10 min-w-10 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 text-base font-medium text-slate-900 dark:text-white cursor-default"
+                className="flex h-10 min-w-10 md:h-10 md:min-w-10 max-md:h-11 max-md:min-w-11 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 md:px-2 max-md:px-3 text-base font-medium text-slate-900 dark:text-white cursor-default"
               >
                 ...
               </button>
             ) : (
               <button
                 onClick={() => onPageChange(page as number)}
-                className={`flex h-10 min-w-10 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 text-base font-medium ${
+                className={`flex h-10 min-w-10 md:h-10 md:min-w-10 max-md:h-11 max-md:min-w-11 items-center justify-center border-r border-slate-200 dark:border-white/10 px-2 md:px-2 max-md:px-3 text-base font-medium ${
                   currentPage === page
                     ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white'
                     : 'text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5'
@@ -98,7 +98,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="flex h-10 min-w-10 items-center justify-center px-2 text-base font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="flex h-10 min-w-10 md:h-10 md:min-w-10 max-md:h-11 max-md:min-w-11 items-center justify-center px-2 md:px-2 max-md:px-3 text-base font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <svg
               width="20"

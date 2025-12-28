@@ -167,15 +167,20 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
             className="mt-2 flex w-full items-center gap-2 py-2 text-sm text-neutral-700 transition duration-150 hover:text-red-600 dark:text-neutral-200 dark:hover:text-red-400"
           >
             <LogOut size={20} className="h-5 w-5 shrink-0" />
+            {/* Desktop: Animated visibility */}
             <motion.span
               animate={{
                 display: open ? "inline-block" : "none",
                 opacity: open ? 1 : 0,
               }}
-              className="!m-0 inline-block whitespace-pre !p-0"
+              className="!m-0 inline-block whitespace-pre !p-0 hidden md:inline-block"
             >
               Logout
             </motion.span>
+            {/* Mobile: Always visible */}
+            <span className="inline-block whitespace-pre md:hidden">
+              Logout
+            </span>
           </button>
         </div>
       </SidebarBody>

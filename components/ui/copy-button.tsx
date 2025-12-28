@@ -31,7 +31,7 @@ export function CopyButton({ text, label = 'Copy', className = '', iconSize = 14
   return (
     <button
       onClick={handleCopy}
-      className={`inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors ${className}`}
+      className={`inline-flex items-center justify-center gap-1 p-1.5 md:p-1.5 max-md:p-2 min-h-[24px] min-w-[24px] md:min-h-[24px] md:min-w-[24px] max-md:min-h-[44px] max-md:min-w-[44px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-primary/10 ${className}`}
       title={label}
       aria-label={label}
     >

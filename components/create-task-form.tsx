@@ -300,12 +300,12 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 overflow-x-hidden">
       {error && (
         <ErrorAlert message={error} onDismiss={() => setError('')} />
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Title */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
@@ -337,7 +337,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         </div>
 
         {/* Priority, Branch, and Assignee Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           <div>
             <label htmlFor="priority" className="block text-xs font-medium text-foreground mb-1">
               Priority
@@ -395,7 +395,7 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         </div>
 
         {/* Due Date and SLA Deadline Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           <div>
             <label htmlFor="dueDate" className="block text-xs font-medium text-foreground mb-1">
               Due Date
@@ -470,117 +470,239 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
           </div>
         </div>
 
-        {/* IT Context Section */}
+        {/* IT Context Section - Collapsible on Mobile */}
         <div className="pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-foreground mb-3">IT Asset Context (Optional)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div>
-              <label htmlFor="serverName" className="block text-xs font-medium text-foreground mb-1">
-                Server Name
-              </label>
-              <input
-                type="text"
-                id="serverName"
-                name="serverName"
-                className="input-base"
-                placeholder="e.g., SRV-WEB-01"
-              />
-            </div>
+          {/* Desktop: Always visible */}
+          <div className="hidden md:block">
+            <h3 className="text-sm font-semibold text-foreground mb-3">IT Asset Context (Optional)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+              {/* IT Context fields content */}
+              <div>
+                <label htmlFor="serverName" className="block text-xs font-medium text-foreground mb-1">
+                  Server Name
+                </label>
+                <input
+                  type="text"
+                  id="serverName"
+                  name="serverName"
+                  className="input-base"
+                  placeholder="e.g., SRV-WEB-01"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="application" className="block text-xs font-medium text-foreground mb-1">
-                Application
-              </label>
-              <input
-                type="text"
-                id="application"
-                name="application"
-                className="input-base"
-                placeholder="e.g., Exchange Server"
-              />
-            </div>
+              <div>
+                <label htmlFor="application" className="block text-xs font-medium text-foreground mb-1">
+                  Application
+                </label>
+                <input
+                  type="text"
+                  id="application"
+                  name="application"
+                  className="input-base"
+                  placeholder="e.g., Exchange Server"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="ipAddress" className="block text-xs font-medium text-foreground mb-1">
-                IP Address
-              </label>
-              <input
-                type="text"
-                id="ipAddress"
-                name="ipAddress"
-                className="input-base"
-                placeholder="e.g., 192.168.1.100"
-              />
-            </div>
+              <div>
+                <label htmlFor="database" className="block text-xs font-medium text-foreground mb-1">
+                  Database
+                </label>
+                <input
+                  type="text"
+                  id="database"
+                  name="database"
+                  className="input-base"
+                  placeholder="e.g., SQL-Prod-01"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="environment" className="block text-xs font-medium text-foreground mb-1">
-                Environment
-              </label>
-              <select
-                id="environment"
-                name="environment"
-                className="input-base"
-              >
-                <option value="">Select...</option>
-                <option value="Production">Production</option>
-                <option value="Staging">Staging</option>
-                <option value="Development">Development</option>
-                <option value="QA">QA</option>
-              </select>
-            </div>
+              <div>
+                <label htmlFor="networkDevice" className="block text-xs font-medium text-foreground mb-1">
+                  Network Device
+                </label>
+                <input
+                  type="text"
+                  id="networkDevice"
+                  name="networkDevice"
+                  className="input-base"
+                  placeholder="e.g., Router-01"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="workstationId" className="block text-xs font-medium text-foreground mb-1">
-                Workstation ID
-              </label>
-              <input
-                type="text"
-                id="workstationId"
-                name="workstationId"
-                className="input-base"
-                placeholder="e.g., WS-USER-123"
-              />
-            </div>
+              <div>
+                <label htmlFor="ipAddress" className="block text-xs font-medium text-foreground mb-1">
+                  IP Address
+                </label>
+                <input
+                  type="text"
+                  id="ipAddress"
+                  name="ipAddress"
+                  className="input-base"
+                  placeholder="e.g., 192.168.1.100"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="adUser" className="block text-xs font-medium text-foreground mb-1">
-                AD User
-              </label>
-              <input
-                type="text"
-                id="adUser"
-                name="adUser"
-                className="input-base"
-                placeholder="e.g., john.doe"
-              />
-            </div>
+              <div>
+                <label htmlFor="port" className="block text-xs font-medium text-foreground mb-1">
+                  Port
+                </label>
+                <input
+                  type="text"
+                  id="port"
+                  name="port"
+                  className="input-base"
+                  placeholder="e.g., 443"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="manufacturer" className="block text-xs font-medium text-foreground mb-1">
-                Manufacturer
-              </label>
-              <input
-                type="text"
-                id="manufacturer"
-                name="manufacturer"
-                className="input-base"
-                placeholder="e.g., Dell, HP, Microsoft"
-              />
-            </div>
+              <div>
+                <label htmlFor="url" className="block text-xs font-medium text-foreground mb-1">
+                  URL
+                </label>
+                <input
+                  type="text"
+                  id="url"
+                  name="url"
+                  className="input-base"
+                  placeholder="e.g., https://app.example.com"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="version" className="block text-xs font-medium text-foreground mb-1">
-                Version
-              </label>
-              <input
-                type="text"
-                id="version"
-                name="version"
-                className="input-base"
-                placeholder="e.g., 1.0.0, Windows 10"
-              />
+              <div>
+                <label htmlFor="environment" className="block text-xs font-medium text-foreground mb-1">
+                  Environment
+                </label>
+                <select id="environment" name="environment" className="input-base">
+                  <option value="">Select environment</option>
+                  <option value="Production">Production</option>
+                  <option value="Staging">Staging</option>
+                  <option value="Development">Development</option>
+                  <option value="Testing">Testing</option>
+                </select>
+              </div>
             </div>
+          </div>
+
+          {/* Mobile: Collapsible */}
+          <div className="block md:hidden">
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none p-3 rounded-lg border border-border bg-card hover:bg-primary/5 transition-colors">
+                <span className="text-sm font-semibold text-foreground">IT Asset Context (Optional)</span>
+                <svg
+                  className="w-4 h-4 text-muted-foreground group-open:rotate-180 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                {/* IT Context fields content for mobile */}
+                <div>
+                  <label htmlFor="serverName-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Server Name
+                  </label>
+                  <input
+                    type="text"
+                    id="serverName-mobile"
+                    name="serverName"
+                    className="input-base"
+                    placeholder="e.g., SRV-WEB-01"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="application-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Application
+                  </label>
+                  <input
+                    type="text"
+                    id="application-mobile"
+                    name="application"
+                    className="input-base"
+                    placeholder="e.g., Exchange Server"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="database-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Database
+                  </label>
+                  <input
+                    type="text"
+                    id="database-mobile"
+                    name="database"
+                    placeholder="e.g., SQL-Prod-01"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="networkDevice-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Network Device
+                  </label>
+                  <input
+                    type="text"
+                    id="networkDevice-mobile"
+                    name="networkDevice"
+                    className="input-base"
+                    placeholder="e.g., Router-01"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="ipAddress-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    IP Address
+                  </label>
+                  <input
+                    type="text"
+                    id="ipAddress-mobile"
+                    name="ipAddress"
+                    className="input-base"
+                    placeholder="e.g., 192.168.1.100"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="port-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Port
+                  </label>
+                  <input
+                    type="text"
+                    id="port-mobile"
+                    name="port"
+                    className="input-base"
+                    placeholder="e.g., 443"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="url-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    URL
+                  </label>
+                  <input
+                    type="text"
+                    id="url-mobile"
+                    name="url"
+                    className="input-base"
+                    placeholder="e.g., https://app.example.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="environment-mobile" className="block text-xs font-medium text-foreground mb-1">
+                    Environment
+                  </label>
+                  <select id="environment-mobile" name="environment" className="input-base">
+                    <option value="">Select environment</option>
+                    <option value="Production">Production</option>
+                    <option value="Staging">Staging</option>
+                    <option value="Development">Development</option>
+                    <option value="Testing">Testing</option>
+                  </select>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
       </div>

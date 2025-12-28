@@ -85,11 +85,20 @@ export const DesktopSidebar = ({
   ...props
 }: React.ComponentProps<typeof motion.div>) => {
   const { open, setOpen, animate } = useSidebar();
+
+  // Handle tablet touch interaction - allow clicking to toggle sidebar
+  const handleSidebarInteraction = () => {
+    // On tablets (600px-1024px), allow click to toggle
+    if (window.innerWidth >= 600 && window.innerWidth <= 1024) {
+      setOpen(!open);
+    }
+  };
+
   return (
     <>
       <motion.div
         className={cn(
-          "hidden h-full w-[300px] flex-shrink-0 bg-neutral-100 px-4 py-4 md:flex md:flex-col dark:bg-neutral-800",
+          "hidden h-full w-[300px] flex-shrink-0 bg-neutral-100 px-4 py-4 md:flex md:flex-col dark:bg-neutral-800 cursor-pointer md:cursor-auto",
           className
         )}
         animate={{
@@ -97,6 +106,7 @@ export const DesktopSidebar = ({
         }}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
+        onClick={handleSidebarInteraction}
         {...props}
       >
         {children}

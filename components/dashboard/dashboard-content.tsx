@@ -82,18 +82,20 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
   const modalData = getModalData();
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground">{greeting}, {firstName}! {emoji} Here's your overview.</p>
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
+      {/* Welcome Header - Responsive Layout */}
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{greeting}, {firstName}! {emoji} Here's your overview.</p>
         </div>
-        <DashboardClient />
+        <div className="flex-shrink-0">
+          <DashboardClient />
+        </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+      {/* Stat Cards - Mobile-First Responsive Grid */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <StatCard
           label="Open Tasks"
           value={stats.open}
@@ -138,8 +140,8 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         />
       </div>
 
-      {/* My Open Tasks and My Day Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* My Open Tasks and My Day Sections - Mobile Stacked, Tablet Side-by-Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
         {/* My Open Tasks Section */}
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -153,7 +155,50 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               View all →
             </Link>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {/* Mobile Card Layout (320px-480px) */}
+          <div className="block md:hidden">
+            {stats.myOpenTasks.length === 0 ? (
+              <div className="rounded-xl border border-border bg-card shadow-sm p-6 text-center">
+                <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
+                <p className="text-foreground font-semibold mb-1">All clear!</p>
+                <p className="text-sm text-muted-foreground mb-3">No open tasks assigned to you</p>
+                <Link
+                  href="/tasks?create=1"
+                  className="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Create Task
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stats.myOpenTasks.slice(0, 5).map((task: { id: string; title: string; slaDeadline: Date | null; priority: TaskPriority }) => (
+                  <div
+                    key={task.id}
+                    className="rounded-xl border border-border bg-card shadow-sm p-4 hover:bg-primary/5 transition-colors"
+                  >
+                    <Link
+                      href={`/tasks/${task.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-foreground text-base leading-tight flex-1 min-w-0">
+                          {task.title}
+                        </h3>
+                        <Badge variant="priority" value={task.priority as TaskPriority} className="ml-2 flex-shrink-0" />
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">SLA: </span>
+                        {formatDateTime(task.slaDeadline)}
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table Layout (481px+) */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             {stats.myOpenTasks.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
@@ -219,7 +264,43 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
               View all →
             </Link>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {/* Mobile Card Layout (320px-480px) */}
+          <div className="block md:hidden">
+            {stats.myDay.length === 0 ? (
+              <div className="rounded-xl border border-border bg-card shadow-sm p-6 text-center">
+                <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
+                <p className="text-sm text-muted-foreground font-medium">All caught up for today!</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stats.myDay.slice(0, 5).map((task: { id: string; title: string; dueDate: Date | null; priority: TaskPriority }) => (
+                  <div
+                    key={task.id}
+                    className="rounded-xl border border-border bg-card shadow-sm p-4 hover:bg-primary/5 transition-colors"
+                  >
+                    <Link
+                      href={`/tasks/${task.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-foreground text-base leading-tight flex-1 min-w-0">
+                          {task.title}
+                        </h3>
+                        <Badge variant="priority" value={task.priority as TaskPriority} className="ml-2 flex-shrink-0" />
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Due: </span>
+                        {formatDateTime(task.dueDate)}
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table Layout (481px+) */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             {stats.myDay.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <CheckCircle2 size={40} className="mx-auto text-success mb-2" />
@@ -266,10 +347,14 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         </section>
       </div>
 
-      {/* Analytics Widgets - 3 or 4 columns row based on role */}
-      <div className={`grid items-start grid-cols-1 md:grid-cols-2 ${user.role === 'Technician' || user.role === 'Viewer' ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
+      {/* Analytics Widgets - Mobile-First Responsive Grid */}
+      <div className={`grid items-start gap-3 sm:gap-4 md:gap-6 ${
+        user.role === 'Technician' || user.role === 'Viewer'
+          ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+          : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+      }`}>
         {/* Weekly Ticket Volume */}
-        <section className="rounded-xl border border-border bg-card pt-6 px-6 pb-2 shadow-sm h-[360px] flex flex-col">
+        <section className="rounded-xl border border-border bg-card pt-6 px-6 pb-2 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <Tooltip content="Number of tasks created each day over the past week" showIcon={false}>
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
@@ -284,7 +369,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         </section>
 
         {/* Tasks by Priority */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <Tooltip content="Distribution of tasks across different priority levels" showIcon={false}>
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
@@ -299,7 +384,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
         </section>
 
         {/* Tasks by Branch */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
+        <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <Tooltip content="Number of open tasks grouped by branch location" showIcon={false}>
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
@@ -347,7 +432,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
 
         {/* Tasks per Technician - Only visible for Admin and TeamLead */}
         {(user.role === 'Admin' || user.role === 'TeamLead') && (
-          <section className="rounded-xl border border-border bg-card p-6 shadow-sm h-[360px] flex flex-col">
+          <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <Tooltip content="Number of open tasks assigned to each technician" showIcon={false}>
                 <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">

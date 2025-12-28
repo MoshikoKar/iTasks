@@ -18,6 +18,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: { fontSize: '18px', padding: '15px 40px' },
     };
 
+    // Mobile/tablet responsive adjustments for touch targets
+    const responsiveSizeStyles = {
+      sm: 'max-md:px-4 max-md:py-3',
+      md: 'max-md:px-6 max-md:py-4',
+      lg: 'max-md:px-8 max-md:py-5',
+    };
+
     // Semantic text colors based on variant
     const textColorClass = {
       primary: 'text-primary',
@@ -29,9 +36,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
-        className={clsx('neu-button inline-flex items-center justify-center font-medium', textColorClass, className)}
+        className={clsx('neu-button inline-flex items-center justify-center font-medium', textColorClass, responsiveSizeStyles[size], className)}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
+        style={{
+          ...sizeStyles[size],
+          opacity: disabled || isLoading ? 0.4 : 1,
+          cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
+          transform: disabled || isLoading ? 'none' : undefined,
+        }}
         whileHover={{ scale: disabled || isLoading ? 1 : 1.02 }}
         whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
         transition={{ duration: 0.1 }}
