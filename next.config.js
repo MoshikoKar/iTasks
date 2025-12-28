@@ -79,20 +79,19 @@ const nextConfig = {
 
   // Allow cross-origin requests from local network devices
   // This allows access from other devices on the same LAN
-  // Add specific IPs as needed when accessing from different devices
+  // IMPORTANT: Add your server's local IP address here (the IP you use to access from other devices)
+  // The origin is the server's URL, not the client device's IP
   allowedDevOrigins: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://0.0.0.0:3000',
-    // Your Android tablet IP
-    'http://192.168.69.102:3000',
-    // Common local network IPs - add more as needed
-    'http://192.168.0.1:3000',
-    'http://192.168.1.1:3000',
-    'http://192.168.69.1:3000',
-    // Add more device IPs here as needed, e.g.:
-    // 'http://192.168.69.103:3000',
-    // 'http://192.168.69.104:3000',
+    // Add your server's local IP address here (e.g., http://192.168.69.50:3000)
+    // You can find it by running: ipconfig (Windows) or ifconfig (Linux/Mac)
+    // Common local network IPs - uncomment and modify as needed:
+    // 'http://192.168.0.1:3000',
+    // 'http://192.168.1.1:3000',
+    // 'http://192.168.69.1:3000',
+    // 'http://192.168.69.50:3000', // Example: replace with your server's IP
   ],
 
   // Optimize output
