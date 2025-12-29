@@ -164,7 +164,10 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
           />
           <button
             onClick={handleLogout}
-            className="mt-2 flex w-full items-center gap-2 py-2 text-sm text-neutral-700 transition duration-150 hover:text-red-600 dark:text-neutral-200 dark:hover:text-red-400"
+            onTouchStart={(e) => {
+              e.currentTarget.focus();
+            }}
+            className="mt-2 flex w-full items-center gap-2 py-2 text-sm text-neutral-700 transition duration-150 hover:text-red-600 dark:text-neutral-200 dark:hover:text-red-400 touch-manipulation min-h-[44px] active:bg-neutral-100 dark:active:bg-neutral-700 rounded-md"
           >
             <LogOut size={20} className="h-5 w-5 shrink-0" />
             {/* Desktop: Animated visibility */}

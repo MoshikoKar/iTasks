@@ -163,28 +163,48 @@ export const MobileSidebar = ({
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('sidebar-open');
     } else {
       document.body.style.overflow = '';
+      document.body.classList.remove('sidebar-open');
     }
     return () => {
       document.body.style.overflow = '';
+      document.body.classList.remove('sidebar-open');
     };
   }, [open]);
+
+  // Close sidebar when clicking outside (on backdrop)
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setOpen(false);
+    }
+  };
 
   return (
     <>
       <div
         className={cn(
-          "flex h-12 sm:h-14 w-full flex-row items-center justify-between bg-neutral-100 px-4 py-2 md:hidden dark:bg-neutral-800"
+          "flex h-12 sm:h-14 w-full flex-row items-center justify-between bg-neutral-100 px-4 py-2 md:hidden dark:bg-neutral-800 relative z-10"
         )}
         {...props}
       >
         <div className="z-20 flex w-full justify-end">
           <button
-            onClick={() => setOpen(!open)}
-            className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors touch-manipulation"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(!open);
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(!open);
+            }}
+            className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 active:bg-neutral-300 dark:active:bg-neutral-600 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
+            type="button"
           >
             <IconMenu2
               className="text-neutral-800 dark:text-neutral-200"
@@ -201,8 +221,10 @@ export const MobileSidebar = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-[99] bg-black/50 backdrop-blur-sm"
-                onClick={() => setOpen(false)}
+                className="fixed inset-0 z-[99] bg-black/50 backdrop-blur-sm touch-none"
+                onClick={handleBackdropClick}
+                onTouchStart={handleBackdropClick}
+                style={{ touchAction: 'none' }}
               />
               {/* Sidebar panel */}
               <motion.div
@@ -214,18 +236,33 @@ export const MobileSidebar = ({
                   ease: "easeInOut",
                 }}
                 className={cn(
-                  "fixed inset-y-0 left-0 z-[100] flex w-[85vw] max-w-[320px] flex-col justify-between bg-white p-6 sm:p-8 dark:bg-neutral-900 shadow-2xl",
+                  "fixed inset-y-0 left-0 z-[100] flex w-[85vw] max-w-[320px] flex-col justify-between bg-white p-6 sm:p-8 dark:bg-neutral-900 shadow-2xl overflow-y-auto",
                   className
                 )}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                style={{ touchAction: 'pan-y' }}
               >
                 <button
-                  className="absolute right-4 top-4 p-2 rounded-lg text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors touch-manipulation"
-                  onClick={() => setOpen(false)}
+                  className="absolute right-4 top-4 p-2 rounded-lg text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 dark:active:bg-neutral-700 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center z-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setOpen(false);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setOpen(false);
+                  }}
                   aria-label="Close menu"
+                  type="button"
                 >
                   <IconX size={24} />
                 </button>
-                {children}
+                <div className="flex-1 overflow-y-auto pt-12">
+                  {children}
+                </div>
               </motion.div>
             </>
           )}
@@ -244,22 +281,35 @@ export const SidebarLink = ({
   className?: string;
   props?: LinkProps;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, isMobile, setOpen } = useSidebar();
+  
+  const handleClick = () => {
+    // On mobile, close sidebar when link is clicked
+    if (isMobile) {
+      setTimeout(() => setOpen(false), 150);
+    }
+  };
+
   return (
     <Link
       href={link.href}
       className={cn(
-        "group/sidebar flex items-center justify-start gap-2 py-2",
+        "group/sidebar flex items-center justify-start gap-2 py-2 min-h-[44px] touch-manipulation active:bg-neutral-100 dark:active:bg-neutral-700 rounded-md transition-colors",
         className
       )}
+      onClick={handleClick}
+      onTouchStart={(e) => {
+        // Prevent double-tap zoom on mobile
+        e.currentTarget.focus();
+      }}
       {...props}
     >
       {link.icon}
 
       <motion.span
         animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: animate ? (open ? 1 : 0) : 1,
+          display: animate && !isMobile ? (open ? "inline-block" : "none") : "inline-block",
+          opacity: animate && !isMobile ? (open ? 1 : 0) : 1,
         }}
         className="!m-0 inline-block whitespace-pre !p-0 text-sm text-neutral-700 transition duration-150 group-hover/sidebar:translate-x-1 dark:text-neutral-200"
       >
