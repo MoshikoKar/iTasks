@@ -618,7 +618,7 @@ button[data-nextjs-toast],
   }
   
   /* Hide desktop sidebar completely on mobile */
-  .md\\:flex {
+  .desktop-sidebar {
     display: none !important;
   }
   
