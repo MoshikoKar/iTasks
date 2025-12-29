@@ -8,6 +8,10 @@ export async function GET() {
       where: { id: "system" },
       select: {
         orgLogo: true,
+        supportEmail: true,
+        timezone: true,
+        dateFormat: true,
+        timeFormat: true,
       },
     });
 
@@ -15,6 +19,10 @@ export async function GET() {
     if (!config) {
       return NextResponse.json({
         orgLogo: null,
+        supportEmail: null,
+        timezone: null,
+        dateFormat: null,
+        timeFormat: null,
       });
     }
 
@@ -22,11 +30,21 @@ export async function GET() {
 
     return NextResponse.json({
       orgLogo,
+      supportEmail: config.supportEmail || null,
+      timezone: config.timezone || null,
+      dateFormat: config.dateFormat || null,
+      timeFormat: config.timeFormat || null,
     });
   } catch (error) {
     logger.error("Error fetching branding config", error);
     return NextResponse.json(
-      { orgLogo: null },
+      { 
+        orgLogo: null,
+        supportEmail: null,
+        timezone: null,
+        dateFormat: null,
+        timeFormat: null,
+      },
       { status: 500 }
     );
   }

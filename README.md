@@ -68,6 +68,7 @@ iTasks is an internal enterprise tool for IT task management. The system support
 - **Session Management**: Opaque tokens stored in database with 7-day expiration
 - **Password Security**: PBKDF2 with 310,000 iterations, SHA-256 digest
 - **LDAP Features**: Auto-user creation on first login, encrypted credentials at rest, connection testing
+- **Login Page**: Responsive design with dynamic particle background, centered layout, and integrated footer with system information
 
 ### Recurring Tasks
 
@@ -231,7 +232,7 @@ Notifications are sent for:
 ```
 ├── app/
 │   ├── actions/          # Server actions (tasks, dashboard, recurring, teams, comments)
-│   ├── api/              # API routes (auth, tasks, recurring, teams, users, ldap, system-config)
+│   ├── api/              # API routes (auth, tasks, recurring, teams, users, ldap, system-config, branding)
 │   ├── tasks/            # Task pages (list, detail, my tasks)
 │   │   └── [id]/
 │   │       ├── actions/  # Task-specific server actions
@@ -245,6 +246,9 @@ Notifications are sent for:
 │   └── page.tsx          # Dashboard
 ├── components/
 │   ├── sidebar.tsx       # Navigation sidebar
+│   ├── header.tsx        # Top navigation header
+│   ├── footer.tsx        # Footer component with system info
+│   ├── particles.tsx    # Animated particle background component
 │   ├── data-table.tsx    # Reusable data table component
 │   ├── create-task-form.tsx
 │   ├── recurring-task-form.tsx
