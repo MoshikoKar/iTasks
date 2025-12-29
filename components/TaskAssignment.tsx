@@ -21,18 +21,28 @@ interface TaskAssignmentProps {
   taskId: string;
   currentAssignee: { id: string; name: string } | null;
   technicians: User[];
+  assignmentStatus?: 'ACTIVE' | 'PENDING_APPROVAL' | 'REJECTED';
+  requestedBy?: { id: string; name: string } | null;
+  currentUserRole?: string;
   onAssign: (taskId: string, assigneeId: string) => Promise<void>;
   onAddTechnician: (taskId: string, technicianId: string) => Promise<void>;
   onRemoveTechnician: (taskId: string, technicianId: string) => Promise<void>;
+  onApproveAssignment?: (taskId: string) => Promise<void>;
+  onRejectAssignment?: (taskId: string) => Promise<void>;
 }
 
 export function TaskAssignment({
   taskId,
   currentAssignee,
   technicians,
+  assignmentStatus = 'ACTIVE',
+  requestedBy,
+  currentUserRole,
   onAssign,
   onAddTechnician,
   onRemoveTechnician,
+  onApproveAssignment,
+  onRejectAssignment,
 }: TaskAssignmentProps) {
   const [isChangingAssignee, setIsChangingAssignee] = useState(false);
   const [changingTechnicianId, setChangingTechnicianId] = useState<string | null>(null);
@@ -119,15 +129,48 @@ export function TaskAssignment({
               <div className="rounded-full bg-primary/10 p-2">
                 <UserIcon size={18} className="text-primary" />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Main Assignee
                 </div>
                 <div className="font-semibold text-foreground">
                   {currentAssignee?.name || "Unassigned"}
                 </div>
+                {assignmentStatus === 'PENDING_APPROVAL' && (
+                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    Pending approval from {currentAssignee?.name}
+                    {requestedBy && ` (requested by ${requestedBy.name})`}
+                  </div>
+                )}
+                {assignmentStatus === 'REJECTED' && (
+                  <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Assignment rejected
+                  </div>
+                )}
               </div>
             </div>
+            <div className="flex gap-2">
+              {assignmentStatus === 'PENDING_APPROVAL' && onApproveAssignment && onRejectAssignment && (
+                <>
+                  <Button
+                    onClick={() => onApproveAssignment(taskId)}
+                    size="sm"
+                    disabled={isUndoing || loading}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    onClick={() => onRejectAssignment(taskId)}
+                    size="sm"
+                    disabled={isUndoing || loading}
+                    variant="destructive"
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+              {assignmentStatus !== 'PENDING_APPROVAL' && (
                 <Button
                   onClick={() => {
                     setIsChangingAssignee(true);
@@ -135,9 +178,11 @@ export function TaskAssignment({
                   }}
                   size="sm"
                   disabled={isUndoing}
-            >
-              Change
-            </Button>
+                >
+                  Change
+                </Button>
+              )}
+            </div>
           </div>
 
           {isChangingAssignee && (
@@ -146,6 +191,7 @@ export function TaskAssignment({
                 onSelect={handleAssign}
                 placeholder="Search for a user to set as main assignee..."
                 excludeUserIds={currentAssignee ? [currentAssignee.id] : []}
+                currentUserRole={currentUserRole}
               />
               <div className="flex gap-2">
                 <Button
@@ -210,6 +256,7 @@ export function TaskAssignment({
               ...(currentAssignee ? [currentAssignee.id] : []),
               ...technicians.map((t) => t.id),
             ]}
+            currentUserRole={currentUserRole}
           />
 
           {loading && !isChangingAssignee && (

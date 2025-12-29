@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { generateRecurringTasks } from '@/app/actions/recurring';
+import { sendDueDateNotifications } from './notification-scheduler';
 import { db } from './db';
 
 let isSchedulerInitialized = false;
@@ -62,6 +63,9 @@ export function initializeRecurringTaskScheduler() {
     try {
       console.log('[Cron] Running recurring task generation check...');
       await generateRecurringTasks();
+
+      console.log('[Cron] Running due date notification check...');
+      await sendDueDateNotifications();
 
       const executionTime = Date.now() - executionStart;
       console.log(`[Cron] Execution completed successfully in ${executionTime}ms`);

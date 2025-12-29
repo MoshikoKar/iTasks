@@ -40,6 +40,8 @@ iTasks is an internal enterprise tool for IT task management. The system support
 - **Priority Levels**: Low, Medium, High, Critical
 - **SLA Tracking**: Automatic deadline calculation based on priority with breach detection
 - **Task Assignment**: Mandatory assignee with role-based permission enforcement
+- **Assignment Approval**: Technicians can request assignment to TeamLeads with approval workflow
+- **Admin Visibility**: Admin users are hidden from non-admin selection lists for enhanced security
 - **Sub-tasks**: Parent-child task relationships
 - **Tags**: Categorization with string arrays
 - **Subscribers**: Users can subscribe to task updates
@@ -51,6 +53,7 @@ iTasks is an internal enterprise tool for IT task management. The system support
 
 - **Dual Authentication**: Local password authentication and LDAP/LDAPS integration
 - **Bootstrap Admin**: First admin user protected from deletion and role demotion
+- **Bootstrap Registration**: Automatic registration screen appears on first startup when no admin users exist
 - **Session Management**: Opaque tokens stored in database with 7-day expiration
 - **Password Security**: PBKDF2 with 310,000 iterations, SHA-256 digest
 - **LDAP Features**: Auto-user creation on first login, encrypted credentials at rest, connection testing
@@ -132,6 +135,10 @@ npm run db:migrate
 
 5. Create an admin user:
 
+On first startup, if no admin users exist, you will be automatically redirected to the bootstrap registration screen at `/bootstrap`. Create your first admin account there.
+
+Alternatively, you can use the PowerShell script:
+
 ```powershell
 .\create-admin-user.ps1
 ```
@@ -183,8 +190,30 @@ SMTP configuration supports:
 
 Notifications are sent for:
 - Task assignment
-- 24 hours before due date
+- Dynamic notifications based on SLA configuration and priority (configurable percentages of remaining SLA time)
 - SLA breach
+
+### Task Assignment & Permissions
+
+**Role Hierarchy:**
+- Admin > TeamLead > Technician > Viewer
+
+**Assignment Rules:**
+- Users cannot assign tasks to users with equal or higher roles (except with approval)
+- Technicians can request assignment to TeamLeads (requires approval)
+- Admins can assign to anyone
+- TeamLeads can assign to Technicians and Viewers in their team
+
+**Assignment Approval Workflow:**
+- When a Technician requests assignment to a TeamLead, the assignment status becomes `PENDING_APPROVAL`
+- The TeamLead receives a notification and can approve or reject the request
+- Approved assignments become active; rejected assignments revert to the original assignee
+- All approval actions are logged in the audit trail
+
+**Admin Visibility:**
+- Admin users are completely hidden from selection lists for non-admin users
+- Only Admins can see and assign tasks to other Admins
+- This restriction is enforced both in the UI and backend API
 
 ## Project Structure
 
@@ -246,7 +275,9 @@ Notifications are sent for:
 ├── create-admin-user.ps1
 ├── clear-database.ps1
 ├── run-dev.ps1
-└── run-prod.ps1
+├── run-dev.sh
+├── run-prod.ps1
+└── run-prod.sh
 ```
 
 ## Development
@@ -263,6 +294,12 @@ Or using PowerShell script:
 .\run-dev.ps1
 ```
 
+Or using shell script (Linux/macOS):
+
+```bash
+./run-dev.sh
+```
+
 ### Building for Production
 
 ```powershell
@@ -274,6 +311,12 @@ Or using PowerShell script:
 
 ```powershell
 .\run-prod.ps1
+```
+
+Or using shell script (Linux/macOS):
+
+```bash
+./run-prod.sh
 ```
 
 ### Database Migrations

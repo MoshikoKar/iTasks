@@ -35,6 +35,12 @@ enum TaskPriority {
   Critical
 }
 
+enum AssignmentStatus {
+  ACTIVE
+  PENDING_APPROVAL
+  REJECTED
+}
+
 enum NotificationType {
   TaskAssigned
   TaskStatusChanged
@@ -70,6 +76,7 @@ model User {
   team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
   tasksCreated Task[]    @relation("TasksCreated")
   tasksAssigned Task[]   @relation("TasksAssigned")
+  tasksRequested Task[]  @relation("AssignmentRequests")
   subscribedTasks Task[] @relation("TaskSubscribers")
   recurringTemplates RecurringTaskConfig[] @relation("TemplateAssignee")
   recurringTasksCreated RecurringTaskConfig[] @relation("RecurringTaskCreator")
@@ -100,10 +107,13 @@ model Task {
   updatedAt      DateTime          @updatedAt
   creatorId      String
   assigneeId     String
+  assignmentStatus AssignmentStatus @default(ACTIVE)
+  requestedByUserId String?
   recurringConfigId String?
   parentTaskId   String?
   creator        User              @relation("TasksCreated", fields: [creatorId], references: [id])
   assignee       User              @relation("TasksAssigned", fields: [assigneeId], references: [id])
+  requestedBy    User?             @relation("AssignmentRequests", fields: [requestedByUserId], references: [id])
   parentTask     Task?             @relation("SubTasks", fields: [parentTaskId], references: [id])
   subTasks       Task[]            @relation("SubTasks")
   context        TaskContext?
@@ -124,6 +134,7 @@ model Task {
   @@index([updatedAt])
   @@index([status, priority])
   @@index([assigneeId, status])
+  @@index([assignmentStatus])
 }
 
 enum TaskType {

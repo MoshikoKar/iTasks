@@ -41,7 +41,14 @@ const getCachedSystemConfig = unstable_cache(
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
-  
+
+  // Check if bootstrap is needed (no admin users exist)
+  const adminCount = await db.user.count({
+    where: { role: "Admin" },
+  });
+
+  const needsBootstrap = adminCount === 0;
+
   // Fetch system config settings (cached)
   let supportEmail: string | null = null;
   let timezone: string | null = null;
@@ -69,7 +76,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             Skip to main content
           </a>
           <ClientWrapper>
-            {user ? (
+            {needsBootstrap ? (
+              // Bootstrap mode - show registration screen
+              <div className="flex flex-col min-h-screen overflow-hidden">
+                <main id="main-content" className="flex-1 p-4 overflow-y-auto overflow-x-hidden">{children}</main>
+                <Footer
+                  supportEmail={supportEmail}
+                  timezone={timezone}
+                  dateFormat={dateFormat}
+                  timeFormat={timeFormat}
+                />
+              </div>
+            ) : user ? (
+              // Normal authenticated layout
               <div className="flex h-screen w-full overflow-hidden flex-col">
                 <Header userId={user.id} />
                 <div className="flex flex-1 overflow-hidden">
@@ -88,9 +107,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 </div>
               </div>
             ) : (
+              // Normal unauthenticated layout (login page)
               <div className="flex flex-col min-h-screen overflow-hidden">
                 <main id="main-content" className="flex-1 p-4 overflow-y-auto overflow-x-hidden">{children}</main>
-                <Footer 
+                <Footer
                   supportEmail={supportEmail}
                   timezone={timezone}
                   dateFormat={dateFormat}

@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { sendMail } from "@/lib/smtp";
 import { notifyTaskCreated, notifyTaskUpdated } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
-import { TaskPriority, TaskStatus, TaskType } from "@prisma/client";
+import { TaskPriority, TaskStatus, TaskType, AssignmentStatus, Role } from "@prisma/client";
 import {
   logTaskCreated,
   logTaskUpdated,
@@ -14,6 +14,221 @@ import { requireAuth } from "@/lib/auth";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation/taskSchema";
 import { logger } from "@/lib/logger";
 import { clearDashboardCache } from "./dashboard";
+
+export async function approveAssignmentRequest(taskId: string) {
+  const user = await requireAuth();
+  const actorId = user.id;
+
+  const task = await db.task.findUnique({
+    where: { id: taskId },
+    include: { assignee: true, creator: true, requestedBy: true }
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.assignmentStatus !== AssignmentStatus.PENDING_APPROVAL) {
+    throw new Error("Task is not pending approval");
+  }
+
+  // Only the current assignee (TeamLead) can approve
+  if (task.assigneeId !== actorId) {
+    throw new Error("Only the assigned user can approve assignment requests");
+  }
+
+  // Update task to active status
+  const updatedTask = await db.$transaction(async (tx) => {
+    const updated = await tx.task.update({
+      where: { id: taskId },
+      data: {
+        assignmentStatus: AssignmentStatus.ACTIVE,
+        requestedByUserId: null, // Clear the request info
+      },
+    });
+
+    // Log approval
+    await tx.auditLog.create({
+      data: {
+        taskId,
+        actorId,
+        action: "assignment_approved",
+        oldValue: { assignmentStatus: AssignmentStatus.PENDING_APPROVAL, requestedByUserId: task.requestedByUserId },
+        newValue: { assignmentStatus: AssignmentStatus.ACTIVE },
+      },
+    });
+
+    return updated;
+  });
+
+  // Log system event
+  await logTaskAssigned(
+    taskId,
+    task.title,
+    actorId,
+    updatedTask.assigneeId,
+    task.assignee.name
+  );
+
+  // Send notifications
+  await notifyTaskUpdated(
+    {
+      taskId: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      assigneeName: task.assignee.name,
+      creatorName: task.creator.name,
+      actorName: user.name,
+      dueDate: task.dueDate,
+      slaDeadline: task.slaDeadline,
+    },
+    task.assignee.email,
+    task.creator.email,
+    {
+      status: task.status,
+      priority: task.priority,
+      title: task.title,
+      assigneeName: task.assignee.name,
+    },
+    user.email,
+    task.assignee.id,
+    task.id,
+    user.id
+  );
+
+  revalidatePath("/tasks");
+  revalidatePath("/");
+
+  clearDashboardCache(updatedTask.assigneeId);
+  if (task.requestedByUserId) {
+    clearDashboardCache(task.requestedByUserId);
+  }
+
+  return updatedTask;
+}
+
+export async function rejectAssignmentRequest(taskId: string) {
+  const user = await requireAuth();
+  const actorId = user.id;
+
+  const task = await db.task.findUnique({
+    where: { id: taskId },
+    include: { assignee: true, creator: true, requestedBy: true }
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.assignmentStatus !== AssignmentStatus.PENDING_APPROVAL) {
+    throw new Error("Task is not pending approval");
+  }
+
+  // Only the current assignee (TeamLead) can reject
+  if (task.assigneeId !== actorId) {
+    throw new Error("Only the assigned user can reject assignment requests");
+  }
+
+  // Get the original assignee before the request
+  const auditLog = await db.auditLog.findFirst({
+    where: {
+      taskId,
+      action: "assignment_requested",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  let originalAssigneeId = task.creatorId; // Fallback to creator
+  if (auditLog?.oldValue && typeof auditLog.oldValue === 'object') {
+    const oldValue = auditLog.oldValue as any;
+    if (oldValue.assigneeId) {
+      originalAssigneeId = oldValue.assigneeId;
+    }
+  }
+
+  // Update task to rejected and revert assignee
+  const updatedTask = await db.$transaction(async (tx) => {
+    const updated = await tx.task.update({
+      where: { id: taskId },
+      data: {
+        assignmentStatus: AssignmentStatus.REJECTED,
+        assigneeId: originalAssigneeId,
+        requestedByUserId: null, // Clear the request info
+      },
+    });
+
+    // Log rejection
+    await tx.auditLog.create({
+      data: {
+        taskId,
+        actorId,
+        action: "assignment_rejected",
+        oldValue: { assignmentStatus: AssignmentStatus.PENDING_APPROVAL, requestedByUserId: task.requestedByUserId, assigneeId: task.assigneeId },
+        newValue: { assignmentStatus: AssignmentStatus.REJECTED, assigneeId: originalAssigneeId },
+      },
+    });
+
+    return updated;
+  });
+
+  // Get the original assignee user info
+  const originalAssignee = await db.user.findUnique({
+    where: { id: originalAssigneeId },
+    select: { name: true, email: true }
+  });
+
+  if (originalAssignee) {
+    // Log system event for reassignment back
+    await logTaskAssigned(
+      taskId,
+      task.title,
+      actorId,
+      originalAssigneeId,
+      originalAssignee.name
+    );
+
+    // Send notifications
+    await notifyTaskUpdated(
+      {
+        taskId: task.id,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        assigneeName: originalAssignee.name,
+        creatorName: task.creator.name,
+        actorName: user.name,
+        dueDate: task.dueDate,
+        slaDeadline: task.slaDeadline,
+      },
+      originalAssignee.email,
+      task.creator.email,
+      {
+        status: task.status,
+        priority: task.priority,
+        title: task.title,
+        assigneeName: task.assignee.name,
+      },
+      user.email,
+      originalAssignee.id,
+      task.id,
+      user.id
+    );
+  }
+
+  revalidatePath("/tasks");
+  revalidatePath("/");
+
+  clearDashboardCache(updatedTask.assigneeId);
+  if (task.requestedByUserId) {
+    clearDashboardCache(task.requestedByUserId);
+  }
+  clearDashboardCache(originalAssigneeId);
+
+  return updatedTask;
+}
 
 async function calculateSLADeadline(priority: TaskPriority, createdAt: Date): Promise<Date | null> {
   try {
@@ -253,6 +468,111 @@ export async function updateTask(
     throw new Error("Forbidden: You don't have permission to edit this task");
   }
 
+  // Handle assignment logic
+  if (validatedData.assigneeId !== undefined && validatedData.assigneeId !== existing.assigneeId) {
+    const newAssignee = await db.user.findUnique({
+      where: { id: validatedData.assigneeId },
+      select: { role: true, name: true }
+    });
+
+    if (!newAssignee) {
+      throw new Error("Assignee not found");
+    }
+
+    // Check assignment permissions
+    const roleHierarchy = { Admin: 3, TeamLead: 2, Technician: 1, Viewer: 0 };
+
+    // Admins can assign to anyone
+    if (actor.role !== "Admin") {
+      // Non-admins cannot assign to Admins
+      if (newAssignee.role === "Admin") {
+        throw new Error("Forbidden: Cannot assign tasks to Admin users");
+      }
+
+      // Cannot assign to users with equal or higher role (except Technician -> TeamLead)
+      if (roleHierarchy[newAssignee.role] >= roleHierarchy[actor.role]) {
+        // Allow Technician -> TeamLead assignment as pending approval
+        if (actor.role === "Technician" && newAssignee.role === "TeamLead") {
+          // This will be handled as a pending assignment below
+        } else {
+          throw new Error("Forbidden: Cannot assign to users with equal or higher role");
+        }
+      }
+    }
+
+    // Check if this is a Technician requesting assignment to TeamLead
+    if (actor.role === "Technician" && newAssignee.role === "TeamLead" && actorId !== validatedData.assigneeId) {
+      // Create a pending assignment request instead of direct assignment
+      const pendingTask = await db.$transaction(async (tx) => {
+        const updated = await tx.task.update({
+          where: { id },
+          data: {
+            assignmentStatus: AssignmentStatus.PENDING_APPROVAL,
+            requestedByUserId: actorId,
+            // Keep other fields unchanged except for audit logging
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            taskId: id,
+            actorId,
+            action: "assignment_requested",
+            oldValue: { assigneeId: existing.assigneeId, assignmentStatus: existing.assignmentStatus },
+            newValue: { assigneeId: validatedData.assigneeId, assignmentStatus: AssignmentStatus.PENDING_APPROVAL, requestedByUserId: actorId },
+          },
+        });
+
+        return updated;
+      });
+
+      // Log the assignment request
+      await logTaskAssigned(
+        id,
+        existing.title,
+        actorId,
+        validatedData.assigneeId,
+        newAssignee.name
+      );
+
+      // Send notification to the TeamLead about the request
+      await notifyTaskUpdated(
+        {
+          taskId: existing.id,
+          title: existing.title,
+          description: existing.description,
+          status: existing.status,
+          priority: existing.priority,
+          assigneeName: newAssignee.name,
+          creatorName: existing.creator?.name,
+          actorName: actor.name,
+          dueDate: existing.dueDate,
+          slaDeadline: existing.slaDeadline,
+        },
+        newAssignee.email,
+        existing.creator?.email,
+        {
+          status: existing.status,
+          priority: existing.priority,
+          title: existing.title,
+          assigneeName: existing.assignee?.name,
+        },
+        actor.email,
+        newAssignee.id,
+        existing.id,
+        actorId
+      );
+
+      revalidatePath("/tasks");
+      revalidatePath("/");
+
+      clearDashboardCache(newAssignee.id);
+      clearDashboardCache(actorId);
+
+      return pendingTask;
+    }
+  }
+
   // Update task and create audit log in a transaction
   const result = await db.$transaction(async (tx) => {
     // Determine new priority and check if it changed
@@ -277,6 +597,7 @@ export async function updateTask(
         priority: newPriority,
         branch: validatedData.branch === undefined ? existing.branch : validatedData.branch,
         assigneeId: validatedData.assigneeId ?? existing.assigneeId,
+        assignmentStatus: validatedData.assigneeId ? AssignmentStatus.ACTIVE : existing.assignmentStatus,
         tags: validatedData.tags ?? existing.tags,
       },
     });

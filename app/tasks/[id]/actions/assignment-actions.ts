@@ -68,3 +68,57 @@ export async function removeTechnician(taskId: string, technicianId: string) {
 
   revalidatePath(`/tasks/${taskId}`);
 }
+
+/**
+ * Approve an assignment request
+ */
+export async function approveAssignmentRequest(taskId: string) {
+  const user = await requireAuth();
+
+  // Only Admin and TeamLead can approve assignments
+  if (user.role !== Role.Admin && user.role !== Role.TeamLead) {
+    throw new Error("Unauthorized: Only Admin and TeamLead can approve assignments");
+  }
+
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/tasks/${taskId}/assignment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ action: 'approve' }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to approve assignment');
+  }
+
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+/**
+ * Reject an assignment request
+ */
+export async function rejectAssignmentRequest(taskId: string) {
+  const user = await requireAuth();
+
+  // Only Admin and TeamLead can reject assignments
+  if (user.role !== Role.Admin && user.role !== Role.TeamLead) {
+    throw new Error("Unauthorized: Only Admin and TeamLead can reject assignments");
+  }
+
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/tasks/${taskId}/assignment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ action: 'reject' }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to reject assignment');
+  }
+
+  revalidatePath(`/tasks/${taskId}`);
+}

@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateTime, formatDateTimeLocal } from "@/lib/utils/date";
 import { changeStatusAction, saveTask } from "./actions/task-actions";
 import { deleteCommentFormData } from "./actions/comment-actions";
-import { assignTask, addTechnician, removeTechnician } from "./actions/assignment-actions";
+import { assignTask, addTechnician, removeTechnician, approveAssignmentRequest, rejectAssignmentRequest } from "./actions/assignment-actions";
 import { deleteTaskActionFormData } from "./actions/delete-action";
 import { DeleteCommentButton } from "@/components/DeleteCommentButton";
 import { AuditPreview } from "@/components/ui/audit-preview";
@@ -26,6 +26,7 @@ type TaskWithRelations = Prisma.TaskGetPayload<{
   include: {
     assignee: true;
     creator: true;
+    requestedBy: true;
     context: true;
     subscribers: true;
     comments: {
@@ -69,6 +70,7 @@ export default async function TaskDetail({
     include: {
       assignee: true,
       creator: true,
+      requestedBy: true,
       context: true,
       subscribers: true,
       comments: {
@@ -474,9 +476,14 @@ export default async function TaskDetail({
                 taskId={task.id}
                 currentAssignee={task.assignee}
                 technicians={task.subscribers}
+                assignmentStatus={task.assignmentStatus}
+                requestedBy={task.requestedBy}
+                currentUserRole={currentUser.role}
                 onAssign={assignTask}
                 onAddTechnician={addTechnician}
                 onRemoveTechnician={removeTechnician}
+                onApproveAssignment={approveAssignmentRequest}
+                onRejectAssignment={rejectAssignmentRequest}
               />
             </div>
           )}

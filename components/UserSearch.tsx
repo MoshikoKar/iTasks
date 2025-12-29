@@ -15,9 +15,10 @@ interface UserSearchProps {
   placeholder?: string;
   className?: string;
   excludeUserIds?: string[];
+  currentUserRole?: string;
 }
 
-export function UserSearch({ onSelect, placeholder = "Search users...", className = "", excludeUserIds = [] }: UserSearchProps) {
+export function UserSearch({ onSelect, placeholder = "Search users...", className = "", excludeUserIds = [], currentUserRole }: UserSearchProps) {
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [isOpen, setIsOpen] = useState(false);

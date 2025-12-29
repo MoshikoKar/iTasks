@@ -1,8 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE } from "./lib/constants";
+import { db } from "./lib/db";
+
+export const runtime = "nodejs";
 
 const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/logout", "/api/auth/user", "/api/branding"];
+const BOOTSTRAP_PATHS = ["/bootstrap", "/api/bootstrap"];
 
 function addSecurityHeaders(response: NextResponse) {
   // Content Security Policy - strict policy
@@ -43,12 +47,36 @@ function addSecurityHeaders(response: NextResponse) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  const isBootstrap = BOOTSTRAP_PATHS.some((path) => pathname.startsWith(path));
 
   let response: NextResponse;
 
-  if (isPublic) {
+  // Check if bootstrap is needed
+  let needsBootstrap = false;
+  try {
+    const adminCount = await db.user.count({
+      where: { role: "Admin" },
+    });
+    needsBootstrap = adminCount === 0;
+  } catch (error) {
+    // If database is not available, allow access to bootstrap (fail-safe)
+    needsBootstrap = true;
+  }
+
+  if (needsBootstrap) {
+    // Bootstrap mode: only allow bootstrap paths and branding
+    if (isBootstrap || pathname.startsWith("/api/branding") || pathname === "/") {
+      response = NextResponse.next();
+    } else {
+      // Redirect to bootstrap page
+      const bootstrapUrl = new URL("/bootstrap", request.url);
+      response = NextResponse.redirect(bootstrapUrl);
+    }
+  } else if (isPublic || isBootstrap) {
+    // Normal mode: allow public paths
     response = NextResponse.next();
   } else {
+    // Normal authentication check
     const session = request.cookies.get(SESSION_COOKIE)?.value;
     if (!session) {
       if (pathname.startsWith("/api")) {

@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    const currentUser = await requireAuth();
 
     const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get("q") || "";
@@ -16,13 +16,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([]);
     }
 
+    // Build base search query
+    const baseWhere = {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { email: { contains: query, mode: "insensitive" } },
+      ],
+    };
+
+    // Apply Admin visibility restrictions
+    let whereClause = baseWhere;
+
+    // Only Admins can see other Admins in search results
+    if (currentUser.role !== "Admin") {
+      whereClause = {
+        AND: [
+          baseWhere,
+          {
+            role: {
+              not: "Admin"
+            }
+          }
+        ]
+      };
+    }
+
     const users = await db.user.findMany({
-      where: {
-        OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { email: { contains: query, mode: "insensitive" } },
-        ],
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
