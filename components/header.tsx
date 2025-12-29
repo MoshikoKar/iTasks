@@ -35,16 +35,16 @@ export function Header({ userId }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
-      <div className="flex h-12 items-center justify-between px-4">
+      <div className="flex h-12 sm:h-14 items-center justify-between px-3 sm:px-4">
         <div className="flex-1" />
 
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="relative flex h-8 w-8 md:h-8 md:w-8 max-md:h-11 max-md:w-11 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+            className="relative flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 touch-manipulation"
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           >
-            <Bell size={18} />
+            <Bell size={20} className="sm:w-[18px] sm:h-[18px]" />
             {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}

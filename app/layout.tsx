@@ -93,8 +93,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <Header userId={user.id} />
                 <div className="flex flex-1 overflow-hidden">
                   <Sidebar userRole={user.role} userName={user.name} />
-                  <main id="main-content" className="flex flex-1 flex-col overflow-y-auto bg-white dark:bg-neutral-900">
-                    <div className="flex-1 p-4 overflow-x-hidden">
+                  <main id="main-content" className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-neutral-900 main-content-area">
+                    <div className="flex-1 p-3 sm:p-4 md:p-6 w-full max-w-full">
                       {children}
                     </div>
                     <Footer

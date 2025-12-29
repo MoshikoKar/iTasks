@@ -114,10 +114,10 @@ export function Footer({ supportEmail, timezone, dateFormat, timeFormat }: Foote
 
   return (
     <footer className="border-t border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 mt-auto">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 dark:text-neutral-400">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-            <div className="text-slate-900 dark:text-neutral-100 font-medium">
+      <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-600 dark:text-neutral-400">
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 sm:gap-4 md:gap-6">
+            <div className="text-slate-900 dark:text-neutral-100 font-medium text-center sm:text-left">
               © {new Date().getFullYear()} iTasks. All rights reserved.
             </div>
             <div className="text-slate-500 dark:text-neutral-500">
@@ -125,22 +125,22 @@ export function Footer({ supportEmail, timezone, dateFormat, timeFormat }: Foote
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 sm:gap-4 md:gap-6">
             {mounted && currentTime && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <span className="text-slate-500 dark:text-neutral-500">Server:</span>
-                <span className="text-slate-700 dark:text-neutral-300 font-mono text-xs">
+                <span className="text-slate-700 dark:text-neutral-300 font-mono text-[10px] sm:text-xs">
                   {formattedDate} {formattedTime}
                 </span>
               </div>
             )}
             
             {supportEmail && (
-              <div className="flex items-center gap-2">
-                <Mail size={14} className="text-slate-500 dark:text-neutral-500" />
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Mail size={12} className="text-slate-500 dark:text-neutral-500 flex-shrink-0" />
                 <Link
                   href="/contact"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors truncate max-w-[150px] sm:max-w-none"
                 >
                   {supportEmail}
                 </Link>

@@ -52,7 +52,7 @@ export function StatCard({
 
   const cardContent = (
     <motion.div
-      className={`group relative overflow-hidden card-base p-6 ${href ? "cursor-pointer" : ""} ${
+      className={`group relative overflow-hidden card-base p-4 sm:p-6 ${href ? "cursor-pointer" : ""} ${
         highlight ? "border-destructive/50" : ""
       }`}
       style={{ boxShadow: cardShadow }}
@@ -60,9 +60,9 @@ export function StatCard({
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="text-sm font-medium text-muted-foreground mb-1">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 truncate">
             {tooltip ? (
               <Tooltip content={tooltip} showIcon={false}>
                 <span>{label}</span>
@@ -71,16 +71,16 @@ export function StatCard({
               label
             )}
           </div>
-          <div className={`text-4xl font-bold ${highlight ? "text-destructive" : "text-foreground"} transition-all`}>
+          <div className={`text-2xl sm:text-3xl md:text-4xl font-bold ${highlight ? "text-destructive" : "text-foreground"} transition-all`}>
             {value}
           </div>
         </div>
         <div
           className={`rounded-lg ${
             colorClasses[color].split(" ")[4]
-          } p-3 transition-transform group-hover:scale-110`}
+          } p-2 sm:p-3 transition-transform group-hover:scale-110 flex-shrink-0`}
         >
-          <div className={colorClasses[color].split(" ")[0] + " " + colorClasses[color].split(" ")[1] + " " + colorClasses[color].split(" ")[2] + " " + colorClasses[color].split(" ")[3]}>{icon}</div>
+          <div className={`${colorClasses[color].split(" ")[0]} ${colorClasses[color].split(" ")[1]} ${colorClasses[color].split(" ")[2]} ${colorClasses[color].split(" ")[3]} [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6`}>{icon}</div>
         </div>
       </div>
       <div

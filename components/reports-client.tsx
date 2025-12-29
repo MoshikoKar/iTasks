@@ -281,11 +281,11 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
+      {/* Header - Responsive Layout */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Reports</h1>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outline"
@@ -293,9 +293,9 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
             className="flex items-center gap-2"
           >
             <Filter size={16} />
-            Filters
+            <span className="hidden xs:inline">Filters</span>
             {(Object.values(filters).some(arr => arr && arr.length > 0) || dateRange.start || dateRange.end) && (
-              <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
+              <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
                 {[
                   dateRange.start || dateRange.end ? 1 : 0,
                   filters.priority?.length || 0,
@@ -306,9 +306,9 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
               </span>
             )}
           </Button>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar size={16} />
-            <span>{analytics.totalTasks} total tasks</span>
+            <span>{analytics.totalTasks} tasks</span>
           </div>
           <Button
             onClick={handleExportCSV}
@@ -317,7 +317,7 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
             className="flex items-center gap-2"
           >
             <Download size={16} />
-            CSV
+            <span className="hidden sm:inline">CSV</span>
           </Button>
           <Button
             onClick={handleExportPDF}
@@ -326,16 +326,16 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
             className="flex items-center gap-2"
           >
             <FileText size={16} />
-            PDF
+            <span className="hidden sm:inline">PDF</span>
           </Button>
         </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="card-base p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Filters</h3>
+        <div className="card-base p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Filters</h3>
             <Button
               onClick={() => {
                 setDateRange({});
@@ -343,14 +343,14 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
               }}
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               <X size={16} />
               Clear All
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {/* Date Range */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Date Range</label>
@@ -459,14 +459,14 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="border-b border-border">
-        <nav className="flex space-x-8">
+      {/* Tab Navigation - Horizontally scrollable on mobile */}
+      <div className="border-b border-border overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+        <nav className="flex space-x-4 sm:space-x-8 min-w-max">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex items-center gap-1.5 sm:gap-2 py-2 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
@@ -480,63 +480,63 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
       </div>
 
       {/* Tab Content */}
-      <div id="reports-content" className="space-y-6">
+      <div id="reports-content" className="space-y-4 sm:space-y-6">
         {activeTab === 'overview' && (
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
             {/* Key Metrics */}
-            <div className="card-base p-6">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Tasks</h3>
-              <div className="text-3xl font-bold text-foreground">{analytics.totalTasks}</div>
+            <div className="card-base p-4 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 sm:mb-2">Total Tasks</h3>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{analytics.totalTasks}</div>
             </div>
 
-            <div className="card-base p-6">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Open Tasks</h3>
-              <div className="text-3xl font-bold text-orange-600">{analytics.openTasks}</div>
+            <div className="card-base p-4 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 sm:mb-2">Open Tasks</h3>
+              <div className="text-2xl sm:text-3xl font-bold text-orange-600">{analytics.openTasks}</div>
             </div>
 
-            <div className="card-base p-6">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Avg Resolution Time</h3>
-              <div className="text-3xl font-bold text-blue-600">{analytics.avgResolutionTime.toFixed(1)}h</div>
+            <div className="card-base p-4 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 sm:mb-2">Avg Resolution</h3>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600">{analytics.avgResolutionTime.toFixed(1)}h</div>
             </div>
 
-            <div className="card-base p-6">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">SLA Compliance</h3>
-              <div className="text-3xl font-bold text-green-600">{analytics.slaCompliance.toFixed(1)}%</div>
+            <div className="card-base p-4 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 sm:mb-2">SLA Compliance</h3>
+              <div className="text-2xl sm:text-3xl font-bold text-green-600">{analytics.slaCompliance.toFixed(1)}%</div>
             </div>
 
             {/* Charts */}
-            <div className="card-base p-6 lg:col-span-2">
+            <div className="card-base p-4 sm:p-6 col-span-2">
               <PieChartComponent
                 data={analytics.statusDistribution}
                 title="Task Status Distribution"
-                height={250}
+                height={220}
               />
             </div>
 
-            <div className="card-base p-6 lg:col-span-2">
+            <div className="card-base p-4 sm:p-6 col-span-2">
               <PieChartComponent
                 data={analytics.priorityDistribution}
                 title="Priority Distribution"
-                height={250}
+                height={220}
               />
             </div>
           </div>
         )}
 
         {activeTab === 'workload' && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="card-base p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Workload by Technician</h2>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="card-base p-4 sm:p-6">
+              <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-foreground">Workload by Technician</h2>
+              <div className="space-y-3 max-h-80 sm:max-h-96 overflow-y-auto pr-1">
                 {Object.entries(analytics.workloadByTechnician)
                   .sort((a, b) => b[1].total - a[1].total)
                   .map(([name, stats]) => (
                     <div key={name} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-foreground">{name}</span>
-                        <span className="text-muted-foreground">{stats.total} total</span>
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
+                        <span className="font-medium text-foreground truncate">{name}</span>
+                        <span className="text-muted-foreground flex-shrink-0 ml-2">{stats.total} total</span>
                       </div>
-                      <div className="h-4 overflow-hidden rounded-full bg-muted">
+                      <div className="h-3 sm:h-4 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full bg-primary transition-all duration-300"
                           style={{
@@ -544,7 +544,7 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
                           }}
                         />
                       </div>
-                      <div className="flex gap-4 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-2 sm:gap-4 text-xs text-muted-foreground">
                         <span>Open: {stats.open}</span>
                         <span>In Progress: {stats.inProgress}</span>
                         <span>Resolved: {stats.resolved}</span>
@@ -554,37 +554,37 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
               </div>
             </div>
 
-            <div className="card-base p-6">
+            <div className="card-base p-4 sm:p-6">
               <BarChartComponent
                 data={Object.entries(analytics.workloadByTechnician).map(([name, stats]) => ({
                   name,
                   value: stats.total
                 }))}
                 title="Tasks per Technician"
-                height={300}
+                height={280}
               />
             </div>
           </div>
         )}
 
         {activeTab === 'performance' && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="card-base p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Team Performance</h2>
-              <div className="space-y-4">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="card-base p-4 sm:p-6">
+              <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-foreground">Team Performance</h2>
+              <div className="space-y-3 sm:space-y-4">
                 {analytics.teamPerformance.map((team) => (
                   <div key={team.name} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">{team.name}</span>
-                      <span className="text-muted-foreground">{team.completionRate.toFixed(1)}% complete</span>
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="font-medium text-foreground truncate">{team.name}</span>
+                      <span className="text-muted-foreground flex-shrink-0 ml-2">{team.completionRate.toFixed(1)}%</span>
                     </div>
-                    <div className="h-4 overflow-hidden rounded-full bg-muted">
+                    <div className="h-3 sm:h-4 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full bg-green-500 transition-all duration-300"
                         style={{ width: `${team.completionRate}%` }}
                       />
                     </div>
-                    <div className="flex gap-4 text-xs text-muted-foreground">
+                    <div className="flex gap-3 sm:gap-4 text-xs text-muted-foreground">
                       <span>Resolved: {team.resolved}</span>
                       <span>Total: {team.total}</span>
                     </div>
@@ -593,13 +593,13 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
               </div>
             </div>
 
-            <div className="card-base p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Resolution Time Distribution</h2>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">
+            <div className="card-base p-4 sm:p-6">
+              <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-foreground">Resolution Time</h2>
+              <div className="text-center py-4 sm:py-6">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
                   {analytics.avgResolutionTime.toFixed(1)}h
                 </div>
-                <div className="text-sm text-muted-foreground mb-4">
+                <div className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                   Average resolution time
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -611,30 +611,30 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
         )}
 
         {activeTab === 'assets' && (
-          <div className="grid gap-6">
-            <div className="card-base p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Most Frequent Asset Issues</h2>
+          <div className="grid gap-4 sm:gap-6">
+            <div className="card-base p-4 sm:p-6">
+              <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-foreground">Most Frequent Asset Issues</h2>
               {analytics.topAssets.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">No asset data available</div>
+                <div className="text-center text-muted-foreground py-6 sm:py-8">No asset data available</div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
+                <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                  <div className="order-2 lg:order-1">
                     <BarChartComponent
                       data={analytics.topAssets}
                       title="Issues by Asset"
-                      height={300}
+                      height={280}
                       color="#ef4444"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 order-1 lg:order-2">
                     {analytics.topAssets.map((asset, index) => (
-                      <div key={asset.name} className="flex items-center justify-between rounded-md border border-border p-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                          <span className="font-medium text-foreground">{asset.name}</span>
+                      <div key={asset.name} className="flex items-center justify-between rounded-md border border-border p-2 sm:p-3">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <span className="text-xs sm:text-sm font-medium text-muted-foreground flex-shrink-0">#{index + 1}</span>
+                          <span className="font-medium text-foreground text-sm truncate">{asset.name}</span>
                         </div>
-                        <span className="rounded-full bg-destructive/10 px-3 py-1 text-sm font-semibold text-destructive border border-destructive/20">
-                          {asset.value} {asset.value === 1 ? "issue" : "issues"}
+                        <span className="rounded-full bg-destructive/10 px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold text-destructive border border-destructive/20 flex-shrink-0 ml-2">
+                          {asset.value}
                         </span>
                       </div>
                     ))}
@@ -646,16 +646,16 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
         )}
 
         {activeTab === 'trends' && (
-          <div className="grid gap-6">
-            <div className="card-base p-6">
+          <div className="grid gap-4 sm:gap-6">
+            <div className="card-base p-4 sm:p-6">
               <LineChartComponent
                 data={analytics.trendData}
                 series={[
                   { dataKey: 'created', name: 'Created', color: '#3b82f6' },
                   { dataKey: 'resolved', name: 'Resolved', color: '#10b981' }
                 ]}
-                title="Task Creation vs Resolution Trends (Last 30 Days)"
-                height={400}
+                title="Task Trends (Last 30 Days)"
+                height={320}
               />
             </div>
           </div>

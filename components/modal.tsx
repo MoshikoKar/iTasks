@@ -90,30 +90,30 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           />
 
           {/* Modal */}
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
             <motion.div
               ref={modalRef}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className={`relative w-full ${sizeClasses[size]} rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md border border-white/20 dark:border-neutral-700/50 shadow-2xl`}
+              className={`relative w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md border border-white/20 dark:border-neutral-700/50 shadow-2xl`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-700 px-6 py-4">
-                <h2 id="modal-title" className="text-xl font-semibold text-slate-900 dark:text-neutral-100">{title}</h2>
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 dark:border-neutral-700 px-4 sm:px-6 py-3 sm:py-4 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-t-xl">
+                <h2 id="modal-title" className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-neutral-100 pr-2">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="rounded-lg p-1 text-slate-400 dark:text-neutral-500 transition-colors hover:bg-slate-100 dark:hover:bg-neutral-700 hover:text-slate-600 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="rounded-lg p-1 text-slate-400 dark:text-neutral-500 transition-colors hover:bg-slate-100 dark:hover:bg-neutral-700 hover:text-slate-600 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
                 >
                   <X size={20} aria-hidden="true" />
                 </button>
               </div>
 
               {/* Content */}
-              <div className="px-6 py-4">
+              <div className="px-4 sm:px-6 py-3 sm:py-4">
                 {children}
               </div>
             </motion.div>

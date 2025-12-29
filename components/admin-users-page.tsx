@@ -225,33 +225,33 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
   }, [stats]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-foreground">Users & Teams</h1>
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Users & Teams</h1>
 
-      {/* User Statistics and Teams Management - Side by Side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* User Statistics and Teams Management - Responsive Stack */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* User Statistics */}
-        <section className="card-base p-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
-            <UserPlus size={20} className="text-primary" />
-            User Statistics
+        <section className="card-base p-4 sm:p-6">
+          <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+            <UserPlus size={18} className="text-primary flex-shrink-0" />
+            <span>User Statistics</span>
           </h2>
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
             {sortedStats.map((stat) => (
-              <div key={stat.role} className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm font-medium text-muted-foreground">{stat.role}</div>
-                <div className="text-3xl font-bold text-foreground mt-1">{stat._count}</div>
+              <div key={stat.role} className="rounded-lg border border-border bg-card p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-xs sm:text-sm font-medium text-muted-foreground">{stat.role}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{stat._count}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Teams Management */}
-        <section className="card-base p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Building2 size={20} className="text-primary" />
-            Teams / Departments
+        <section className="card-base p-4 sm:p-6">
+        <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Building2 size={18} className="text-primary flex-shrink-0" />
+            <span>Teams / Departments</span>
           </h2>
           <Button
             variant="primary"
@@ -260,7 +260,7 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
               setIsTeamModalOpen(true);
               setTeamError('');
             }}
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto justify-center"
             style={{ padding: '10px 20px' }}
           >
             <Plus size={16} />
@@ -272,34 +272,34 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
             <ErrorAlert message={teamError} onDismiss={() => setTeamError('')} />
           </div>
         )}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {teams.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
+            <div className="col-span-full text-center py-6 sm:py-8 text-muted-foreground">
               No teams created yet. Create your first team to organize users.
             </div>
           ) : (
             teams.map((team) => (
               <div
                 key={team.id}
-                className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="rounded-lg border border-border bg-card p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{team.name}</h3>
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{team.name}</h3>
                     {team.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
                         {team.description}
                       </p>
                     )}
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  <div className="flex gap-1 ml-2 flex-shrink-0">
                     <button
                       onClick={() => {
                         setSelectedTeam(team);
                         setIsTeamModalOpen(true);
                         setTeamError('');
                       }}
-                      className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                      className="p-1.5 sm:p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors touch-manipulation"
                       aria-label={`Edit team ${team.name}`}
                     >
                       <Edit2 size={14} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
@@ -307,7 +307,7 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
                     <button
                       onClick={() => handleDeleteTeam(team)}
                       disabled={isTeamDeleting}
-                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50"
+                      className="p-1.5 sm:p-2 text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50 touch-manipulation"
                       aria-label={`Delete team ${team.name}`}
                     >
                       <Trash2 size={14} className="text-destructive" aria-hidden="true" />
@@ -325,16 +325,83 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
       </section>
       </div>
 
-      {/* Users Table */}
-      <section className="card-base p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Users</h2>
-          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2" style={{ padding: '10px 20px' }}>
+      {/* Users Section */}
+      <section className="card-base p-4 sm:p-6">
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Users</h2>
+          <Button variant="primary" onClick={() => setIsAddModalOpen(true)} className="gap-2 w-full sm:w-auto justify-center" style={{ padding: '10px 20px' }}>
             <UserPlus size={18} />
             Add User
           </Button>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Mobile Card Layout */}
+        <div className="block md:hidden space-y-3">
+          {users.map((user) => (
+            <div key={user.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-foreground truncate">{user.name}</h3>
+                    <CopyButton text={user.id} label="Copy user ID" iconSize={12} />
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                </div>
+                <RoleBadge role={user.role} />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Team</span>
+                  <div className="mt-1">
+                    {user.team ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary border border-primary/20">
+                        <Building2 size={10} />
+                        {user.team.name}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Created</span>
+                  <div className="mt-1 text-muted-foreground text-xs">
+                    {formatDateTimeStable(user.createdAt)}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Assigned</span>
+                  <div className="mt-1 font-medium text-foreground">{user._count.tasksAssigned}</div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Created</span>
+                  <div className="mt-1 font-medium text-foreground">{user._count.tasksCreated}</div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button
+                  onClick={() => handleEditUser(user)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg text-sm font-medium transition-colors touch-manipulation"
+                >
+                  <Edit2 size={14} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 text-destructive hover:bg-destructive/10 rounded-lg text-sm font-medium transition-colors touch-manipulation"
+                >
+                  <Trash2 size={14} className="text-destructive" />
+                  <span className="text-destructive">Delete</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-muted">
               <tr>
@@ -351,9 +418,11 @@ export function AdminUsersPage({ users, teams, stats, passwordPolicyLevel = 'str
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t border-border hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-foreground flex items-center gap-2">
-                    {user.name}
-                    <CopyButton text={user.id} label="Copy user ID" iconSize={12} />
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <div className="flex items-center gap-2">
+                      {user.name}
+                      <CopyButton text={user.id} label="Copy user ID" iconSize={12} />
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
                   <td className="px-4 py-3">

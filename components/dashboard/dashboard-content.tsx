@@ -350,52 +350,52 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       {/* Analytics Widgets - Mobile-First Responsive Grid */}
       <div className={`grid items-start gap-3 sm:gap-4 md:gap-6 ${
         user.role === 'Technician' || user.role === 'Viewer'
-          ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
-          : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
       }`}>
         {/* Weekly Ticket Volume */}
-        <section className="rounded-xl border border-border bg-card pt-6 px-6 pb-2 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+        <section className="rounded-xl border border-border bg-card pt-4 sm:pt-6 px-4 sm:px-6 pb-2 shadow-sm h-[260px] sm:h-[300px] md:h-[340px] flex flex-col">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <Tooltip content="Number of tasks created each day over the past week" showIcon={false}>
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <BarChart3 size={20} className="text-primary" />
-                Weekly Ticket Volume
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
+                <BarChart3 size={18} className="text-primary flex-shrink-0" />
+                <span className="truncate">Weekly Volume</span>
               </h2>
             </Tooltip>
           </div>
-          <div className="flex-1 mt-8">
+          <div className="flex-1 mt-4 sm:mt-6 md:mt-8 min-h-0">
             <BarChart data={stats.weeklyVolume} />
           </div>
         </section>
 
         {/* Tasks by Priority */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm h-[260px] sm:h-[300px] md:h-[340px] flex flex-col">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <Tooltip content="Distribution of tasks across different priority levels" showIcon={false}>
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <PieChart size={20} className="text-primary" />
-                Tasks by Priority
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
+                <PieChart size={18} className="text-primary flex-shrink-0" />
+                <span className="truncate">Tasks by Priority</span>
               </h2>
             </Tooltip>
           </div>
-          <div className="w-full flex-1">
+          <div className="w-full flex-1 min-h-0">
             <DonutChart data={stats.priorityDistribution} />
           </div>
         </section>
 
         {/* Tasks by Branch */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm h-[260px] sm:h-[300px] md:h-[340px] flex flex-col">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <Tooltip content="Number of open tasks grouped by branch location" showIcon={false}>
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp size={20} className="text-primary" />
-                Tasks by Branch
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp size={18} className="text-primary flex-shrink-0" />
+                <span className="truncate">Tasks by Branch</span>
               </h2>
             </Tooltip>
             {stats.branchDistribution.length > 10 && (
               <button
                 onClick={() => openModal("branches")}
-                className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer"
+                className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer flex-shrink-0"
               >
                 View all →
               </button>
@@ -403,24 +403,24 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
           </div>
           {stats.branchDistribution.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
-              <PieChart size={40} className="mx-auto text-muted-foreground/50 mb-2" />
-              <p className="text-foreground font-semibold mb-1">All locations covered</p>
-              <p className="text-sm text-muted-foreground">No branch-specific tasks yet</p>
+              <PieChart size={32} className="mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-foreground font-semibold mb-1 text-sm">All locations covered</p>
+              <p className="text-xs text-muted-foreground">No branch-specific tasks yet</p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
+            <div className="flex-1 overflow-y-auto space-y-1 pr-1 min-h-0">
               {stats.branchDistribution.slice(0, 10).map((item: { branch: string; count: number }) => (
                   <Link
                     key={item.branch}
                     href={`/tasks?branch=${encodeURIComponent(item.branch)}&status=Open`}
-                    className="block py-0.5 px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                    className="block py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
                   >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></div>
-                      <span className="font-medium text-foreground text-xs">{item.branch}</span>
+                      <span className="font-medium text-foreground text-xs truncate">{item.branch}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0">
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0 ml-2">
                       {item.count}
                     </span>
                   </div>
@@ -432,18 +432,18 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
 
         {/* Tasks per Technician - Only visible for Admin and TeamLead */}
         {(user.role === 'Admin' || user.role === 'TeamLead') && (
-          <section className="rounded-xl border border-border bg-card p-6 shadow-sm md:h-[360px] max-md:h-[280px] flex flex-col">
-            <div className="flex items-center justify-between mb-4">
+          <section className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm h-[260px] sm:h-[300px] md:h-[340px] flex flex-col">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Tooltip content="Number of open tasks assigned to each technician" showIcon={false}>
-                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                  <ListTodo size={20} className="text-primary" />
-                  Tasks per Technician
+                <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
+                  <ListTodo size={18} className="text-primary flex-shrink-0" />
+                  <span className="truncate">Tasks per Technician</span>
                 </h2>
               </Tooltip>
               {stats.userDistribution && stats.userDistribution.length > 10 && (
                 <button
                   onClick={() => openModal("technicians")}
-                  className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  className="text-xs text-primary hover:text-primary/80 font-medium cursor-pointer flex-shrink-0"
                 >
                   View all →
                 </button>
@@ -451,24 +451,24 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
             </div>
             {!stats.userDistribution || stats.userDistribution.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
-                <ListTodo size={40} className="mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-foreground font-semibold mb-1">Workload balanced</p>
-                <p className="text-sm text-muted-foreground">No active task assignments</p>
+                <ListTodo size={32} className="mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-foreground font-semibold mb-1 text-sm">Workload balanced</p>
+                <p className="text-xs text-muted-foreground">No active task assignments</p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto space-y-0.5 pr-1">
+              <div className="flex-1 overflow-y-auto space-y-1 pr-1 min-h-0">
                 {stats.userDistribution.map((item: { user: string; count: number }) => (
                   <Link
                     key={item.user}
                     href={`/tasks?assignee=${encodeURIComponent(item.user)}&status=Open`}
-                    className="block py-0.5 px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                    className="block py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></div>
                         <span className="font-medium text-foreground truncate text-xs">{item.user}</span>
                       </div>
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0">
+                      <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary flex-shrink-0 ml-2">
                         {item.count}
                       </span>
                     </div>

@@ -33,6 +33,17 @@ iTasks is an internal enterprise tool for IT task management. The system support
 
 ## Key Features
 
+### Responsive Design
+
+- **Full Mobile Support**: Optimized for mobile devices (< 640px) with touch-friendly interfaces
+- **Tablet Support**: Adaptive layouts for tablet devices (640px-1024px) with collapsible sidebar
+- **Desktop Experience**: Full-featured desktop layouts (1024px+) with hover interactions
+- **Orientation Support**: Works seamlessly in both portrait and landscape orientations
+- **Dynamic Grids**: Responsive card grids that automatically adjust from 1-5 columns based on screen size
+- **Mobile-First Tables**: Tables automatically switch to card layouts on mobile for better usability
+- **Touch Targets**: All interactive elements meet minimum 44px touch target requirements
+- **Smooth Transitions**: Sidebar and layout transitions are smooth across all screen sizes
+
 ### Task Management
 
 - **Task Types**: Standard, Recurring Instance
@@ -451,7 +462,6 @@ Additional documentation is available in the `docs/` directory:
 
 - React Strict Mode disabled in development (for faster compilation)
 - Some accessibility improvements needed (keyboard navigation, ARIA labels)
-- Mobile responsiveness could be improved (table views)
 - No offline support
 - Polling-based updates (not WebSocket-based real-time)
 
