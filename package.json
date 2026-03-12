@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@prisma/adapter-pg": "6.19.1",
     "@prisma/client": "6.19.1",
     "@tabler/icons-react": "^3.36.0",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
+    "@remotion/cli": "^4.0.435",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "25.0.2",
     "@types/node-cron": "^3.0.11",
@@ -53,6 +55,7 @@
     "eslint-config-next": "^16.0.10",
     "postcss": "^8.4.40",
     "prisma": "6.19.1",
+    "remotion": "^4.0.435",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

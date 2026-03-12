@@ -197,7 +197,6 @@ export const MobileSidebar = ({
               setOpen(!open);
             }}
             onTouchStart={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               setOpen(!open);
             }}
@@ -251,7 +250,6 @@ export const MobileSidebar = ({
                     setOpen(false);
                   }}
                   onTouchStart={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     setOpen(false);
                   }}

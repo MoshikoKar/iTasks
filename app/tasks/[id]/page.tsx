@@ -21,6 +21,7 @@ import { deleteTaskActionFormData } from "./actions/delete-action";
 import { DeleteCommentButton } from "@/components/DeleteCommentButton";
 import { AuditPreview } from "@/components/ui/audit-preview";
 import { CopyButton } from "@/components/ui/copy-button";
+import { TaskEditDirtyGuard } from "@/components/TaskEditDirtyGuard";
 
 type TaskWithRelations = Prisma.TaskGetPayload<{
   include: {
@@ -187,7 +188,7 @@ export default async function TaskDetail({
               {isEditMode && canManageTask && (
                 <div className="mb-4 rounded-lg border-2 border-primary/50 bg-primary/5 p-3">
                   <p className="text-sm font-medium text-primary">
-                    ✏️ Editing task - Click 'Save Changes' to apply
+                    ✏️ Editing task - Changes are not auto-saved. Click &apos;Save Changes&apos; before navigating away or your edits will be lost.
                   </p>
                 </div>
               )}
@@ -573,6 +574,7 @@ export default async function TaskDetail({
         </div>
       </div>
       </div>
+      <TaskEditDirtyGuard enabled={isEditMode && canManageTask} />
     </div>
   );
 }

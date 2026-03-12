@@ -28,6 +28,7 @@ interface Notification {
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
@@ -48,9 +49,13 @@ export default function NotificationsPage() {
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.notifications);
+        setLoadError(null);
+      } else {
+        setLoadError('Unable to load notifications. Please try again.');
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      setLoadError('Unable to load notifications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -211,7 +216,28 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {notifications.length === 0 ? (
+      {loadError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-100">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold">Unable to load notifications</h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-200">
+                {loadError}
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={fetchNotifications}
+              className="shrink-0"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!loadError && notifications.length === 0 ? (
         <div className="text-center py-12">
           <Bell size={48} className="mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
           <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
@@ -246,12 +272,24 @@ export default function NotificationsPage() {
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
                   Unread ({unreadNotifications.length})
                 </h2>
-                <button
-                  onClick={() => handleSelectAll(unreadNotifications.every(n => selectedNotifications.has(n.id)))}
-                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleSelectAll(
+                      unreadNotifications.every((n) =>
+                        selectedNotifications.has(n.id)
+                      )
+                    )
+                  }
+                  className="h-auto px-0 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  {unreadNotifications.every(n => selectedNotifications.has(n.id)) ? 'Deselect all' : 'Select all'}
-                </button>
+                  {unreadNotifications.every((n) =>
+                    selectedNotifications.has(n.id)
+                  )
+                    ? "Deselect all"
+                    : "Select all"}
+                </Button>
               </div>
               <div className="space-y-2">
                 {unreadNotifications.map((notification) => (

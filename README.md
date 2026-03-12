@@ -44,6 +44,13 @@ iTasks is an internal enterprise tool for IT task management. The system support
 - **Touch Targets**: All interactive elements meet minimum 44px touch target requirements
 - **Smooth Transitions**: Sidebar and layout transitions are smooth across all screen sizes
 
+### UI & Notifications Enhancements
+
+- **Dashboard Layout**: Refined dashboard layout and sidebar navigation for clearer task overview
+- **Login & Auth Screens**: Polished login page visuals and responsive behavior
+- **Task Detail UX**: Improved task detail page with better status updates and comments workflow
+- **Notifications Page**: Updated notifications page layout and styling for better readability
+
 ### Task Management
 
 - **Task Types**: Standard, Recurring Instance

@@ -24,6 +24,7 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
   const [mentionUsers, setMentionUsers] = useState<User[]>([]);
+  const [mentionError, setMentionError] = useState<string | null>(null);
   const [mentionedUsers, setMentionedUsers] = useState<Map<string, User>>(new Map());
   const [cursorPosition, setCursorPosition] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -44,6 +45,7 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
   useEffect(() => {
     if (!mentionSearch) {
       setMentionUsers([]);
+      setMentionError(null);
       return;
     }
 
@@ -54,6 +56,8 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
         setMentionUsers(data);
       } catch (error) {
         console.error("Failed to fetch users:", error);
+        setMentionUsers([]);
+        setMentionError("Unable to load suggestions.");
       }
     };
 
@@ -182,7 +186,14 @@ export function CommentInput({ taskId, onSubmit }: CommentInputProps) {
               left: 0,
             }}
           >
-            {mentionUsers.length === 0 ? (
+            {mentionError ? (
+              <div className="p-3 text-center text-sm text-red-600 dark:text-red-400">
+                <div className="font-medium">Unable to load suggestions</div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                  You can still post your comment, or try again in a moment.
+                </div>
+              </div>
+            ) : mentionUsers.length === 0 ? (
               <div className="p-3 text-center text-sm text-slate-500 dark:text-neutral-400">
                 {mentionSearch ? "No users found" : "Start typing to search..."}
               </div>

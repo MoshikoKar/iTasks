@@ -35,19 +35,29 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!newStatus) return;
-
+    const hasNotes = progressNotes.trim().length > 0;
+    const hasFiles = selectedFiles.length > 0;
     const oldStatus = previousStatusRef.current;
+    const hasStatusChange = !!newStatus && newStatus !== oldStatus;
+
+    if (!hasStatusChange && !hasNotes && !hasFiles) {
+      setError('Add progress notes, attachments, or choose a new status before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Change status
-      const formData = new FormData();
-      formData.append('taskId', taskId);
-      formData.append('status', newStatus);
-      await changeStatusAction(formData);
+      // Change status when requested
+      if (hasStatusChange && newStatus) {
+        const formData = new FormData();
+        formData.append('taskId', taskId);
+        formData.append('status', newStatus);
+        await changeStatusAction(formData);
+        previousStatusRef.current = newStatus;
+      }
 
       // Upload files if any
-      if (selectedFiles.length > 0) {
+      if (hasFiles) {
         const uploadPromises = selectedFiles.map(async (file) => {
           const uploadFormData = new FormData();
           uploadFormData.append('taskId', taskId);
@@ -67,36 +77,43 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
       }
 
       // Add progress notes as a comment if provided
-      if (progressNotes.trim()) {
+      if (hasNotes) {
+        const commentPrefix = hasStatusChange && newStatus
+          ? `Status Update: ${newStatus}`
+          : `Progress Update (status unchanged: ${oldStatus})`;
+
         await addCommentAction(
           taskId,
-          `Status Update: ${newStatus}\n\n${progressNotes}`,
+          `${commentPrefix}\n\n${progressNotes}`,
           []
         );
       }
 
-      previousStatusRef.current = newStatus;
-
-      // Show toast with undo option
-      toast.success(`Status updated to ${newStatus}`, {
-        duration: 5000,
-        action: {
-          label: 'Undo',
-          onClick: async () => {
-            try {
-              const undoFormData = new FormData();
-              undoFormData.append('taskId', taskId);
-              undoFormData.append('status', oldStatus);
-              await changeStatusAction(undoFormData);
-              previousStatusRef.current = oldStatus;
-              toast.info('Status change undone');
-              window.location.reload();
-            } catch (error) {
-              toast.error('Failed to undo status change');
-            }
+      if (hasStatusChange && newStatus) {
+        // Show toast with undo option for status changes
+        toast.success(`Status updated to ${newStatus}`, {
+          duration: 5000,
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              try {
+                const undoFormData = new FormData();
+                undoFormData.append('taskId', taskId);
+                undoFormData.append('status', oldStatus);
+                await changeStatusAction(undoFormData);
+                previousStatusRef.current = oldStatus;
+                toast.info('Status change undone');
+                window.location.reload();
+              } catch (error) {
+                toast.error('Failed to undo status change');
+              }
+            },
           },
-        },
-      });
+        });
+      } else if (hasNotes || hasFiles) {
+        // Progress-only update feedback
+        toast.success('Progress update recorded');
+      }
 
       setProgressNotes('');
       setSelectedFiles([]);
@@ -132,7 +149,6 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
             value={newStatus || ''}
             onChange={(e) => setNewStatus(e.target.value as TaskStatus)}
             className="input-base"
-            required
           >
             <option value="">Select status...</option>
             {Object.values(TaskStatus)
@@ -221,7 +237,7 @@ export function StatusUpdateForm({ taskId, currentStatus, onSuccess }: StatusUpd
           type="submit"
           variant="primary"
           isLoading={isSubmitting}
-          disabled={!newStatus || isSubmitting}
+          disabled={(!newStatus && progressNotes.trim().length === 0 && selectedFiles.length === 0) || isSubmitting}
         >
           Update Status
         </Button>

@@ -22,7 +22,7 @@ import {
 import { motion } from "framer-motion";
 
 const items = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: [Role.Admin, Role.TeamLead, Role.Technician, Role.Viewer] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: [Role.Admin, Role.TeamLead, Role.Technician, Role.Viewer] },
   { href: "/tasks", label: "All Tasks", icon: ListTodo, roles: [Role.Admin, Role.TeamLead, Role.Technician, Role.Viewer] },
   { href: "/sla", label: "SLA & Exceptions", icon: Shield, roles: [Role.Admin, Role.TeamLead] },
   { href: "/recurring", label: "Recurring Tasks", icon: Repeat, roles: [Role.Admin, Role.TeamLead] },
@@ -164,9 +164,6 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
           />
           <button
             onClick={handleLogout}
-            onTouchStart={(e) => {
-              e.currentTarget.focus();
-            }}
             className="mt-2 flex w-full items-center gap-2 py-2 text-sm text-neutral-700 transition duration-150 hover:text-red-600 dark:text-neutral-200 dark:hover:text-red-400 touch-manipulation min-h-[44px] active:bg-neutral-100 dark:active:bg-neutral-700 rounded-md"
           >
             <LogOut size={20} className="h-5 w-5 shrink-0" />

@@ -304,57 +304,6 @@ button[data-nextjs-toast],
   pointer-events: none !important;
 }
 
-/* Custom Checkbox Styles */
-.container {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-}
-
-.container input[type="checkbox"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  position: absolute !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  pointer-events: none !important;
-}
-
-.container svg {
-  overflow: visible;
-  display: block;
-  flex-shrink: 0;
-}
-
-.container svg .path {
-  fill: none;
-  stroke: rgb(71, 85, 105);
-  stroke-width: 6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
-  stroke-dasharray: 241 9999999;
-  stroke-dashoffset: 0;
-}
-
-.container input[type="checkbox"]:checked ~ svg .path {
-  stroke-dasharray: 70.5096664428711 9999999;
-  stroke-dashoffset: -262.2723388671875;
-  stroke: rgb(59, 130, 246);
-}
-
-.dark .container svg .path {
-  stroke: rgb(148, 163, 184);
-}
-
-.dark .container input[type="checkbox"]:checked ~ svg .path {
-  stroke: rgb(96, 165, 250);
-}
-
 /* Dashboard Card Shadow */
 .card-shadow {
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset !important;

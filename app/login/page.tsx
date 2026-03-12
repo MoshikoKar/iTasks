@@ -55,7 +55,7 @@ export default function LoginPage() {
         return;
       }
       // Use full page reload to ensure server-side layout re-renders with auth state
-      const redirectTo = searchParams.get("from") || "/";
+      const redirectTo = searchParams.get("from") || "/dashboard";
       window.location.href = redirectTo;
     } catch {
       setError("Login failed");

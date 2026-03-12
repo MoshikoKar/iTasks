@@ -68,3 +68,11 @@ scripts/create-test-users.ts
 scripts/remove-test-users.ts
 create-test-users.ps1
 remove-test-users.ps1
+
+# Audit Reports
+docs/audit-*.md
+
+# Video files
+video/
+/video/
+/out/
