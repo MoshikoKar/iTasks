@@ -218,7 +218,11 @@ export async function exportToPDF(elementId: string, filename: string): Promise<
       footerText = filterSupportedCharacters(systemConfig.reportFooterText.trim()) || defaultFooterText;
     }
 
-    for (const line of lines) {
+    for (const rawLine of lines) {
+      const line = filterSupportedCharacters(rawLine);
+      if (!line.trim()) {
+        continue;
+      }
       // Check if we need a new page (leave room for footer)
       const footerHeight = 20;
       if (currentY > pageHeight - margin - footerHeight - 10) {

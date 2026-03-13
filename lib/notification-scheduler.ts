@@ -2,6 +2,7 @@ import { db } from './db';
 import { sendMail } from './smtp';
 import { TaskStatus, TaskPriority } from '@prisma/client';
 import { logger } from './logger';
+import { recordSlaNotificationSent } from './metrics';
 
 interface NotificationRule {
   priority: TaskPriority;
@@ -159,6 +160,7 @@ View task: ${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "htt
       text,
       html,
     });
+    recordSlaNotificationSent(task.priority);
     logger.info(`Sent due date notification for task ${task.id} (${hoursRemaining} hours remaining)`);
   } catch (error) {
     logger.error(`Failed to send due date notification for task ${task.id}:`, error);

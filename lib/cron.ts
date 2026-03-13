@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { generateRecurringTasks } from '@/app/actions/recurring';
 import { sendDueDateNotifications } from './notification-scheduler';
 import { db } from './db';
+import { startCronTimer, recordCronError } from './metrics';
 
 let isSchedulerInitialized = false;
 let cronJob: cron.ScheduledTask | null = null;
@@ -60,6 +61,7 @@ export function initializeRecurringTaskScheduler() {
       return;
     }
 
+    const endTimer = startCronTimer('recurring_and_notifications');
     try {
       console.log('[Cron] Running recurring task generation check...');
       await generateRecurringTasks();
@@ -70,9 +72,11 @@ export function initializeRecurringTaskScheduler() {
       const executionTime = Date.now() - executionStart;
       console.log(`[Cron] Execution completed successfully in ${executionTime}ms`);
     } catch (error) {
+      recordCronError('recurring_and_notifications');
       const executionTime = Date.now() - executionStart;
       console.error(`[Cron] Error in recurring task generation after ${executionTime}ms:`, error);
     } finally {
+      endTimer();
       // Always release the lock
       await releaseLock();
     }

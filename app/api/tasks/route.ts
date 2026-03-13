@@ -6,8 +6,12 @@ import { Role } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { apiRateLimiter } from "@/lib/rate-limit";
 import { validateCSRFHeader } from "@/lib/csrf";
+import { withApiMetrics } from "@/lib/metrics";
 
 export const runtime = "nodejs";
+
+/** Maximum tasks returned when cursor/limit are not provided (legacy path). */
+const LEGACY_MAX_TAKE = 500;
 
 /**
  * Build task filter based on user role (RBAC)
@@ -91,7 +95,7 @@ async function getTasksHandler(request: NextRequest) {
           assignee: { select: { id: true, name: true } },
           context: { select: { serverName: true, application: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
         take: limitNum + 1, // Take one extra to check if there's a next page
         ...(cursor && { cursor: { id: cursor }, skip: 1 }), // Skip the cursor itself
       });
@@ -109,17 +113,29 @@ async function getTasksHandler(request: NextRequest) {
         },
       });
     } else {
-      // Backward compatibility: return all tasks as array
+      // Legacy path: no cursor/limit — apply bounded take and deterministic order
       const tasks = await db.task.findMany({
         where,
         include: {
           assignee: { select: { id: true, name: true } },
           context: { select: { serverName: true, application: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        take: LEGACY_MAX_TAKE,
       });
 
-      return NextResponse.json(tasks);
+      const truncated = tasks.length >= LEGACY_MAX_TAKE;
+      const nextCursor = truncated ? tasks[tasks.length - 1]?.id : null;
+
+      return NextResponse.json({
+        tasks,
+        ...(truncated && { truncated: true }),
+        pagination: {
+          limit: LEGACY_MAX_TAKE,
+          hasNextPage: truncated,
+          ...(nextCursor && { nextCursor }),
+        },
+      });
     }
   } catch (error) {
     logger.error("Error fetching tasks", error);
@@ -228,6 +244,6 @@ async function createTaskHandler(request: NextRequest) {
   }
 }
 
-export const GET = getTasksHandler;
-export const POST = createTaskHandler;
+export const GET = withApiMetrics(getTasksHandler, { route: "/api/tasks" });
+export const POST = withApiMetrics(createTaskHandler, { route: "/api/tasks" });
 

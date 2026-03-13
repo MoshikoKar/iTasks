@@ -224,6 +224,23 @@ npm run dev
 **Updated**:
 - `@prisma/client` - Regenerated with new schema
 
+---
+
+### ✅ Task: Dependency jsPDF upgrade and PDF export hardening (2026-03-13)
+
+**Status**: COMPLETE
+
+**Problem**: `jspdf` was pinned to an outdated version (`^3.0.4`) with known path traversal and injection vulnerabilities, and PDF export content needed validation to ensure only safe characters were rendered.
+
+**Solution**:
+- Upgraded `jspdf` dependency to `^4.2.0` and refreshed the lockfile via `npm install jspdf@^4.2.0`.
+- Updated `lib/utils/export.ts` so all lines derived from the DOM are passed through `filterSupportedCharacters` before being rendered into the PDF, ensuring only supported, sanitized characters are included.
+- Verified that PDF exports are triggered as downloads only (no embedded PDF viewers or iframe rendering), so existing CSP remains sufficient for this flow.
+
+**Files Modified**:
+- `package.json` / `package-lock.json` (dependency upgrade to `jspdf@^4.2.0`)
+- `lib/utils/export.ts` (sanitized text flow into `exportToPDF`)
+
 ## Testing Checklist
 
 ### Recent Activity

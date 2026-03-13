@@ -7,6 +7,7 @@ import { AuthProvider, LogActionType, LogEntityType } from "@prisma/client";
 import crypto from "crypto";
 import { logger } from "@/lib/logger";
 import { authRateLimiter } from "@/lib/rate-limit";
+import { withApiMetrics, recordAuthFailure } from "@/lib/metrics";
 
 export const runtime = "nodejs";
 
@@ -88,6 +89,7 @@ async function loginHandler(request: NextRequest) {
       }
       
       // Local user but wrong password
+      recordAuthFailure("invalid_password");
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
@@ -192,11 +194,13 @@ async function loginHandler(request: NextRequest) {
     }
 
     // If we reach here, authentication failed
+    recordAuthFailure("invalid_credentials");
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   } catch (error) {
+    recordAuthFailure("server_error");
     logger.error("Error during login", error);
     return NextResponse.json({ error: "Failed to login" }, { status: 500 });
   }
 }
 
-export const POST = loginHandler;
+export const POST = withApiMetrics(loginHandler, { route: "/api/auth/login" });

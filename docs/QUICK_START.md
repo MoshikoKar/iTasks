@@ -193,6 +193,8 @@ Before deploying to production:
 - [ ] Backup database before migration
 - [ ] Train users on new authentication options
 
+Additionally, ensure that production builds and CI pipelines use `npm ci` (not `npm install`) so that `package-lock.json` remains the authoritative source of dependency versions.
+
 ---
 
 **Status**: All tasks complete ✅  

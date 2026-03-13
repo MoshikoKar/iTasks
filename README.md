@@ -363,6 +363,10 @@ npm run db:studio
 npm run lint
 ```
 
+### CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on push and pull requests to `main`/`master`: install deps with `npm ci`, lint, and build.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
@@ -460,6 +464,10 @@ Additional documentation is available in the `docs/` directory:
 - `docs/LDAP_SETUP.md` - LDAP/LDAPS authentication setup guide
 - `docs/LDAP_TROUBLESHOOTING.md` - LDAP troubleshooting guide
 - `docs/QUICK_START.md` - Quick start guide after implementation
+- `docs/API.md` - API overview and conventions
+- `docs/DEPLOYMENT.md` - Deployment guidance
+- `docs/MONITORING.md` - Prometheus metrics and monitoring setup
+- `docs/SECURITY_HEADERS.md` - Security headers and CSP configuration
 - `docs/SECURITY_AUDIT_FINAL.md` - Security audit report
 - `docs/FULL_AUDIT_2025.md` - Comprehensive audit report
 - `docs/UX_AUDIT_FINAL.md` - UX audit findings
@@ -516,6 +524,8 @@ Optional:
 
 ### Monitoring
 
+iTasks exposes Prometheus-format metrics at `GET /api/metrics` for scraping by Prometheus or Grafana Agent. See `docs/MONITORING.md` for metric definitions and scrape configuration.
+
 Recommended monitoring:
 - Database connection health
 - SMTP server availability
@@ -523,6 +533,7 @@ Recommended monitoring:
 - Failed authentication attempts
 - SLA breach rates
 - System log volume
+- Prometheus metrics (request latency, cron jobs, auth failures, SLA notifications)
 
 ## Contributing
 
