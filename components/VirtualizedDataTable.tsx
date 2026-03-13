@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, memo, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { TaskStatus, TaskPriority } from "@prisma/client";
 import { Filter, Search, ExternalLink } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { formatDate } from "@/lib/utils/date";
+import { Badge } from "@/components/ui/badge";
 
 interface Task {
   id: string;
@@ -194,10 +195,10 @@ export function VirtualizedDataTable({ tasks, showFilters = true }: VirtualizedD
                             </Link>
                           </td>
                           <td className="px-6 py-4">
-                            <StatusBadge status={task.status} />
+                            <Badge variant="status" value={task.status} enableHighlight showTooltip />
                           </td>
                           <td className="px-6 py-4">
-                            <PriorityBadge priority={task.priority} />
+                            <Badge variant="priority" value={task.priority} enableHighlight showTooltip />
                           </td>
                           <td className="px-6 py-4">
                             {task.branch ? (
@@ -231,25 +232,3 @@ export function VirtualizedDataTable({ tasks, showFilters = true }: VirtualizedD
     </div>
   );
 }
-
-const StatusBadge = memo(function StatusBadge({ status }: { status: TaskStatus }) {
-  const colors: Record<TaskStatus, string> = {
-    Open: "bg-blue-500 dark:bg-blue-600 text-white border border-blue-600 dark:border-blue-700",
-    InProgress: "bg-purple-500 dark:bg-purple-600 text-white border border-purple-600 dark:border-purple-700",
-    PendingVendor: "bg-amber-500 dark:bg-amber-600 text-white border border-amber-600 dark:border-amber-700",
-    PendingUser: "bg-orange-500 dark:bg-orange-600 text-white border border-orange-600 dark:border-orange-700",
-    Resolved: "bg-green-500 dark:bg-green-600 text-white border border-green-600 dark:border-green-700",
-    Closed: "bg-slate-500 dark:bg-neutral-600 text-white border border-slate-600 dark:border-neutral-700",
-  };
-  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[status]}`}>{status}</span>;
-});
-
-const PriorityBadge = memo(function PriorityBadge({ priority }: { priority: TaskPriority }) {
-  const colors: Record<TaskPriority, string> = {
-    Low: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800",
-    Medium: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
-    High: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800",
-    Critical: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800",
-  };
-  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${colors[priority]}`}>{priority}</span>;
-});

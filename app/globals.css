@@ -134,22 +134,26 @@
 }
 
 .neu-button {
-  background-color: #e0e0e0;
-  border-radius: 50px;
-  box-shadow: inset 4px 4px 10px #bcbcbc, inset -4px -4px 10px #ffffff;
-  color: #4d4d4d;
+  border-radius: 9999px;
+  background-color: hsl(var(--color-primary));
+  color: hsl(var(--color-primary-foreground));
+  border: 1px solid hsl(var(--color-border));
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: 2px solid rgb(206, 206, 206);
+  transition:
+    background-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out,
+    transform 0.1s ease-in-out;
 }
 
 .neu-button:hover:not(:disabled) {
-  box-shadow: inset 2px 2px 5px #bcbcbc, inset -2px -2px 5px #ffffff, 2px 2px 5px #bcbcbc, -2px -2px 5px #ffffff;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.16);
+  transform: translateY(-1px);
 }
 
-.neu-button:focus {
+.neu-button:focus,
+.neu-button:focus-visible {
   outline: none;
-  box-shadow: inset 2px 2px 5px #bcbcbc, inset -2px -2px 5px #ffffff, 2px 2px 5px #bcbcbc, -2px -2px 5px #ffffff;
 }
 
 .neu-button:disabled {
@@ -158,18 +162,19 @@
 }
 
 .dark .neu-button {
-  background-color: #2d2d2d;
-  box-shadow: inset 4px 4px 10px #1a1a1a, inset -4px -4px 10px #404040;
-  color: #d0d0d0;
-  border: 2px solid rgb(60, 60, 60);
+  background-color: hsl(var(--color-primary));
+  color: hsl(var(--color-primary-foreground));
+  border-color: hsl(var(--color-border));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .dark .neu-button:hover:not(:disabled) {
-  box-shadow: inset 2px 2px 5px #1a1a1a, inset -2px -2px 5px #404040, 2px 2px 5px #1a1a1a, -2px -2px 5px #404040;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-.dark .neu-button:focus {
-  box-shadow: inset 2px 2px 5px #1a1a1a, inset -4px -4px 5px #404040, 2px 2px 5px #1a1a1a, -2px -2px 5px #404040;
+.dark .neu-button:focus,
+.dark .neu-button:focus-visible {
+  outline: none;
 }
 
 /* Override text color for danger/destructive buttons */
@@ -304,13 +309,19 @@ button[data-nextjs-toast],
   pointer-events: none !important;
 }
 
-/* Dashboard Card Shadow */
+/* Dashboard Card Shadow
+   Use .card-base for most cards and containers.
+   Reserve .card-shadow for elevated hero/featured tiles, such as dashboard stat highlight cards. */
 .card-shadow {
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset !important;
+  box-shadow:
+    0 18px 45px -24px rgba(15, 23, 42, 0.55),
+    0 8px 24px -18px rgba(15, 23, 42, 0.4);
 }
 
 .dark .card-shadow {
-  box-shadow: rgba(255, 255, 255, 0.15) 0px 50px 100px -20px, rgba(255, 255, 255, 0.2) 0px 30px 60px -30px, rgba(255, 255, 255, 0.25) 0px -2px 6px 0px inset !important;
+  box-shadow:
+    0 18px 45px -24px rgba(15, 23, 42, 0.9),
+    0 10px 30px -20px rgba(15, 23, 42, 0.8);
 }
 
 /* Change Highlight Animation */

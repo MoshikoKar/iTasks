@@ -14,6 +14,7 @@ interface TooltipProps {
 export function Tooltip({ content, description, children, showIcon = true }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -26,19 +27,23 @@ export function Tooltip({ content, description, children, showIcon = true }: Too
           const rect = triggerRef.current.getBoundingClientRect();
           const scrollY = window.scrollY;
           const scrollX = window.scrollX;
-          
-          // Position tooltip above the trigger element
-          const top = rect.top + scrollY - 8; // 8px margin above
-          const left = rect.left + scrollX + (rect.width / 2);
-          
+
+          const shouldPlaceBelow = rect.top < 56;
+          const nextPlacement: 'top' | 'bottom' = shouldPlaceBelow ? 'bottom' : 'top';
+          const verticalOffset = 8;
+
+          const top =
+            nextPlacement === 'top'
+              ? rect.top + scrollY - verticalOffset
+              : rect.bottom + scrollY + verticalOffset;
+          const left = rect.left + scrollX + rect.width / 2;
+
+          setPlacement(nextPlacement);
           setPosition({ top, left });
         }
       };
 
-      // Update position immediately
       updatePosition();
-
-      // Use requestAnimationFrame to ensure DOM is ready
       requestAnimationFrame(updatePosition);
     }
   }, [isVisible]);
@@ -50,10 +55,18 @@ export function Tooltip({ content, description, children, showIcon = true }: Too
           const rect = triggerRef.current.getBoundingClientRect();
           const scrollY = window.scrollY;
           const scrollX = window.scrollX;
-          
-          const top = rect.top + scrollY - 8;
-          const left = rect.left + scrollX + (rect.width / 2);
-          
+
+          const shouldPlaceBelow = rect.top < 56;
+          const nextPlacement: 'top' | 'bottom' = shouldPlaceBelow ? 'bottom' : 'top';
+          const verticalOffset = 8;
+
+          const top =
+            nextPlacement === 'top'
+              ? rect.top + scrollY - verticalOffset
+              : rect.bottom + scrollY + verticalOffset;
+          const left = rect.left + scrollX + rect.width / 2;
+
+          setPlacement(nextPlacement);
           setPosition({ top, left });
         }
       };
@@ -71,16 +84,20 @@ export function Tooltip({ content, description, children, showIcon = true }: Too
   const tooltipElement = isVisible && tooltipContent ? (
     <div
       ref={tooltipRef}
-      className="fixed px-3 py-1.5 bg-neutral-900 dark:bg-neutral-700 text-white text-xs rounded-md shadow-lg whitespace-nowrap pointer-events-none z-[9999]"
+      className="fixed px-3 py-2 bg-neutral-900 dark:bg-neutral-700 text-white text-xs md:text-sm leading-relaxed rounded-md shadow-lg whitespace-nowrap pointer-events-none z-9999"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
-        transform: 'translate(-50%, -100%)',
+        transform: placement === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
       }}
       role="tooltip"
     >
       {tooltipContent}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900 dark:border-t-neutral-700"></div>
+      {placement === 'top' ? (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900 dark:border-t-neutral-700"></div>
+      ) : (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 border-4 border-transparent border-b-neutral-900 dark:border-b-neutral-700"></div>
+      )}
     </div>
   ) : null;
 

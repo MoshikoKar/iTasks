@@ -16,26 +16,31 @@ export function verifyPassword(storedHash: string, candidate: string) {
   return provided.length === compared.length && crypto.timingSafeEqual(provided, compared);
 }
 
-export async function getCurrentUser() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!sessionToken) return null;
+export async function validateSessionToken(sessionToken: string | null | undefined) {
+  if (!sessionToken) {
+    return null;
+  }
 
-  // Find valid session and include user data
   const session = await db.session.findUnique({
     where: { token: sessionToken },
     include: { user: true },
   });
 
-  // Check if session exists and is not expired
   if (!session || session.expiresAt < new Date()) {
-    // Clean up expired session
     if (session) {
       await db.session.delete({ where: { id: session.id } });
     }
     return null;
   }
 
+  return session;
+}
+
+export async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value;
+  const session = await validateSessionToken(sessionToken);
+  if (!session) return null;
   return session.user;
 }
 

@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE } from "./lib/constants";
+import { SESSION_COOKIE, getCookieOptions } from "./lib/constants";
 import { db } from "./lib/db";
+import { validateSessionToken } from "./lib/auth";
 
 export const runtime = "nodejs";
 
@@ -77,14 +78,24 @@ export async function middleware(request: NextRequest) {
     response = NextResponse.next();
   } else {
     // Normal authentication check
-    const session = request.cookies.get(SESSION_COOKIE)?.value;
+    const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+    const session = await validateSessionToken(sessionToken);
+
     if (!session) {
       if (pathname.startsWith("/api")) {
         response = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        response.cookies.set(SESSION_COOKIE, "", {
+          ...getCookieOptions(),
+          maxAge: 0,
+        });
       } else {
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("from", pathname);
         response = NextResponse.redirect(loginUrl);
+        response.cookies.set(SESSION_COOKIE, "", {
+          ...getCookieOptions(),
+          maxAge: 0,
+        });
       }
     } else {
       response = NextResponse.next();
