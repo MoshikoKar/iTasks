@@ -87,7 +87,7 @@ export function DashboardContent({ stats, user }: DashboardContentProps) {
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{greeting}, {firstName}! {emoji} Here's your overview.</p>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{greeting}, {firstName}! {emoji} Here&apos;s your overview.</p>
         </div>
         <div className="flex-shrink-0">
           <DashboardClient />

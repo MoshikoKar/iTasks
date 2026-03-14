@@ -497,7 +497,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
               <p className="font-medium text-foreground">Active Directory:</p>
               <ul className="list-disc list-inside space-y-0.5 ml-2">
                 <li><strong>Group Membership:</strong> Domain Users (default) - no special groups required</li>
-                <li><strong>ACL Permissions on Base DN:</strong> "List Contents" and "Read All Properties" on user objects</li>
+                <li><strong>ACL Permissions on Base DN:</strong> &quot;List Contents&quot; and &quot;Read All Properties&quot; on user objects</li>
                 <li><strong>Scope:</strong> Base DN and all sub-containers (subtree search)</li>
                 <li><strong>Attributes Read:</strong> cn, mail, displayName, sAMAccountName, userPrincipalName, uid, dn</li>
               </ul>
@@ -719,7 +719,7 @@ export function LDAPConfigForm({ onSuccess, onCancel }: LDAPConfigFormProps) {
                   className="input-base"
                   placeholder="example.com"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">Active Directory domain (only needed if username doesn't include domain)</p>
+                <p className="mt-1 text-xs text-muted-foreground">Active Directory domain (only needed if username doesn&apos;t include domain)</p>
               </div>
             )}
             {/* Hidden inputs to persist discovered values in form */}

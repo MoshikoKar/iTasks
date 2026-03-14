@@ -4,7 +4,7 @@ import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
-    let config = await db.systemConfig.findUnique({
+    const config = await db.systemConfig.findUnique({
       where: { id: "system" },
       select: {
         orgLogo: true,

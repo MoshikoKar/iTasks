@@ -147,7 +147,7 @@ export function FullListModal({ isOpen, onClose, title, items, type, icon }: Ful
 
                 {visibleItems.length === 0 && (
                   <div className="py-8 text-center text-sm text-muted-foreground">
-                    No matches for "{query}"
+                    No matches for &quot;{query}&quot;
                   </div>
                 )}
               </div>

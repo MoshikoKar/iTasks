@@ -244,7 +244,7 @@ export default function NotificationsPage() {
             No notifications yet
           </h3>
           <p className="text-neutral-500 dark:text-neutral-400">
-            You'll see updates about tasks assigned to you here
+            You&apos;ll see updates about tasks assigned to you here
           </p>
         </div>
       ) : (

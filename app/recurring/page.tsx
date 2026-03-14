@@ -60,7 +60,7 @@ export default async function RecurringTasksPage() {
     redirect("/");
   }
 
-  let filter = buildRecurringTaskFilter(currentUser);
+  const filter = buildRecurringTaskFilter(currentUser);
   
   // For TeamLead, we need to filter admin's recurring tasks to exclude ones assigned to admin himself
   // Since Prisma doesn't support field-to-field comparison, we'll fetch and filter

@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import { ComponentType } from 'react';
 
-export function createLazyComponent<P = {}>(
+export function createLazyComponent<P = object>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
   LoadingComponent?: ComponentType
 ) {

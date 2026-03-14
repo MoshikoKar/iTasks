@@ -153,7 +153,7 @@ export function NotificationDropdown({ userId, onClose, onUnreadCountChange }: N
               No notifications yet
             </p>
             <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-              You'll see updates about tasks assigned to you here
+              You&apos;ll see updates about tasks assigned to you here
             </p>
           </div>
         ) : (

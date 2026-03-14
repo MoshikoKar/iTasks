@@ -48,7 +48,7 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
       >
         <div className="space-y-4">
           <p className="text-slate-600 dark:text-neutral-400">
-            Are you sure you want to delete <strong className="text-slate-900 dark:text-neutral-100">"{taskTitle}"</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong className="text-slate-900 dark:text-neutral-100">&quot;{taskTitle}&quot;</strong>? This action cannot be undone.
           </p>
           <div className="flex gap-3 justify-end">
             <Button

@@ -409,7 +409,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
                   placeholder="https://example.com/logo.png"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  URL to your organization's logo (PNG/SVG). Leave empty to use default branding.
+                  URL to your organization&apos;s logo (PNG/SVG). Leave empty to use default branding.
                 </p>
               </>
             ) : (
@@ -440,7 +440,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
                   }}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Upload your organization's logo (PNG, SVG, JPEG, GIF - max 5MB). Leave empty to use default branding.
+                  Upload your organization&apos;s logo (PNG, SVG, JPEG, GIF - max 5MB). Leave empty to use default branding.
                 </p>
               </>
             )}
@@ -478,7 +478,7 @@ export function SystemConfigForm({ onSuccess, onCancel }: SystemConfigFormProps)
               placeholder="Made with <3 with iTasks"
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Custom footer text for reports and exports. Leave empty to use default: "Made with &lt;3 with iTasks". Emojis and unsupported characters are automatically removed.
+              Custom footer text for reports and exports. Leave empty to use default: &quot;Made with &lt;3 with iTasks&quot;. Emojis and unsupported characters are automatically removed.
             </p>
           </div>
         </div>

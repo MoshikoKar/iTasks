@@ -69,7 +69,7 @@ export function ContactSupportForm({ userEmail, userName }: ContactSupportFormPr
         <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 flex items-start gap-3">
           <CheckCircle2 className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" size={20} />
           <span className="text-sm text-green-800 dark:text-green-300">
-            Your message has been sent successfully. We'll get back to you soon.
+            Your message has been sent successfully. We&apos;ll get back to you soon.
           </span>
         </div>
       )}

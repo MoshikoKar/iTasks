@@ -438,7 +438,7 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
             <AlertTriangle className="text-destructive shrink-0 mt-0.5" size={20} aria-hidden="true" />
             <div>
               <p className="text-sm text-destructive">
-                Are you sure you want to delete the recurring task <strong>"{selectedConfig?.name}"</strong>?
+                Are you sure you want to delete the recurring task <strong>&quot;{selectedConfig?.name}&quot;</strong>?
               </p>
               <p className="text-xs text-destructive/80 mt-1">
                 This action cannot be undone. Previously generated tasks will not be deleted.
