@@ -175,7 +175,7 @@ export const MobileSidebar = ({
   }, [open]);
 
   // Close sidebar when clicking outside (on backdrop)
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       setOpen(false);
     }

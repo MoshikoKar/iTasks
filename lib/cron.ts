@@ -5,7 +5,7 @@ import { db } from './db';
 import { startCronTimer, recordCronError } from './metrics';
 
 let isSchedulerInitialized = false;
-let cronJob: cron.ScheduledTask | null = null;
+let cronJob: ReturnType<typeof cron.schedule> | null = null;
 const LOCK_KEY = 123456789; // Unique key for the recurring task lock
 const MAX_EXECUTION_TIME_MS = 55000; // 55 seconds - slightly less than 60s to prevent overlap
 
@@ -81,7 +81,6 @@ export function initializeRecurringTaskScheduler() {
       await releaseLock();
     }
   }, {
-    scheduled: true,
     timezone: 'Asia/Jerusalem'
   });
 

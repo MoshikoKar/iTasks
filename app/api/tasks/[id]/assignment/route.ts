@@ -7,7 +7,8 @@ import { validateCSRFHeader } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
-async function approveHandler(request: NextRequest, { params }: { params: { id: string } }) {
+async function approveHandler(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -34,7 +35,7 @@ async function approveHandler(request: NextRequest, { params }: { params: { id: 
     }
 
     await requireAuth();
-    const task = await approveAssignmentRequest(params.id);
+    const task = await approveAssignmentRequest(id);
     return NextResponse.json(task);
   } catch (error) {
     logger.error("Error approving assignment request", error);
@@ -45,7 +46,8 @@ async function approveHandler(request: NextRequest, { params }: { params: { id: 
   }
 }
 
-async function rejectHandler(request: NextRequest, { params }: { params: { id: string } }) {
+async function rejectHandler(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -72,7 +74,7 @@ async function rejectHandler(request: NextRequest, { params }: { params: { id: s
     }
 
     await requireAuth();
-    const task = await rejectAssignmentRequest(params.id);
+    const task = await rejectAssignmentRequest(id);
     return NextResponse.json(task);
   } catch (error) {
     logger.error("Error rejecting assignment request", error);
@@ -83,7 +85,7 @@ async function rejectHandler(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export const POST = async (request: NextRequest, context: { params: { id: string } }) => {
+export const POST = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const body = await request.json();
   const { action } = body;
 

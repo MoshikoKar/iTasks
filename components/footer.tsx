@@ -104,12 +104,12 @@ export function Footer({ supportEmail, timezone, dateFormat, timeFormat }: Foote
 
   const formattedDate = useMemo(() => {
     if (!currentTime) return '';
-    return formatDateWithSettings(currentTime, dateFormat, timezone);
+    return formatDateWithSettings(currentTime, dateFormat ?? null, timezone ?? null);
   }, [currentTime, dateFormat, timezone]);
 
   const formattedTime = useMemo(() => {
     if (!currentTime) return '';
-    return formatTimeWithSettings(currentTime, timeFormat, timezone);
+    return formatTimeWithSettings(currentTime, timeFormat ?? null, timezone ?? null);
   }, [currentTime, timeFormat, timezone]);
 
   return (

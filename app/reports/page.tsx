@@ -32,9 +32,7 @@ export default async function ReportsPage() {
 
   // Fetch team data - for TeamLead and Viewer, only their team
   const teams = await db.team.findMany({
-    where: shouldFilterByTeam ? {
-      id: currentUser.teamId
-    } : {},
+    where: shouldFilterByTeam && currentUser.teamId ? { id: currentUser.teamId } : {},
     select: {
       id: true,
       name: true,

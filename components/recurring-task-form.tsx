@@ -132,10 +132,9 @@ export function RecurringTaskForm({ users, currentUser, config, onSuccess }: Rec
       const url = config ? `/api/recurring/${config.id}` : '/api/recurring';
       const method = config ? 'PUT' : 'POST';
 
-      const headers = {
-        'Content-Type': 'application/json',
-        ...getHeaders(),
-      };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const gh = getHeaders();
+      if (gh['X-CSRF-Token']) headers['X-CSRF-Token'] = gh['X-CSRF-Token'];
 
       const response = await fetch(url, {
         method,

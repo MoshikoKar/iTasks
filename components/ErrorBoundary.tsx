@@ -31,7 +31,8 @@ class BasicErrorTracker implements ErrorTracker {
   }
 
   captureMessage(message: string, level: 'error' | 'warning' | 'info' = 'error') {
-    console[level]('[ErrorTracker] Message:', message, {
+    const fn = level === 'warning' ? console.warn : level === 'info' ? console.info : console.error;
+    fn('[ErrorTracker] Message:', message, {
       timestamp: new Date().toISOString(),
       url: window.location.href,
     });

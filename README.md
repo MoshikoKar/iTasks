@@ -164,6 +164,8 @@ Alternatively, you can use the PowerShell script:
 
 The first admin user created will automatically be marked as the bootstrap admin (protected from deletion and role demotion).
 
+Bootstrap detection is cached in memory (default 60s TTL) to avoid a DB query on every request. Optional env: `SKIP_BOOTSTRAP_CHECK=true` (skip check when already bootstrapped), `BOOTSTRAP_CACHE_TTL_MS` (cache TTL in ms). See `docs/BOOTSTRAP.md`.
+
 6. Start the development server:
 
 ```powershell
@@ -461,6 +463,7 @@ See `prisma/schema.prisma` for complete schema definition.
 
 Additional documentation is available in the `docs/` directory:
 
+- `docs/BOOTSTRAP.md` - Bootstrap detection, caching, and optional env configuration
 - `docs/LDAP_SETUP.md` - LDAP/LDAPS authentication setup guide
 - `docs/LDAP_TROUBLESHOOTING.md` - LDAP troubleshooting guide
 - `docs/QUICK_START.md` - Quick start guide after implementation

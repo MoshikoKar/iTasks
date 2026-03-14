@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { db } from "@/lib/db";
 import { unstable_cache } from "next/cache";
+import { getNeedsBootstrap } from "@/lib/bootstrap";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +43,7 @@ const getCachedSystemConfig = unstable_cache(
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
 
-  // Check if bootstrap is needed (no admin users exist)
-  const adminCount = await db.user.count({
-    where: { role: "Admin" },
-  });
-
-  const needsBootstrap = adminCount === 0;
+  const needsBootstrap = await getNeedsBootstrap();
 
   // Fetch system config settings (cached)
   let supportEmail: string | null = null;

@@ -10,7 +10,7 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
-  // Optimize images
+  // Optimize images (no remotePatterns - avoids CVE-2025-59471 DoS via unbounded remote image loading)
   images: {
     formats: ['image/avif', 'image/webp'],
   },

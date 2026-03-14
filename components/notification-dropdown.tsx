@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, CheckCheck } from 'lucide-react';
@@ -25,7 +25,7 @@ interface Notification {
 interface NotificationDropdownProps {
   userId: string;
   onClose: () => void;
-  onUnreadCountChange: (count: number) => void;
+  onUnreadCountChange: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export function NotificationDropdown({ userId, onClose, onUnreadCountChange }: NotificationDropdownProps) {

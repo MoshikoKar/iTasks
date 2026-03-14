@@ -6,6 +6,7 @@ import { logUserCreated } from "@/lib/logging/system-logger";
 import { logger } from "@/lib/logger";
 import { createUserSchema } from "@/lib/validation/userSchema";
 import { validatePassword } from "@/lib/constants";
+import { getNeedsBootstrap, invalidateBootstrapCache } from "@/lib/bootstrap";
 
 export const runtime = "nodejs";
 
@@ -25,12 +26,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Check if any admin users already exist
-    const adminCount = await db.user.count({
-      where: { role: Role.Admin },
-    });
-
-    if (adminCount > 0) {
+    const needsBootstrap = await getNeedsBootstrap({ forceRefresh: true });
+    if (!needsBootstrap) {
       return NextResponse.json(
         { error: "Bootstrap registration is only available when no admin users exist" },
         { status: 403 }
@@ -97,6 +94,8 @@ export async function POST(request: NextRequest) {
         role: true,
       },
     });
+
+    invalidateBootstrapCache();
 
     // Log user creation
     await logUserCreated(

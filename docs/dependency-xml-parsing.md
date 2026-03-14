@@ -13,8 +13,8 @@ The vulnerable `fast-xml-parser` (versions &lt;5.3.9) is pulled in **transitivel
 
 - **Why:** `@types/nodemailer` declares a dependency on `@aws-sdk/client-sesv2` for TypeScript typings when using Nodemailer with AWS SES. The app uses `nodemailer` for SMTP (see `lib/smtp.ts`); the types package is the only direct link to the AWS SDK in the lock file.
 
-- **Remotion / @upstash/ratelimit:**  
-  `@upstash/ratelimit` does not list AWS SDK in its dependencies in the current lock file. `@remotion/cli` and `remotion` are devDependencies only; they do not affect production runtime. The only production-relevant transitive path to `fast-xml-parser` is via `@types/nodemailer` (dev), but the lock file is shared, so the vulnerable package is still present unless overridden.
+- **@upstash/ratelimit:** Removed from the project. The app uses an in-memory rate limiter (`lib/rate-limit.ts`) and does not import or use `@upstash/ratelimit`; the package was removed to reduce dependency surface and any associated transitive CVEs.
+- **Remotion:** `remotion` and `@remotion/cli` are required for the video feature (`video/components` use Remotion APIs). They remain in devDependencies. When upstream releases versions that depend on patched `@aws-sdk/*` or other transitive dependencies, upgrade and refresh the lock file. The only production-relevant transitive path to `fast-xml-parser` is via `@types/nodemailer` (dev), but the lock file is shared, so the vulnerable package is still present unless overridden.
 
 ## XML Parsing Usage in This App
 
@@ -51,4 +51,4 @@ The vulnerable `fast-xml-parser` (versions &lt;5.3.9) is pulled in **transitivel
 
 ---
 
-*Last updated: 2026-03-13. Reflects dependency state and overrides as of that date.*
+*Last updated: 2026-03-14. @upstash/ratelimit removed (unused); remotion retained for video feature.*

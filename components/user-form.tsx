@@ -93,12 +93,13 @@ export function UserForm({ user, onSuccess, passwordPolicyLevel = 'strong' }: Us
       const url = user ? `/api/users/${user.id}` : '/api/users';
       const method = user ? 'PATCH' : 'POST';
 
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const gh = getHeaders();
+      if (gh['X-CSRF-Token']) headers['X-CSRF-Token'] = gh['X-CSRF-Token'];
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...getHeaders(),
-        },
+        headers,
         credentials: 'same-origin',
         body: JSON.stringify(data),
       });

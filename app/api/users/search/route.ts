@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build base search query
-    const baseWhere = {
+    const baseWhere: Prisma.UserWhereInput = {
       OR: [
         { name: { contains: query, mode: "insensitive" } },
         { email: { contains: query, mode: "insensitive" } },
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     };
 
     // Apply Admin visibility restrictions
-    let whereClause = baseWhere;
+    let whereClause: Prisma.UserWhereInput = baseWhere;
 
     // Only Admins can see other Admins in search results
     if (currentUser.role !== "Admin") {

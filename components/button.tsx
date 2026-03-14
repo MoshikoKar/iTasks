@@ -1,13 +1,14 @@
 'use client';
 
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import { forwardRef } from "react";
 import { clsx } from "clsx";
-import { motion } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger" | "ghost";
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -47,6 +48,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-destructive text-destructive-foreground border border-destructive shadow-sm hover:bg-destructive/90 disabled:bg-destructive/60",
       ghost:
         "bg-transparent text-primary hover:bg-accent hover:text-accent-foreground border border-transparent",
+      outline:
+        "bg-transparent text-primary border border-border hover:bg-accent hover:text-accent-foreground",
     };
 
     const baseClasses =

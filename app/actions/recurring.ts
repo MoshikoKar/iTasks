@@ -50,7 +50,7 @@ export async function generateRecurringTasks() {
   const userMap = new Map(users.map((user) => [user.id, user]));
 
   // Process all configs and collect email promises
-  const emailPromises: Promise<void>[] = [];
+  const emailPromises: Promise<unknown>[] = [];
 
   for (const config of configs) {
     try {

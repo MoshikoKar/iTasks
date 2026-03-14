@@ -5,11 +5,12 @@ export interface ExportData {
 }
 
 /**
- * Filter out emojis and unsupported characters for PDF export
- * Only allows ASCII printable characters (32-126) plus common extended ASCII (128-255)
- * This ensures compatibility with jsPDF and standard PDF fonts
+ * Filter out emojis and unsupported characters for PDF export.
+ * Only allows ASCII printable (32-126), extended ASCII (128-255), and tab/newline/carriage return.
+ * Used so no user-controlled values reach jsPDF text() without sanitization (no AcroForm or PDF JS).
+ * Exported for unit testing.
  */
-function filterSupportedCharacters(text: string): string {
+export function filterSupportedCharacters(text: string): string {
   return text
     .split('')
     .filter(char => {

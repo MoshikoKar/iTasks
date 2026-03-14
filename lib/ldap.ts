@@ -18,7 +18,7 @@ if (ENCRYPTION_KEY.length < 32) {
  */
 export function encryptSecret(text: string): string {
   const iv = crypto.randomBytes(16);
-  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const key = crypto.scryptSync(ENCRYPTION_KEY!, 'salt', 32);
   const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -34,7 +34,7 @@ export function decryptSecret(encrypted: string): string {
     throw new Error('Invalid encrypted format');
   }
   const iv = Buffer.from(ivHex, 'hex');
-  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const key = crypto.scryptSync(ENCRYPTION_KEY!, 'salt', 32);
   const decipher = crypto.createDecipheriv(ENCRYPTION_ALGORITHM, key, iv);
   let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

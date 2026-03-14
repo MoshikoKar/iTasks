@@ -1,9 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE, getCookieOptions } from "./lib/constants";
-import { db } from "./lib/db";
 import { validateSessionToken } from "./lib/auth";
 import { addSecurityHeaders } from "./lib/security-headers";
+import { getNeedsBootstrap } from "./lib/bootstrap";
 
 export const runtime = "nodejs";
 
@@ -17,17 +17,7 @@ export async function middleware(request: NextRequest) {
 
   let response: NextResponse;
 
-  // Check if bootstrap is needed
-  let needsBootstrap = false;
-  try {
-    const adminCount = await db.user.count({
-      where: { role: "Admin" },
-    });
-    needsBootstrap = adminCount === 0;
-  } catch (error) {
-    // If database is not available, allow access to bootstrap (fail-safe)
-    needsBootstrap = true;
-  }
+  const needsBootstrap = await getNeedsBootstrap();
 
   if (needsBootstrap) {
     // Bootstrap mode: only allow bootstrap paths and branding

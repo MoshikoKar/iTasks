@@ -193,10 +193,9 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
         return;
       }
 
-      const headers = {
-        'Content-Type': 'application/json',
-        ...getHeaders(),
-      };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const csrfHeaders = getHeaders();
+      if (csrfHeaders['X-CSRF-Token']) headers['X-CSRF-Token'] = csrfHeaders['X-CSRF-Token'];
 
       const response = await fetch('/api/tasks', {
         method: 'POST',
@@ -226,8 +225,10 @@ export function CreateTaskForm({ currentUserId, users, onSuccess }: CreateTaskFo
             formData.append('taskId', task.id);
             formData.append('file', file);
             
-            const uploadHeaders = getHeaders();
-            
+            const uploadHeaders: Record<string, string> = {};
+            const gh = getHeaders();
+            if (gh['X-CSRF-Token']) uploadHeaders['X-CSRF-Token'] = gh['X-CSRF-Token'];
+
             const uploadResponse = await fetch('/api/attachments', {
               method: 'POST',
               headers: uploadHeaders,

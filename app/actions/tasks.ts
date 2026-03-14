@@ -212,7 +212,7 @@ export async function rejectAssignmentRequest(taskId: string) {
         assigneeName: task.assignee.name,
       },
       user.email,
-      originalAssignee.id,
+      originalAssigneeId,
       task.id,
       user.id
     );
@@ -403,7 +403,7 @@ export async function createTask(data: {
     },
     assignee?.email,
     creator?.email,
-    assignee?.id,
+    task.assigneeId,
     task.id
   );
 
@@ -472,7 +472,7 @@ export async function updateTask(
   if (validatedData.assigneeId !== undefined && validatedData.assigneeId !== existing.assigneeId) {
     const newAssignee = await db.user.findUnique({
       where: { id: validatedData.assigneeId },
-      select: { role: true, name: true }
+      select: { id: true, role: true, name: true, email: true }
     });
 
     if (!newAssignee) {

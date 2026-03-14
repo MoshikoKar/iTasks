@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: `Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}` },
+        { error: `Validation failed: ${validationResult.error.issues.map(e => e.message).join(", ")}` },
         { status: 400 }
       );
     }

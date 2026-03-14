@@ -164,7 +164,7 @@ export function TaskAssignment({
                     onClick={() => onRejectAssignment(taskId)}
                     size="sm"
                     disabled={isUndoing || loading}
-                    variant="destructive"
+                    variant="danger"
                   >
                     Reject
                   </Button>

@@ -67,7 +67,7 @@ const dbErrorsTotal = new Counter({
 function registerAllMetrics() {
   const reg = getOrCreateRegistry();
 
-  for (const metric of [
+  const metrics = [
     httpRequestDurationSeconds,
     httpRequestErrorsTotal,
     cronJobDurationSeconds,
@@ -75,7 +75,8 @@ function registerAllMetrics() {
     authFailuresTotal,
     slaNotificationsSentTotal,
     dbErrorsTotal,
-  ]) {
+  ] as client.Metric[];
+  for (const metric of metrics) {
     // Avoid "A metric with the name ... has already been registered." on hot reload
     try {
       reg.registerMetric(metric);

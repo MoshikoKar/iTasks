@@ -26,7 +26,7 @@ export async function addComment(
   });
 
   if (!validationResult.success) {
-    throw new Error(`Validation failed: ${validationResult.error.errors.map(e => e.message).join(", ")}`);
+    throw new Error(`Validation failed: ${validationResult.error.issues.map(e => e.message).join(", ")}`);
   }
 
   const validatedData = validationResult.data;
@@ -58,7 +58,7 @@ export async function addComment(
       userId: user.id,
       content: validatedData.content,
       mentions: {
-        create: validatedData.mentionedUserIds.map(userId => ({ userId }))
+        create: (validatedData.mentionedUserIds ?? []).map(userId => ({ userId }))
       }
     },
   });
@@ -71,7 +71,7 @@ export async function addComment(
     user.id,
     {
       contentLength: validatedData.content.length,
-      mentionsCount: validatedData.mentionedUserIds.length,
+      mentionsCount: (validatedData.mentionedUserIds ?? []).length,
     }
   );
 
