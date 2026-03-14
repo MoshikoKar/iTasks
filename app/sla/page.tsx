@@ -7,50 +7,107 @@ import { formatDateTime } from "@/lib/utils/date";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 
-export default async function SLAPage() {
+/** Max tasks per list per page to keep server render and memory bounded. */
+const SLA_PAGE_SIZE = 50;
+
+export default async function SLAPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; assignee?: string; branch?: string }>;
+}) {
   try {
     await requireRole([Role.Admin, Role.TeamLead]);
   } catch (error) {
     redirect("/");
   }
-  const now = new Date();
-  
-  const overdueTasks = await db.task.findMany({
-    where: {
-      OR: [
-        { dueDate: { lt: now }, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
-        { slaDeadline: { lt: now }, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
-      ],
-    },
-    include: {
-      assignee: { select: { name: true, email: true } },
-      context: true,
-    },
-    orderBy: [
-      { priority: "desc" },
-      { dueDate: "asc" },
-    ],
-  });
+  const params = (await searchParams) ?? {};
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const assigneeName = params.assignee?.trim() || undefined;
+  const branchFilter = params.branch?.trim() || undefined;
 
-  const approachingTasks = await db.task.findMany({
-    where: {
-      AND: [
-        { slaDeadline: { gte: now } },
-        { slaDeadline: { lte: new Date(now.getTime() + 24 * 60 * 60 * 1000) } },
-        { status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
-      ],
-    },
-    include: {
-      assignee: { select: { name: true, email: true } },
-      context: true,
-    },
-    orderBy: [
-      { priority: "desc" },
-      { slaDeadline: "asc" },
+  const now = new Date();
+  const overdueWhere = {
+    AND: [
+      {
+        OR: [
+          { dueDate: { lt: now }, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
+          { slaDeadline: { lt: now }, status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
+        ],
+      },
+      ...(assigneeName
+        ? [
+            {
+              assignee: { name: { equals: assigneeName, mode: "insensitive" as const } },
+            },
+          ]
+        : []),
+      ...(branchFilter ? [{ branch: branchFilter }] : []),
     ],
-  });
+  };
+  const approachingWhere = {
+    AND: [
+      { slaDeadline: { gte: now } },
+      { slaDeadline: { lte: new Date(now.getTime() + 24 * 60 * 60 * 1000) } },
+      { status: { notIn: [TaskStatus.Resolved, TaskStatus.Closed] } },
+      ...(assigneeName
+        ? [
+            {
+              assignee: { name: { equals: assigneeName, mode: "insensitive" as const } },
+            },
+          ]
+        : []),
+      ...(branchFilter ? [{ branch: branchFilter }] : []),
+    ],
+  };
+
+  const skip = (page - 1) * SLA_PAGE_SIZE;
+
+  const [countOverdue, countApproaching, overdueTasks, approachingTasks] = await Promise.all([
+    db.task.count({ where: overdueWhere }),
+    db.task.count({ where: approachingWhere }),
+    db.task.findMany({
+      where: overdueWhere,
+      include: {
+        assignee: { select: { name: true, email: true } },
+        context: true,
+      },
+      orderBy: [
+        { priority: "desc" },
+        { dueDate: "asc" },
+        { id: "asc" },
+      ],
+      skip,
+      take: SLA_PAGE_SIZE,
+    }),
+    db.task.findMany({
+      where: approachingWhere,
+      include: {
+        assignee: { select: { name: true, email: true } },
+        context: true,
+      },
+      orderBy: [
+        { priority: "desc" },
+        { slaDeadline: "asc" },
+        { id: "asc" },
+      ],
+      skip,
+      take: SLA_PAGE_SIZE,
+    }),
+  ]);
 
   const allTasks = [...overdueTasks, ...approachingTasks];
+  const totalOverduePages = Math.ceil(countOverdue / SLA_PAGE_SIZE) || 1;
+  const totalApproachingPages = Math.ceil(countApproaching / SLA_PAGE_SIZE) || 1;
+  const maxPage = Math.max(totalOverduePages, totalApproachingPages);
+  const hasPaging = countOverdue > SLA_PAGE_SIZE || countApproaching > SLA_PAGE_SIZE;
+  const queryString = (overrides: { page?: number }) => {
+    const q = new URLSearchParams();
+    if (params.assignee) q.set("assignee", params.assignee);
+    if (params.branch) q.set("branch", params.branch);
+    if (overrides.page !== undefined && overrides.page !== 1) q.set("page", String(overrides.page));
+    const s = q.toString();
+    return s ? `?${s}` : "";
+  };
 
   const groupedByAssignee = allTasks.reduce((acc, task) => {
     const assigneeName = task.assignee.name;
@@ -63,12 +120,81 @@ export default async function SLAPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-foreground">SLA & Exceptions</h1>
         <div className="text-sm text-muted-foreground">
-          {overdueTasks.length} Overdue • {approachingTasks.length} Approaching
+          {countOverdue} Overdue • {countApproaching} Approaching
         </div>
       </div>
+
+      {/* Filters and paging */}
+      <div className="flex flex-wrap items-center gap-3">
+        <form method="get" action="/sla" className="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="page" value="1" />
+          <input
+            type="text"
+            name="assignee"
+            placeholder="Filter by assignee"
+            defaultValue={params.assignee ?? ""}
+            className="rounded border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground"
+          />
+          <input
+            type="text"
+            name="branch"
+            placeholder="Filter by branch"
+            defaultValue={params.branch ?? ""}
+            className="rounded border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground"
+          />
+          <button
+            type="submit"
+            className="rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            Apply
+          </button>
+          {(params.assignee || params.branch) && (
+            <Link
+              href="/sla"
+              className="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted"
+            >
+              Clear
+            </Link>
+          )}
+        </form>
+        {hasPaging && (
+          <nav className="flex items-center gap-2 text-sm">
+            {page > 1 ? (
+              <Link
+                href={`/sla${queryString({ page: page - 1 })}`}
+                className="text-primary hover:underline"
+              >
+                Previous
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">Previous</span>
+            )}
+            <span className="text-muted-foreground">
+              Page {page} of {maxPage}
+            </span>
+            {page < maxPage ? (
+              <Link
+                href={`/sla${queryString({ page: page + 1 })}`}
+                className="text-primary hover:underline"
+              >
+                Next
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">Next</span>
+            )}
+          </nav>
+        )}
+      </div>
+
+      {hasPaging && (
+        <p className="text-sm text-muted-foreground">
+          Showing up to {SLA_PAGE_SIZE} overdue and {SLA_PAGE_SIZE} approaching tasks per page. Use
+          filters or pagination to drill down.
+        </p>
+      )}
 
       {allTasks.length === 0 ? (
         <div className="card-base p-8 text-center text-muted-foreground">

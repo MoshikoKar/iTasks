@@ -45,12 +45,8 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
         isOpen={isModalOpen}
         onClose={() => !isDeleting && setIsModalOpen(false)}
         title="Delete Task"
-      >
-        <div className="space-y-4">
-          <p className="text-slate-600 dark:text-neutral-400">
-            Are you sure you want to delete <strong className="text-slate-900 dark:text-neutral-100">&quot;{taskTitle}&quot;</strong>? This action cannot be undone.
-          </p>
-          <div className="flex gap-3 justify-end">
+        footer={
+          <>
             <Button
               variant="secondary"
               onClick={() => setIsModalOpen(false)}
@@ -58,7 +54,7 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
             >
               Cancel
             </Button>
-            <form onSubmit={handleDelete}>
+            <form onSubmit={handleDelete} className="inline-block">
               <input type="hidden" name="taskId" value={taskId} />
               <Button
                 type="submit"
@@ -70,8 +66,12 @@ export function DeleteTaskButton({ taskId, taskTitle, deleteTaskAction }: Delete
                 <span className="text-destructive">Delete</span>
               </Button>
             </form>
-          </div>
-        </div>
+          </>
+        }
+      >
+        <p className="text-slate-600 dark:text-neutral-400">
+          Are you sure you want to delete <strong className="text-slate-900 dark:text-neutral-100">&quot;{taskTitle}&quot;</strong>? This action cannot be undone.
+        </p>
       </Modal>
     </>
   );

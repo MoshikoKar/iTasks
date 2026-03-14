@@ -26,32 +26,30 @@ const DEFAULT_NOTIFICATION_RULES: NotificationRule[] = [
 // Track sent notifications to avoid duplicates
 const sentNotifications = new Map<string, SentNotification[]>();
 
+/** Config slice needed for SLA hours lookup */
+type SystemConfigSla = {
+  slaCriticalHours: number | null;
+  slaHighHours: number | null;
+  slaMediumHours: number | null;
+  slaLowHours: number | null;
+};
+
 /**
- * Calculate SLA hours for a given priority
+ * Return SLA hours for a priority from a pre-fetched system config (no DB call).
  */
-async function getSLAHours(priority: TaskPriority): Promise<number | null> {
-  try {
-    const config = await db.systemConfig.findUnique({
-      where: { id: "system" },
-    });
-
-    if (!config) return null;
-
-    switch (priority) {
-      case TaskPriority.Critical:
-        return config.slaCriticalHours;
-      case TaskPriority.High:
-        return config.slaHighHours;
-      case TaskPriority.Medium:
-        return config.slaMediumHours;
-      case TaskPriority.Low:
-        return config.slaLowHours;
-      default:
-        return null;
-    }
-  } catch (error) {
-    logger.error("Error getting SLA hours", error);
-    return null;
+function getSLAHoursFromConfig(config: SystemConfigSla | null, priority: TaskPriority): number | null {
+  if (!config) return null;
+  switch (priority) {
+    case TaskPriority.Critical:
+      return config.slaCriticalHours;
+    case TaskPriority.High:
+      return config.slaHighHours;
+    case TaskPriority.Medium:
+      return config.slaMediumHours;
+    case TaskPriority.Low:
+      return config.slaLowHours;
+    default:
+      return null;
   }
 }
 
@@ -174,6 +172,16 @@ export async function sendDueDateNotifications(): Promise<void> {
   try {
     logger.info('[NotificationScheduler] Starting due date notification check');
 
+    const systemConfig = await db.systemConfig.findUnique({
+      where: { id: 'system' },
+      select: { slaCriticalHours: true, slaHighHours: true, slaMediumHours: true, slaLowHours: true },
+    });
+    if (!systemConfig) {
+      logger.warn('[NotificationScheduler] No system config (id: system); skipping SLA notifications');
+      return;
+    }
+    logger.info('[NotificationScheduler] Loaded system config once for this run (single systemConfig query)');
+
     // Get all active tasks with due dates
     const activeTasks = await db.task.findMany({
       where: {
@@ -205,8 +213,8 @@ export async function sendDueDateNotifications(): Promise<void> {
         continue;
       }
 
-      const slaHours = await getSLAHours(task.priority);
-      if (!slaHours) {
+      const slaHours = getSLAHoursFromConfig(systemConfig, task.priority);
+      if (slaHours == null) {
         continue; // Skip if no SLA configured for this priority
       }
 

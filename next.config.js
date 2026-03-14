@@ -1,52 +1,67 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: false, // Disable in dev for faster compilation
 
-  // Server components external packages
+const isDev = process.env.NODE_ENV !== 'production';
+
+// Shared config: server externals, images, TypeScript
+const shared = {
   serverExternalPackages: ['node-cron', 'cron-parser'],
-
-  // Performance optimizations
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-
-  // Optimize images (no remotePatterns - avoids CVE-2025-59471 DoS via unbounded remote image loading)
   images: {
     formats: ['image/avif', 'image/webp'],
   },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+};
 
-  // Experimental optimizations
+// Production-only: explicit production path
+const production = {
+  output: 'standalone',
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: true,
+  },
   experimental: {
     optimizePackageImports: ['@tabler/icons-react', 'lucide-react', 'framer-motion'],
-    // Webpack layer caching for faster rebuilds
+  },
+  webpack: (config) => config,
+  turbopack: {},
+};
+
+// Development-only: faster builds, dev tools, no production optimizations
+const development = {
+  output: undefined,
+  reactStrictMode: false,
+  compiler: {
+    removeConsole: false,
+  },
+  devIndicators: false,
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://0.0.0.0:3000',
+    'http://192.168.69.102:3000',
+    'http://172.22.0.1:3000',
+    'http://172.17.80.1:3000',
+  ],
+  experimental: {
+    optimizePackageImports: ['@tabler/icons-react', 'lucide-react', 'framer-motion'],
     webpackBuildWorker: true,
   },
-
-  // Turbopack configuration (empty to allow webpack config)
   turbopack: {},
-
-  // Aggressive webpack optimizations for FAST development
   webpack: (config, { dev, isServer }) => {
     if (dev) {
-      // Persistent filesystem cache
       config.cache = {
         type: 'filesystem',
         cacheDirectory: '.next/cache/webpack',
         buildDependencies: {
           config: [__filename],
         },
-        // More aggressive caching
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+        maxAge: 1000 * 60 * 60 * 24 * 7,
       };
 
       if (!isServer) {
-        // Disable source maps in development for faster builds
         config.devtool = false;
-
-        // Optimize module resolution
         config.resolve.symlinks = false;
-
-        // Aggressive optimization for dev
         config.optimization = {
           ...config.optimization,
           moduleIds: 'named',
@@ -60,41 +75,16 @@ const nextConfig = {
           providedExports: false,
           sideEffects: false,
         };
-
-        // Reduce the amount of work webpack does
         config.stats = 'errors-only';
       }
     }
-
     return config;
   },
+};
 
-  // Enable type checking in production builds
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-
-  // Disable development indicators completely
-  devIndicators: false,
-
-  // Allow cross-origin requests from local network devices
-  // This allows access from other devices on the same LAN
-  // IMPORTANT: Add your server's local IP address here (the IP you use to access from other devices)
-  // The origin is the server's URL, not the client device's IP
-  allowedDevOrigins: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://0.0.0.0:3000',
-    // Server's local IP address (found via ipconfig)
-    'http://192.168.69.102:3000',
-    // Add more IPs if you have multiple network interfaces
-    'http://172.22.0.1:3000',
-    'http://172.17.80.1:3000',
-  ],
-
-  // Optimize output
-  output: process.env.NODE_ENV === 'development' ? 'standalone' : undefined,
+const nextConfig = {
+  ...shared,
+  ...(isDev ? development : production),
 };
 
 module.exports = nextConfig;
-

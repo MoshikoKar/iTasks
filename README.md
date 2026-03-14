@@ -249,7 +249,7 @@ Notifications are sent for:
 │   ├── sla/              # SLA & Exceptions page
 │   ├── recurring/        # Recurring tasks page
 │   ├── reports/          # Reports page
-│   ├── admin/            # Admin pages (users, teams, settings, logs)
+│   ├── admin/            # Admin pages (users, teams, settings, logs); layout enforces Admin role for all /admin/* routes
 │   ├── login/            # Login page
 │   ├── layout.tsx        # Root layout
 │   └── page.tsx          # Dashboard
@@ -475,6 +475,8 @@ Additional documentation is available in the `docs/` directory:
 - `docs/ux/UX_AUDIT_FINAL.md` - UX audit findings
 - `docs/architecture/ARCHITECTURAL_AUDIT.md` - Architecture review
 - `docs/implementation/implementation.md` - Implementation and refactoring summaries
+- `docs/dependencies/ajv-redos-mitigation.md` - AJV ReDoS mitigation
+- `docs/dependencies/dompurify-xss-mitigation.md` - DOMPurify XSS mitigation
 
 ## Known Issues & Limitations
 

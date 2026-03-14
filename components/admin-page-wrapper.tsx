@@ -725,15 +725,8 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity, password
         }}
         title="Delete User"
         size="sm"
-      >
-        <div className="space-y-4">
-          {deleteError && (
-            <ErrorAlert message={deleteError} onDismiss={() => setDeleteError('')} />
-          )}
-          <p className="text-foreground">
-            Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-3">
+        footer={
+          <>
             <Button
               variant="secondary"
               onClick={() => {
@@ -747,7 +740,16 @@ export function AdminPageWrapper({ users, teams, stats, recentActivity, password
             <Button variant="danger" onClick={confirmDelete} isLoading={isDeleting} className="text-destructive">
               <span className="text-destructive">Delete User</span>
             </Button>
-          </div>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {deleteError && (
+            <ErrorAlert message={deleteError} onDismiss={() => setDeleteError('')} />
+          )}
+          <p className="text-foreground">
+            Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This action cannot be undone.
+          </p>
         </div>
       </Modal>
 

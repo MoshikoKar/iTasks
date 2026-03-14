@@ -432,20 +432,8 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
         }}
         title="Delete Recurring Task"
         size="sm"
-      >
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-            <AlertTriangle className="text-destructive shrink-0 mt-0.5" size={20} aria-hidden="true" />
-            <div>
-              <p className="text-sm text-destructive">
-                Are you sure you want to delete the recurring task <strong>&quot;{selectedConfig?.name}&quot;</strong>?
-              </p>
-              <p className="text-xs text-destructive/80 mt-1">
-                This action cannot be undone. Previously generated tasks will not be deleted.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-end gap-3">
+        footer={
+          <>
             <Button
               onClick={() => {
                 setIsDeleteModalOpen(false);
@@ -464,6 +452,18 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
             >
               <span className="text-destructive">Delete</span>
             </Button>
+          </>
+        }
+      >
+        <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+          <AlertTriangle className="text-destructive shrink-0 mt-0.5" size={20} aria-hidden="true" />
+          <div>
+            <p className="text-sm text-destructive">
+              Are you sure you want to delete the recurring task <strong>&quot;{selectedConfig?.name}&quot;</strong>?
+            </p>
+            <p className="text-xs text-destructive/80 mt-1">
+              This action cannot be undone. Previously generated tasks will not be deleted.
+            </p>
           </div>
         </div>
       </Modal>

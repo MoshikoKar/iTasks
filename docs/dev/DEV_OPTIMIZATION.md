@@ -209,7 +209,7 @@ npm run lint
 
 ## 📁 Files Modified
 
-1. ✅ `next.config.js` - Aggressive webpack optimizations
+1. ✅ `next.config.js` - Split into clear **dev** vs **production** branches. Dev: aggressive webpack caching, no source maps, disabled optimizations, `devIndicators: false`, `allowedDevOrigins`, `webpackBuildWorker`. Production: `output: 'standalone'`, `removeConsole: true`, `reactStrictMode: true`, no dev-only flags.
 2. ✅ `package.json` - Removed Turbopack flag
 3. ✅ `.env.development` - Disabled Fast Refresh (NEW FILE)
 
