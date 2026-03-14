@@ -92,7 +92,7 @@ If you want to enable LDAP authentication:
 4. Click "Test Connection" to verify
 5. If successful, click "Save Configuration"
 
-See `docs/LDAP_SETUP.md` for detailed configuration guide.
+See `docs/ldap/ldap.md` for detailed configuration guide.
 
 ## What Changed
 
@@ -114,7 +114,7 @@ See `docs/LDAP_SETUP.md` for detailed configuration guide.
 ### Files to Review
 
 - `IMPLEMENTATION_SUMMARY.md` - Complete technical details
-- `docs/LDAP_SETUP.md` - LDAP setup and troubleshooting
+- `docs/ldap/ldap.md` - LDAP setup and troubleshooting
 - `todo.md` - Updated task status
 
 ## Verification Commands
@@ -175,7 +175,7 @@ npm run build
 ## Need Help?
 
 1. Check `IMPLEMENTATION_SUMMARY.md` for technical details
-2. Read `docs/LDAP_SETUP.md` for LDAP setup guide
+2. Read `docs/ldap/ldap.md` for LDAP setup guide
 3. Review Recent Activity logs in Admin Settings
 4. Check browser console for errors
 5. Check server logs in terminal

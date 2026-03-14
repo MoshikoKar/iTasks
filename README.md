@@ -164,7 +164,7 @@ Alternatively, you can use the PowerShell script:
 
 The first admin user created will automatically be marked as the bootstrap admin (protected from deletion and role demotion).
 
-Bootstrap detection is cached in memory (default 60s TTL) to avoid a DB query on every request. Optional env: `SKIP_BOOTSTRAP_CHECK=true` (skip check when already bootstrapped), `BOOTSTRAP_CACHE_TTL_MS` (cache TTL in ms). See `docs/BOOTSTRAP.md`.
+Bootstrap detection is cached in memory (default 60s TTL) to avoid a DB query on every request. Optional env: `SKIP_BOOTSTRAP_CHECK=true` (skip check when already bootstrapped), `BOOTSTRAP_CACHE_TTL_MS` (cache TTL in ms). See `docs/bootstrap/BOOTSTRAP.md`.
 
 6. Start the development server:
 
@@ -193,7 +193,7 @@ System configuration is managed through the Admin Settings page (Admin role requ
 
 ### LDAP Authentication
 
-See `docs/LDAP_SETUP.md` for detailed LDAP configuration instructions.
+See `docs/ldap/ldap.md` for detailed LDAP configuration instructions.
 
 Key features:
 - Test connection before saving
@@ -463,20 +463,18 @@ See `prisma/schema.prisma` for complete schema definition.
 
 Additional documentation is available in the `docs/` directory:
 
-- `docs/BOOTSTRAP.md` - Bootstrap detection, caching, and optional env configuration
-- `docs/LDAP_SETUP.md` - LDAP/LDAPS authentication setup guide
-- `docs/LDAP_TROUBLESHOOTING.md` - LDAP troubleshooting guide
-- `docs/QUICK_START.md` - Quick start guide after implementation
-- `docs/API.md` - API overview and conventions
-- `docs/DEPLOYMENT.md` - Deployment guidance
-- `docs/MONITORING.md` - Prometheus metrics and monitoring setup
-- `docs/SECURITY_HEADERS.md` - Security headers and CSP configuration
-- `docs/SECURITY_AUDIT_FINAL.md` - Security audit report
-- `docs/FULL_AUDIT_2025.md` - Comprehensive audit report
-- `docs/UX_AUDIT_FINAL.md` - UX audit findings
-- `docs/ARCHITECTURAL_AUDIT.md` - Architecture review
-- `docs/REFACTORING_SUMMARY.md` - Refactoring improvements
-- `docs/IMPLEMENTATION_SUMMARY.md` - Implementation details
+- `docs/bootstrap/BOOTSTRAP.md` - Bootstrap detection, caching, and optional env configuration
+- `docs/ldap/ldap.md` - LDAP/LDAPS authentication setup and troubleshooting
+- `docs/getting-started/QUICK_START.md` - Quick start guide after implementation
+- `docs/api/API.md` - API overview and conventions
+- `docs/deployment/DEPLOYMENT.md` - Deployment guidance
+- `docs/monitoring/MONITORING.md` - Prometheus metrics and monitoring setup
+- `docs/security/SECURITY_HEADERS.md` - Security headers and CSP configuration
+- `docs/security/SECURITY_AUDIT_FINAL.md` - Security audit report
+- `docs/audit/FULL_AUDIT_2025.md` - Comprehensive audit report
+- `docs/ux/UX_AUDIT_FINAL.md` - UX audit findings
+- `docs/architecture/ARCHITECTURAL_AUDIT.md` - Architecture review
+- `docs/implementation/implementation.md` - Implementation and refactoring summaries
 
 ## Known Issues & Limitations
 
@@ -527,7 +525,7 @@ Optional:
 
 ### Monitoring
 
-iTasks exposes Prometheus-format metrics at `GET /api/metrics` for scraping by Prometheus or Grafana Agent. See `docs/MONITORING.md` for metric definitions and scrape configuration.
+iTasks exposes Prometheus-format metrics at `GET /api/metrics` for scraping by Prometheus or Grafana Agent. See `docs/monitoring/MONITORING.md` for metric definitions and scrape configuration.
 
 Recommended monitoring:
 - Database connection health

@@ -24,9 +24,40 @@ jobs:
       - name: Install dependencies with npm ci
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
       - name: Lint
         run: npm run lint
 
       - name: Build
         run: npm run build
+
+  deploy:
+    name: Deploy (reproducible build)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+    needs: build-and-validate-lockfile
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies with npm ci
+        run: npm ci
+
+      - name: Build for deployment
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Deployment placeholder
+        run: |
+          echo "Build artifact ready. Wire your deploy step here (e.g. Docker push, SSH, or deploy to your host)."
+          echo "See docs/DEPLOYMENT.md for deployment process and rollback."
 

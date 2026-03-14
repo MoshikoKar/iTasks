@@ -41,4 +41,4 @@ PDF export is implemented in `lib/utils/export.ts` using the `jspdf` library. Re
 
 - Implementation: `lib/utils/export.ts`
 - Report PDF trigger: `components/reports-client.tsx` (export to PDF action)
-- Related: `docs/IMPLEMENTATION_SUMMARY.md` (jsPDF upgrade and hardening)
+- Related: `docs/implementation/implementation.md` (jsPDF upgrade and hardening)
