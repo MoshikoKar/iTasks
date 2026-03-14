@@ -37,7 +37,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          ENCRYPTION_KEY: 00000000000000000000000000000000
+          ENCRYPTION_KEY: "ci-build-placeholder-32-chars-long!!"
           NEXT_PUBLIC_APP_URL: https://example.com
 
   deploy:
@@ -63,7 +63,7 @@ jobs:
         env:
           NODE_ENV: production
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          ENCRYPTION_KEY: 00000000000000000000000000000000
+          ENCRYPTION_KEY: "ci-build-placeholder-32-chars-long!!"
           NEXT_PUBLIC_APP_URL: https://example.com
 
       - name: Deployment placeholder
