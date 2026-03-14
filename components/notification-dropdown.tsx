@@ -167,7 +167,7 @@ export function NotificationDropdown({ userId, onClose, onUnreadCountChange }: N
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                  <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
                     !notification.isRead ? 'bg-blue-500' : 'bg-transparent'
                   }`} />
                   <div className="flex-1 min-w-0">

@@ -534,7 +534,7 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
                     <div key={name} className="space-y-2">
                       <div className="flex items-center justify-between text-xs sm:text-sm">
                         <span className="font-medium text-foreground truncate">{name}</span>
-                        <span className="text-muted-foreground flex-shrink-0 ml-2">{stats.total} total</span>
+                        <span className="text-muted-foreground shrink-0 ml-2">{stats.total} total</span>
                       </div>
                       <div className="h-3 sm:h-4 overflow-hidden rounded-full bg-muted">
                         <div
@@ -576,7 +576,7 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
                   <div key={team.name} className="space-y-2">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="font-medium text-foreground truncate">{team.name}</span>
-                      <span className="text-muted-foreground flex-shrink-0 ml-2">{team.completionRate.toFixed(1)}%</span>
+                      <span className="text-muted-foreground shrink-0 ml-2">{team.completionRate.toFixed(1)}%</span>
                     </div>
                     <div className="h-3 sm:h-4 overflow-hidden rounded-full bg-muted">
                       <div
@@ -630,10 +630,10 @@ export function ReportsClient({ tasks, teams }: ReportsClientProps) {
                     {analytics.topAssets.map((asset, index) => (
                       <div key={asset.name} className="flex items-center justify-between rounded-md border border-border p-2 sm:p-3">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                          <span className="text-xs sm:text-sm font-medium text-muted-foreground flex-shrink-0">#{index + 1}</span>
+                          <span className="text-xs sm:text-sm font-medium text-muted-foreground shrink-0">#{index + 1}</span>
                           <span className="font-medium text-foreground text-sm truncate">{asset.name}</span>
                         </div>
-                        <span className="rounded-full bg-destructive/10 px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold text-destructive border border-destructive/20 flex-shrink-0 ml-2">
+                        <span className="rounded-full bg-destructive/10 px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold text-destructive border border-destructive/20 shrink-0 ml-2">
                           {asset.value}
                         </span>
                       </div>

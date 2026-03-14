@@ -30,10 +30,6 @@ if (-not (Test-Path -Path "$projectRoot\node_modules")) {
   npm install --no-audit --no-fund
 }
 
-if (-not (Test-Path -Path "$projectRoot\node_modules\.prisma\client\index.js")) {
-  npm run db:generate
-}
-
 $env:NODE_ENV = "development"
 if (-not $env:PORT) {
   $env:PORT = "3000"
@@ -60,7 +56,10 @@ Stop-PortListener -Port ([int]$env:PORT)
 
 npx prisma migrate status --schema ".\prisma\schema.prisma"
 npx prisma db push --schema ".\prisma\schema.prisma"
-npx prisma generate --schema ".\prisma\schema.prisma"
+# Generate Prisma client only when missing (avoids EPERM when DLL is locked on Windows)
+if (-not (Test-Path -Path "$projectRoot\node_modules\.prisma\client\index.js")) {
+  npx prisma generate --schema ".\prisma\schema.prisma"
+}
 
 $connectionCheck = @'
 const { PrismaClient } = require("@prisma/client");

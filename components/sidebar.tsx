@@ -156,7 +156,7 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
               label: userName,
               href: "#",
               icon: (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-xs font-semibold text-white">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-blue-600 to-blue-700 text-xs font-semibold text-white">
                   {userName.charAt(0).toUpperCase()}
                 </div>
               ),
@@ -173,7 +173,7 @@ export function Sidebar({ userRole, userName }: { userRole: Role; userName: stri
                 display: open ? "inline-block" : "none",
                 opacity: open ? 1 : 0,
               }}
-              className="!m-0 inline-block whitespace-pre !p-0 hidden md:inline-block"
+              className="m-0! hidden whitespace-pre p-0! md:inline-block"
             >
               Logout
             </motion.span>

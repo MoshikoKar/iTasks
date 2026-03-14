@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { generateRecurringTasks } from '@/app/actions/recurring';
 import { sendDueDateNotifications } from './notification-scheduler';
+import { cleanupExpiredSessions } from './auth';
 import { db } from './db';
 import { startCronTimer, recordCronError } from './metrics';
 
@@ -68,6 +69,11 @@ export function initializeRecurringTaskScheduler() {
 
       console.log('[Cron] Running due date notification check...');
       await sendDueDateNotifications();
+
+      const cleaned = await cleanupExpiredSessions();
+      if (cleaned > 0) {
+        console.log(`[Cron] Cleaned up ${cleaned} expired session(s).`);
+      }
 
       const executionTime = Date.now() - executionStart;
       console.log(`[Cron] Execution completed successfully in ${executionTime}ms`);

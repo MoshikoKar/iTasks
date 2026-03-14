@@ -56,6 +56,8 @@ The deploy job runs after the build-and-validate job succeeds. It performs a fre
 
 2. **Database**
    - If a migration was applied during the failed deploy, run the down migration or restore from backup before or after app rollback, depending on whether the new code depends on the new schema. Document migration rollback steps in your migration files or ops runbook.
+   - Backup and restore procedures, RPO/RTO, and automation are documented in [Backup and Restore](../backup-restore/BACKUP_RESTORE.md). Use `scripts/backup-db.ps1` and `scripts/restore-db.ps1` for operational backups.
+- Background jobs (recurring tasks, due-date notifications, session cleanup) run in-process by default; for a dedicated worker or scaling options see [Background Jobs](../infra/BACKGROUND_JOBS.md).
 
 3. **Verification**
    - Confirm health endpoint and critical flows on the rolled-back version.

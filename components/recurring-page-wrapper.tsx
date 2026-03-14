@@ -435,7 +435,7 @@ export function RecurringPageWrapper({ configs, users, currentUser }: RecurringP
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-            <AlertTriangle className="text-destructive flex-shrink-0 mt-0.5" size={20} aria-hidden="true" />
+            <AlertTriangle className="text-destructive shrink-0 mt-0.5" size={20} aria-hidden="true" />
             <div>
               <p className="text-sm text-destructive">
                 Are you sure you want to delete the recurring task <strong>"{selectedConfig?.name}"</strong>?

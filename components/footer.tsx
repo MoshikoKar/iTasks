@@ -137,7 +137,7 @@ export function Footer({ supportEmail, timezone, dateFormat, timeFormat }: Foote
             
             {supportEmail && (
               <div className="flex items-center gap-1 sm:gap-2">
-                <Mail size={12} className="text-slate-500 dark:text-neutral-500 flex-shrink-0" />
+                <Mail size={12} className="text-slate-500 dark:text-neutral-500 shrink-0" />
                 <Link
                   href="/contact"
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors truncate max-w-[150px] sm:max-w-none"

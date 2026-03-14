@@ -4,6 +4,14 @@
 
 The Prisma client needs to be regenerated with the new schema changes.
 
+## Required environment variables
+
+- **DATABASE_URL** – PostgreSQL connection string (required).
+- **ENCRYPTION_KEY** – At least 32 characters; used for encrypting stored secrets (e.g. LDAP/SMTP).
+- **Production only:** set **NEXT_PUBLIC_APP_URL** or **NEXTAUTH_URL** so the app can build absolute URLs (e.g. in notification emails). Session is handled via the custom DB-backed session (SESSION_COOKIE), not NextAuth, unless `USE_NEXTAUTH=true`.
+
+See README.md for the full env list and optional SMTP/LDAP configuration.
+
 ## Step-by-Step Setup
 
 ### 1. Stop the Current Dev Server

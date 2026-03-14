@@ -5,12 +5,10 @@ import { validateSessionToken } from "./lib/auth";
 import { addSecurityHeaders } from "./lib/security-headers";
 import { getNeedsBootstrap } from "./lib/bootstrap";
 
-export const runtime = "nodejs";
-
 const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/logout", "/api/auth/user", "/api/branding"];
 const BOOTSTRAP_PATHS = ["/bootstrap", "/api/bootstrap"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
   const isBootstrap = BOOTSTRAP_PATHS.some((path) => pathname.startsWith(path));

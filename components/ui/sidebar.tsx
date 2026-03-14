@@ -118,7 +118,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "desktop-sidebar hidden h-full flex-shrink-0 bg-neutral-100 px-4 py-4 md:flex md:flex-col dark:bg-neutral-800",
+          "desktop-sidebar hidden h-full shrink-0 bg-neutral-100 px-4 py-4 md:flex md:flex-col dark:bg-neutral-800",
           isTablet ? "cursor-pointer" : "cursor-auto",
           className
         )}
@@ -220,7 +220,7 @@ export const MobileSidebar = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-[99] bg-black/50 backdrop-blur-sm touch-none"
+                className="fixed inset-0 z-99 bg-black/50 backdrop-blur-sm touch-none"
                 onClick={handleBackdropClick}
                 onTouchStart={handleBackdropClick}
                 style={{ touchAction: 'none' }}
@@ -235,7 +235,7 @@ export const MobileSidebar = ({
                   ease: "easeInOut",
                 }}
                 className={cn(
-                  "fixed inset-y-0 left-0 z-[100] flex w-[85vw] max-w-[320px] flex-col justify-between bg-white p-6 sm:p-8 dark:bg-neutral-900 shadow-2xl overflow-y-auto",
+                  "fixed inset-y-0 left-0 z-100 flex w-[85vw] max-w-[320px] flex-col justify-between bg-white p-6 sm:p-8 dark:bg-neutral-900 shadow-2xl overflow-y-auto",
                   className
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -309,7 +309,7 @@ export const SidebarLink = ({
           display: animate && !isMobile ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate && !isMobile ? (open ? 1 : 0) : 1,
         }}
-        className="!m-0 inline-block whitespace-pre !p-0 text-sm text-neutral-700 transition duration-150 group-hover/sidebar:translate-x-1 dark:text-neutral-200"
+        className="m-0! inline-block whitespace-pre p-0! text-sm text-neutral-700 transition duration-150 group-hover/sidebar:translate-x-1 dark:text-neutral-200"
       >
         {link.label}
       </motion.span>

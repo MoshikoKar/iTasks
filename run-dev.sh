@@ -33,12 +33,6 @@ if [ ! -d "node_modules" ]; then
   npm install --no-audit --no-fund
 fi
 
-# Generate Prisma client if it doesn't exist
-if [ ! -f "node_modules/.prisma/client/index.js" ]; then
-  echo "Generating Prisma client..."
-  npm run db:generate
-fi
-
 export NODE_ENV="development"
 export PORT="${PORT:-3000}"
 
@@ -78,8 +72,11 @@ npx prisma migrate status --schema "./prisma/schema.prisma"
 echo "Applying database migrations..."
 npx prisma db push --schema "./prisma/schema.prisma"
 
-echo "Generating Prisma client..."
-npx prisma generate --schema "./prisma/schema.prisma"
+# Generate Prisma client only when missing (avoids EPERM when DLL is locked)
+if [ ! -f "node_modules/.prisma/client/index.js" ]; then
+  echo "Generating Prisma client..."
+  npx prisma generate --schema "./prisma/schema.prisma"
+fi
 
 # Database connection check
 cat > .connection-check.js << 'EOF'

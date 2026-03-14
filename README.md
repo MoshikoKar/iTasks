@@ -129,14 +129,14 @@ Create a `.env` file with the following required variables:
 
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/itasks?schema=public"
-NEXTAUTH_SECRET="your-secret-key-minimum-32-characters"
 ENCRYPTION_KEY="your-32-character-encryption-key-for-ldap-smtp"
-NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-**Important**: 
+**Required:** `DATABASE_URL`, `ENCRYPTION_KEY`. The app uses a custom DB-backed session (cookie name `SESSION_COOKIE`), not NextAuth. In production set `NEXT_PUBLIC_APP_URL` or `NEXTAUTH_URL` so the app can build absolute URLs (e.g. in notification emails). Optional: `NEXTAUTH_URL` as fallback base URL; `NEXTAUTH_SECRET` only if `USE_NEXTAUTH=true`.
+
+**Important:**
 - `ENCRYPTION_KEY` must be at least 32 characters for AES-256 security
-- `NEXTAUTH_SECRET` should be at least 32 characters
 - Never commit `.env` files to version control
 
 4. Set up the database:
@@ -294,7 +294,7 @@ Notifications are sent for:
 │   └── constants.ts      # Application constants
 ├── prisma/
 │   └── schema.prisma    # Database schema
-├── middleware.ts        # Authentication and security headers middleware
+├── proxy.ts             # Request proxy (auth and security headers)
 ├── instrumentation.ts    # Recurring task scheduler initialization
 ├── create-admin-user.ps1
 ├── clear-database.ps1
@@ -497,8 +497,7 @@ Additional documentation is available in the `docs/` directory:
 ### Pre-Deployment Checklist
 
 - [ ] Set strong `ENCRYPTION_KEY` (32+ characters)
-- [ ] Set strong `NEXTAUTH_SECRET` (32+ characters)
-- [ ] Configure `NEXTAUTH_URL` for production domain
+- [ ] Set `NEXT_PUBLIC_APP_URL` or `NEXTAUTH_URL` for production (absolute URLs for emails/links)
 - [ ] Use encrypted database connections (SSL/TLS)
 - [ ] Enable HTTPS (enforced via security headers)
 - [ ] Configure SMTP server for notifications
@@ -514,11 +513,13 @@ Additional documentation is available in the `docs/` directory:
 
 Required:
 - `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - Session encryption secret
-- `ENCRYPTION_KEY` - LDAP/SMTP password encryption key
+- `ENCRYPTION_KEY` - LDAP/SMTP password encryption key (32+ chars)
+
+Production: set at least one of `NEXT_PUBLIC_APP_URL` or `NEXTAUTH_URL` for absolute URLs. Session uses custom DB-backed model (SESSION_COOKIE), not NextAuth, unless `USE_NEXTAUTH=true`.
 
 Optional:
-- `NEXTAUTH_URL` - Application URL (required in production)
+- `NEXTAUTH_URL` - Fallback base URL (used with NEXT_PUBLIC_APP_URL for links/emails)
+- `NEXTAUTH_SECRET` - Only if `USE_NEXTAUTH=true`
 - `SMTP_HOST` - SMTP server hostname
 - `SMTP_PORT` - SMTP server port
 - `SMTP_FROM` - Email sender address
