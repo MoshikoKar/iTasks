@@ -2,8 +2,11 @@
  * Unit tests for auth helpers (verifyPassword).
  * Core business logic for password verification without DB/cookies.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import crypto from 'crypto';
+
+vi.mock('./db', () => ({ db: {} }));
+
 import { verifyPassword } from './auth';
 
 const PBKDF2_ITERATIONS = 310000;
